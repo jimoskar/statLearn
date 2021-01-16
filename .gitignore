@@ -1,0 +1,23 @@
+.DS_Store
+
+# History files
+.Rhistory
+*.Rproj
+# Example code in package build process
+*-Ex.R
+
+# R data files from past sessions
+.Rdata
+
+# RStudio files
+.Rproj.user/
+.Rproj.user
+
+*cache*
+*.rdb
+*.rdx
+*_files*
+tmp_R_cache*
+unnamed-chunk*
+vignettes/*.md
+vignettes/figure

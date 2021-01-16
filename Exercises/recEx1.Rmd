@@ -1,0 +1,27 @@
+---
+title: "Recommended Exercises (Module 2)"
+author: "Jim Totland"
+date: "1/16/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[Link to problem set](https://github.com/stefaniemuff/statlearning/blob/master/Exercise2/RecEx2.pdf)
+
+## Problem 1
+a) Weather forecasting. Response: "Sunny", "Cloudy", "Rain" etc. Predictors: Air pressure, temperature, and the weather of the previous day(s). The goal is to predict.
+
+b) Battery life of a phone. Response: Time until the phone is dead. Predictors: Screen size, Battery specs, Processor etc. Both prediction and inference are relevant here. Given a phone, we want to be able to predict what the battery life will be, based to the predictors, but from the regression we will also be able to infer which predictors are most significant.
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
