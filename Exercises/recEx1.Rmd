@@ -76,5 +76,39 @@ ggpairs(Auto[-9])
 
 From the plot we can see that there seems to be a linear relationship between multiple predictors. E.g. `weight` and `displacement` have a clearly positive linear relationship. There also seems to be some non-linear relationships, e.g. between `mpg` and `horsepower`.
 
+f) I will here treat `cylinders` and `origin` as qualitative variables and get the following box plots:
+
+```{r, echo = F, cache = T}
+Auto$origin = as.factor(Auto$origin)
+ggplot(Auto) + 
+  geom_boxplot(mapping = aes(x = origin, y = mpg))
+
+Auto$cylinders = as.factor(Auto$cylinders)
+ggplot(Auto) + 
+  geom_boxplot(mapping = aes(x = cylinders, y = mpg))
+```
+
+The majority of the variables seem to have some relvance in predicrting `mpg`. But the variables `year`, `acceleration` and `name` are probably the least impactful based on visual inspection.
+
+g) The following function calculates the correlation matrix given the covariance matrix.
+
+```{r}
+getCor <- function(covMat) {
+  rows <- dim(covMat)[1]
+  cols <- dim(covMat)[2]
+  corMat <- matrix(nrow = rows, ncol = cols)
+  
+  for (i in 1:rows) {
+    for(j in 1:cols) {
+      corMat[i,j] = covMat[i,j] / (sqrt(covMat[i,i]) * sqrt(covMat[j,j]))
+    }
+  }
+  return (corMat)
+}
+```
+
+
+
+
 
 
