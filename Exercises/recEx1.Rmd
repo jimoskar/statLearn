@@ -16,12 +16,65 @@ a) Weather forecasting. Response: "Sunny", "Cloudy", "Rain" etc. Predictors: Air
 
 b) Battery life of a phone. Response: Time until the phone is dead. Predictors: Screen size, Battery specs, Processor etc. Both prediction and inference are relevant here. Given a phone, we want to be able to predict what the battery life will be, based to the predictors, but from the regression we will also be able to infer which predictors are most significant.
 
-## Including Plots
+## Problem 2
 
-You can also embed plots, for example:
+a) In this example, the more flexible methods have a smaller test MSE. But at some point the test MSE start to increase monotonically with the flexibility. This is a result of overfitting.
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+b) The variance refers to how much $\hat{f}$ would change if we used another set of training data. A small variance could indicate that a rigid method has been used, implying that the data is most likely underfiited.
+
+c) Bias generally decreases with flexibility, which indicates that a very low bias is connected to overfitting the data. 
+
+
+## Problem 3
+
+```{r chunk-name, results = "hide"}
+library(ISLR)
+data(Auto)
+```
+```{r, include = F}
+library(tidyverse)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+a) Use the `glimpse` function from the tidyverse:
+
+```{r}
+glimpse(Auto)
+```
+The data has dimensions $392 \times 9$. All predictors except `name` are quantitative, although some of the them may also be treated as categorical.
+
+b)
+The range is found by applying the `range()` function. For example:
+```{r}
+range(Auto$mpg)
+```
+
+c) The mean and standard deviation can be found in the following way:
+```{r}
+for (i in 1:8) {
+  print(summarise(Auto, mean = mean(Auto[,i]), sd = sd(Auto[,i])))
+}
+```
+
+d) Possible, though not very clean, solution:
+
+```{r}
+ReducedAuto <- Auto[- (10:85),]
+
+for (i in 1:8) {
+  print(summarise(ReducedAuto, mean = mean(ReducedAuto[,i]), 
+                  sd = sd(ReducedAuto[,i]), 
+                  range = range(ReducedAuto[,i])))
+}
+```
+
+e)
+```{r, cache = T}
+library(GGally)
+ggpairs(Auto[-9])
+```
+
+From the plot we can see that there seems to be a linear relationship between multiple predictors. E.g. `weight` and `displacement` have a clearly positive linear relationship. There also seems to be some non-linear relationships, e.g. between `mpg` and `horsepower`.
+
+
+
