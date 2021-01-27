@@ -32,4 +32,40 @@ summary(fit)
 ## iii) year suggests that every 10th year, mpg increases with 7.770
 
 # d)
+# We have to do conduxt the test origin2 = origin3 = 0. This requires an F.test, which
+# is readily available with
+
+anova(fit)
+# The small p-value is trong evidence that origin has an influence on the response mpg.
+
+# e)
+library(ggfortify)
+autoplot(fit, smooth.colour = NA)
+# There is some evidence of non-linearity in the Residuals vs Fitted plot
+
+# f)
+set.seed(2332)
+n = 100
+
+par(mfrow = c(2, 3))
+for (i in 1:6) {
+  sim = rnorm(n)
+  qqnorm(sim, pch = 1, frame = FALSE)
+  qqline(sim, col = "blue", lwd = 1)
+}
+
+# g)
+
+fit2 <- lm(mpg ~ displacement + weight + year + origin + year:origin, Auto)
+summary(fit2)
+anova(fit2)
+# The p-value of the F-test provides evidence that the interaction effect is relevant for the response.
+# The interpretation is that the slope of year is somewhat larger for the categories origin2/3.
+
+# h)
+
+fit3 <- lm(mpg ~ log(displacement), Auto)
+summary(fit3)
+
+#DO THE LAB OF CHAPTER 3!!
 
