@@ -69,3 +69,113 @@ summary(fit3)
 
 #DO THE LAB OF CHAPTER 3!!
 
+
+#===========#
+# Problem 2 #
+#===========#
+
+# b)
+# The interpretation of a 95% confidence interval is that if we repeat the same experiment
+# a very large amount of times, we expect the relevant parameter to lie in the confidence
+# interval for 95% of the experiments. Example:
+
+beta0 = 1
+beta1 = 3
+true_beta = c(beta0, beta1)  # vector of model coefficients
+true_sd = 1  # choosing true sd
+X = runif(100, 0, 1)  # simulate the predictor variable X
+Xmat = model.matrix(~X, data = data.frame(X))  # create design matrix
+
+
+ci_int = ci_x = 0  # Counts how many times the true value is within the confidence interval
+nsim = 1000
+for (i in 1:nsim) {
+  y = rnorm(n = 100, mean = Xmat %*% true_beta, sd = rep(true_sd, 100))
+  mod = lm(y ~ x, data = data.frame(y = y, x = X))
+  ci = confint(mod)
+  ci_int[i] = ifelse(beta0 >= ci[1,1] && beta0 <= ci[1,2], 1, 0)  # if true value of beta0 is within the CI then 1 else 0
+  ci_x[i] = ifelse(beta1 >= ci[2,1] && beta1 <= ci[2,2], 1, 0)  # if true value of beta_1 is within the CI then 1 else 0
+}
+
+c(mean(ci_int), mean(ci_x))
+
+# c)
+# The interpretation of a e.g. 95 % prediction interval is that if you repeat an experiment on Y
+# for a given x0 a large amount of times, we expect the resulting Y-value to lie in the pred.int.
+# 95 % of the time. Example:
+
+beta0 = 1
+beta1 = 3
+true_beta = c(beta0, beta1)  # vector of model coefficients
+true_sd = 1  # choosing true sd
+X = runif(100, 0, 1)  # simulate the predictor variable X
+Xmat = model.matrix(~X, data = data.frame(X))  # create design matrix
+
+x0 = c(1, 0.4)
+pi_y0 = 0 # Counts how many times the true value is within the PI
+nsim = 1000
+for (i in 1:nsim) {
+  y = rnorm(n = 100, mean = Xmat %*% true_beta, sd = rep(true_sd, 100))
+  mod = lm(y ~ x, data = data.frame(y = y, x = X))
+  y0 = rnorm(n = 1, mean = x0 %*% true_beta, sd = true_sd)
+  pi = predict(mod, newdata = data.frame(x = x0[2]), interval = "predict")[2:3]
+  pi_y0[i] = ifelse(y0 >= pi[1] && y0 <= pi[2], 1, 0)
+}
+
+mean(pi_y0)
+
+# d)
+
+# e)
+# The error is the theoretical, irreducible error, while a residual is the distance from the
+# estimated regression plane to a data point.
+
+
+
+#===================#
+# Lab (3.6) in ISLR #
+#===================#
+
+library(ISLR)
+library(MASS)
+
+
+lm.fit <- lm(medv ~ lstat, Boston)
+summary(lm.fit)
+names(lm.fit)
+
+# Plot the fit and data together
+attach(Boston)
+plot(lstat,medv)
+abline(lm.fit)
+
+# Diagnostic plots:
+par(mfrow = (c(2, 2))) # View all pltos at same time
+plot(lm.fit)
+
+# Leverage plot:
+plot(hatvalues(lm.fit))
+which.max(hatvalues(lm.fit)) # Find index of largest element
+
+# Multiple linear regression
+lm.fit <- lm(medv ~ ., data = Boston)
+library(car)
+vif(lm.fit)
+
+# Use all except age:
+lm.fit1 <- update(lm.fit, ~.-age)
+
+# Non-linear transformation:
+lm.fit2 <- lm(medv ~ lstat + I(lstat^2))
+plot(lm.fit2)
+
+# For higher degrees:
+lm.fit5 <- lm(medv ~ poly(lstat, 5))
+
+# Qualitative predictors
+rm(list = ls())
+library(ISLR)
+lm.fit=lm(Sales~.+Income:Advertising+Price:Age, data=Carseats)
+contrasts(Carseats$ShelveLoc)
+
+
