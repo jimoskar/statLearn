@@ -43,3 +43,60 @@ dF
 #===========#
 # Problem 6 #
 #===========#
+
+library(MASS)
+library(stats)
+library(class)
+library(pROC)
+library(ISLR)
+library(tidyverse)
+library(GGally)
+
+
+## a)
+data("Weekly")
+?Weekly
+head(Weekly)
+glimpse(Weekly)
+summary(Weekly)
+
+ggpairs(Weekly, lower = list(continuous = wrap("points", size = 0.1))) + # change point size
+  theme(text = element_text(size = 7)) # change text size
+# Exponential relationship between years and volume?
+
+## b)
+
+logfit <- glm(Direction ~ . -Year -Today, family = "binomial", data = Weekly)
+summary(logfit)
+# Lag2 is the only predictor with relatively low p-value.
+
+## c)
+glm.probs_Weekly = predict(logfit, type = "response")
+glm.preds_Weekly = ifelse(glm.probs_Weekly > 0.5, "Up", "Down")
+table(glm.preds_Weekly, Weekly$Direction)
+
+## d)
+Weekly_trainID = (Weekly$Year < 2009)
+Weekly_train = Weekly[Weekly_trainID, ]
+Weekly_test = Weekly[!Weekly_trainID, ]
+
+lfit <- glm(Direction ~ Lag2, family = "binomial", Weekly_train)
+
+glm.probs_Weekly <- predict(lfit, newdata = Weekly_test, type = "response")
+glm.preds_Weekly = ifelse(glm.probs_Weekly > 0.5, "Up", "Down")
+conf <- table(glm.preds_Weekly, Weekly_test$Direction)
+conf
+
+# Correctly classified:
+(conf[1,1] + conf[2,2]) / (sum(conf[2,]) + sum(conf[1,]))
+
+## e)
+
+?lda()
+lda.Weekly <-  lda(Direction ~ Lag2, data = Weekly_train)
+summary(lda.Weekly)
+lda.Weekly_pred <- predict(lda.Weekly, newdata = Weekly_test)$class
+lda.Weekly_prob = predict(lda.Weekly, newdata = Weekly_test)$posterior
+table(lda.Weekly_pred, Weekly_test$Direction)
+
+
