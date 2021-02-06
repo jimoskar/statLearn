@@ -96,7 +96,81 @@ conf
 lda.Weekly <-  lda(Direction ~ Lag2, data = Weekly_train)
 summary(lda.Weekly)
 lda.Weekly_pred <- predict(lda.Weekly, newdata = Weekly_test)$class
-lda.Weekly_prob = predict(lda.Weekly, newdata = Weekly_test)$posterior
-table(lda.Weekly_pred, Weekly_test$Direction)
+lda.Weekly_prob <-  predict(lda.Weekly, newdata = Weekly_test)$posterior
+lda.conf <- table(lda.Weekly_pred, Weekly_test$Direction)
+(lda.conf[1,1] + lda.conf[2,2]) / (sum(lda.conf[1,]) + sum(lda.conf[2,]))
 
+## f)
+
+qda.Weekly <-  qda(Direction ~ Lag2, data = Weekly_train)
+summary(qda.Weekly)
+qda.Weekly_pred <- predict(qda.Weekly, newdata = Weekly_test)$class
+qda.Weekly_prob <-  predict(qda.Weekly, newdata = Weekly_test)$posterior
+qda.conf <- table(qda.Weekly_pred, Weekly_test$Direction)
+(qda.conf[1,1] + qda.conf[2,2]) / (sum(qda.conf[1,]) + sum(qda.conf[2,]))
+
+## g)
+library(class)
+knn.train = as.matrix(Weekly_train$Lag2)
+knn.test = as.matrix(Weekly_test$Lag2)
+
+set.seed(123)
+yourKNNmodel = knn(train = knn.train, test = knn.test, cl = Weekly_train$Direction,
+                   k = 4, prob = T)
+knn.conf <- table(yourKNNmodel, Weekly_test$Direction)
+(knn.conf[1,1] + knn.conf[2,2]) / (sum(knn.conf[1,]) + sum(knn.conf[2,]))
+
+## h)
+# knn error:
+K = 30
+knn.error = rep(NA, K)
+
+set.seed(321)
+for (k in 1:K) {
+  knn.pred = knn(train = knn.train, test = knn.test, cl = Weekly_train$Direction,
+                 k = k)
+  knn.error[k] = mean(knn.pred != Weekly_test$Direction)
+}
+knn.error.df = data.frame(k = 1:K, error = knn.error)
+ggplot(knn.error.df, aes(x = k, y = error)) + geom_point(col = "blue") + geom_line(linetype = "dotted")
+# k = 12 yields the lowest error
+
+## i)
+# lda seems to be best, or logistic regression
+
+## j)
+# get the probabilities for the classified class
+knn.Weekly_prob = attributes(yourKNNmodel)$prob
+
+# since we want the probability for Up, we need to take 1-p for the elements
+# that gives probability for Down
+down = which(yourKNNmodel == "Down")
+knn.Weekly_prob[down] = 1 - knn.Weekly_prob[down]
+
+library(pROC)
+library(plotROC)
+
+
+glmroc = roc(response = Weekly_test$Direction, predictor = glm.probs_Weekly,
+             direction = "<")
+ldaroc = roc(response = Weekly_test$Direction, predictor = lda.Weekly_prob[,
+                                                                           2], direction = "<")
+qdaroc = roc(response = Weekly_test$Direction, predictor = qda.Weekly_prob[,
+                                                                           2], direction = "<")
+knnroc = roc(response = Weekly_test$Direction, predictor = knn.Weekly_prob,
+             direction = "<")
+auc(glmroc)
+# you can use this function for all your methods and plot them using
+# plot(yourRoc)
+
+# or use ggplot2
+dat = data.frame(Direction = Weekly_test$Direction, glm = glm.probs_Weekly, lda = lda.Weekly_prob[,
+                                                                                           2], qda = qda.Weekly_prob[, 2], knn = knn.Weekly_prob)
+dat_long = melt_roc(dat, "Direction", c("glm", "lda", "qda", "knn"))
+ggplot(dat_long, aes(d = D, m = M, color = name)) + geom_roc(n.cuts = F) + xlab("1-Specificity") +
+  ylab("Sensitivity")
+# glm is very similar to lda, so the roc-curve for glm is not shown.
+
+
+# AUC: yourAUC = auc(yourRoc)
 
