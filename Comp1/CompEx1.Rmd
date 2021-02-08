@@ -50,7 +50,7 @@ and
 $$
 \begin{split}
 \mathsf{Cov}(\widetilde{f}(\mathbf{x}_0)) &= \mathsf{Cov}(\mathbf{x}_0^T \widetilde{\boldsymbol{\beta}}) 
-= \mathbf{x}_0\mathsf{Cov}(\widetilde{\boldsymbol{\beta}})\mathbf{x}_0^T \\ &= \sigma^2\mathbf{x}_0((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}) \mathbf{x}_0^T.
+= \mathbf{x^T}_0\mathsf{Cov}(\widetilde{\boldsymbol{\beta}})\mathbf{x}_0 \\ &= \sigma^2\mathbf{x^T}_0((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}) \mathbf{x}_0.
 \end{split}
 $$
 
@@ -63,7 +63,7 @@ $$
 \begin{split}
 \mathsf{E}[(y_0 - \widetilde{f}(\mathbf{x}_0))^2] &= [\mathsf{E}(\widetilde{f}(\mathbf{x}_0)-f(\mathbf{x}_0)]^2+\mathsf{Var}(\widetilde{f}(\mathbf{x}_0) ) + \mathsf{Var}(\varepsilon) \\
 &= [\mathsf{E}(\widetilde{f}(\mathbf{x}_0)) - \mathsf{E}(f(\mathbf{x}_0))]^2 + \mathsf{Cov}(\widetilde{f}(\mathbf{x}_0)) + \sigma^2I \\
-&= [\mathbf{x}_0^T (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathbf{X}\boldsymbol{\beta} + \mathbf{x}_0^T\boldsymbol{\beta}]^2 + \sigma^2\mathbf{x}_0((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}) \mathbf{x}_0^T + \sigma^2I \\
+&= [\mathbf{x}_0^T (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathbf{X}\boldsymbol{\beta} + \mathbf{x}_0^T\boldsymbol{\beta}]^2 + \sigma^2\mathbf{x^T}_0((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}) \mathbf{x}_0 + \sigma^2I \\
 \end{split}
 $$
 FOR NOE GRISERI
