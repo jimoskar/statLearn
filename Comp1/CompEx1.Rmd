@@ -1,0 +1,111 @@
+---
+subtitle: "TMA4268 Statistical Learning V2021"
+title: "Compulsory exercise 1: Group 39"
+author: "Alexander J Ohrt, Jim Totland"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document
+---
+  
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
+                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3)
+```
+
+# Problem 1
+
+## a)
+
+We assume that ${\bf Y}$ is a multivariate normal, which gives the distribution  ${\bf Y} \sim N_{n}({\bf X} {\boldsymbol\beta},\sigma^2 {\bf I})$.
+
+$$
+\begin{split}
+\mathsf{E}(\widetilde{\boldsymbol \beta}) &= \mathsf{E}((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf Y}) = (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathsf{E}({\bf Y}) \\ &= (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathsf{E}({\bf X}\boldsymbol{\beta} + \varepsilon) = (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathbf{X}\boldsymbol{\beta}
+\end{split}
+$$
+
+and 
+
+$$
+\begin{split}
+\mathsf{Cov}(\widetilde{\boldsymbol \beta}) &= \mathsf{Cov}((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf Y}) = ((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T)\mathsf{Cov}({\bf Y})((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T)^T \\ &= ((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T)\sigma^2 I({\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-T}) = \sigma^2((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-T}) \\
+&= \sigma^2((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}),
+\end{split}
+$$
+
+where we have used that $(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1} = (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-T}$ in the last equality (USIKKER PÅ DENNE SISTE! DET BLIR I HVERT FALL HELT RIKTIG Å BEHOLDE -T).
+In both these equations it is apparent that the moments are equal to those of the OLS estimator when $\lambda = 0$. 
+
+## b)
+
+The requested moments of $\widetilde{f}(\mathbf{x}_0)$ are 
+
+$$
+\mathsf{E}(\widetilde{f}(\mathbf{x}_0)) = \mathsf{E}(\mathbf{x}_0^T \widetilde{\boldsymbol{\beta}}) = \mathbf{x}_0^T\mathsf{E}(\widetilde{\boldsymbol \beta}) = \mathbf{x}_0^T (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathbf{X}\boldsymbol{\beta}
+$$
+
+and
+
+$$
+\begin{split}
+\mathsf{Cov}(\widetilde{f}(\mathbf{x}_0)) &= \mathsf{Cov}(\mathbf{x}_0^T \widetilde{\boldsymbol{\beta}}) 
+= \mathbf{x}_0\mathsf{Cov}(\widetilde{\boldsymbol{\beta}})\mathbf{x}_0^T \\ &= \sigma^2\mathbf{x}_0((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}) \mathbf{x}_0^T.
+\end{split}
+$$
+
+
+## c)
+
+The expected MSE at $\mathbf{x}_0$ is 
+
+$$
+\begin{split}
+\mathsf{E}[(y_0 - \widetilde{f}(\mathbf{x}_0))^2] &= [\mathsf{E}(\widetilde{f}(\mathbf{x}_0)-f(\mathbf{x}_0)]^2+\mathsf{Var}(\widetilde{f}(\mathbf{x}_0) ) + \mathsf{Var}(\varepsilon) \\
+&= [\mathsf{E}(\widetilde{f}(\mathbf{x}_0)) - \mathsf{E}(f(\mathbf{x}_0))]^2 + \mathsf{Cov}(\widetilde{f}(\mathbf{x}_0)) + \sigma^2I \\
+&= [\mathbf{x}_0^T (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathbf{X}\boldsymbol{\beta} + \mathbf{x}_0^T\boldsymbol{\beta}]^2 + \sigma^2\mathbf{x}_0((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}) \mathbf{x}_0^T + \sigma^2I \\
+\end{split}
+$$
+FOR NOE GRISERI
+
+```{r, echo=TRUE, eval=TRUE}
+id <- "1X_8OKcoYbng1XvYFDirxjEWr7LtpNr1m" # google file ID
+values <- dget(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+X = values$X
+dim(X)
+x0 = values$x0
+dim(x0)
+beta=values$beta
+dim(beta)
+sigma=values$sigma
+sigma
+```
+
+## d)
+
+```{r,eval=FALSE}
+library(ggplot2)
+bias = function(lambda,X,x0,beta)
+{
+  p = ncol(X)
+  value = ...  
+  return(value)
+}
+lambdas = seq(0, 2, length.out = 500)
+BIAS = rep(NA,length(lambdas))
+for (i in 1:length(lambdas)) BIAS[i] = bias(lambdas[i], X, x0, beta)
+dfBias = data.frame(lambdas = lambdas, bias = BIAS)
+ggplot(dfBias, aes(x = lambdas, y = bias)) + 
+  geom_line(color = "red")+
+  xlab(expression(lambda))+
+  ylab(expression(bias^2))
+```
+
+Comments: 
+ 
+
+# Problem 2
+
+## a) 
+
+
