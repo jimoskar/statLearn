@@ -169,7 +169,6 @@ Inspection of the data. Assuming that 0 = False and 1 = True (as usual), which m
 ```{r}
 knitr::kable(table(Deceased = d.corona$deceased)) # Prøvde å sette kolonne-navn, men fikk det ikke til.
 
-names(d.corona)
 knitr::kable(table(d.corona$country, d.corona$sex))
 
 knitr::kable(table(d.corona$deceased, d.corona$sex))
@@ -194,9 +193,130 @@ summary(lm.fit)
 
 ## c) 
 
+(i) 
+
+(ii)
+
+I am guessing that "the appropriate model" would be to use linear regression, as used earlier, since this is the only regression-model we have learned thus far. Not quite sure if they want us to leave out some of the predictors however, or if they just want us to keep all of them in the model. 
+
 ## d)
 
+I will make the models before answering the questions, which can/will be deleted later (since these are multiple choice).
 
+```{r}
+# Make data sets.
+trainID = sample(x = 1:nrow(d.corona), size = 1500, replace = F) # E.g
+train = d.corona[trainID,]
+test = d.corona[!trainID,]
+nrow(d.corona)
+
+# Ikke så greit å bruke indekser i d.corona tydeligvis. Kan se mer på dette senere dersom det virker 
+# som en fornuftig måte å løse oppgaven på...
+
+library(MASS)
+lda.fit <- lda(deceased ~ ., data = train)
+lda.fit.pred <- predict(lda.fit, newdata = test)$class
+table(predicted = lda.fit.pred, true = test$deceased)
+
+# This did not work. 
+
+```
+
+EVENTUALLY THERE WILL ONLY BE TRUE OR FALSE IN EACH OF THESE, BUT I HAVE WRITTEN MY THOUGHTS HERE FIRST. 
+
+(i) `r length(d.corona$deceased[d.corona$deceased == T])/length(d.corona$deceased[d.corona$deceased == F]) * 100` % seems to be the percentage of deaths in the dataset. This is not equal to the percentage given in the question (by accident). If they were equal I would say that this statement is TRUE. because, as I have understood it, the "null rate" for misclassification can be obtained in this case by always classifying the individual as healthy. 
+
+(ii) Following the argumentation in the above point, LDA is useless if the misclassification rate is higher than approx 5 %. Need to make a LDA in code to test?
+
+(iii) Can we answer this from theory?
+
+(iv) The same concern goes for this statement as for the ones above. 
+
+# Problem 3
+
+```{r, eval=T}
+#read file
+id <- "1i1cQPeoLLC_FyAH0nnqCnnrSBpn05_hO" # google file ID
+diab <- dget(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+t = MASS::Pima.tr2
+train = diab$ctrain
+test = diab$ctest
+```
+
+## a)
+
+```{r}
+logReg = glm(diabetes~., data = train, family = "binomial")
+summary(logReg)
+```
+
+(i) (assuming they want us to do it theoretically, and not in R, e.g. by plotting) We have that 
+
+$$
+\begin{split}
+p_i = \frac{e^{\beta_0 + \beta_1x_{i1} + \beta_2 x_{i2} + \dots + \beta_7 x_{i7}}}{ 1+ 
+e^{\beta_0 + \beta_1x_{i1} + \beta_2 x_{i2} + \dots + \beta_7 x_{i7}}} &= \frac{e^{\eta_i(x)}}{1+e^{\eta_i(x)}} \implies \frac{p_i}{1-p_i} = \frac{\frac{e^{\eta_i(x)}}{1+e^{\eta_i(x9)}}}{1-\frac{e^{\eta_i(x)}}{1+e^{\eta_i(x)}}} = e^{\eta_i(x)} \\ \implies  \mathsf{log}\left(\frac{p_i}{1-p_i}\right) &= \eta_i(x) = \beta_0 + \beta_1x_{i1} + \beta_2 x_{i2} + \dots + \beta_7 x_{i7}
+\end{split}
+$$
+
+(ii) Can be seen below
+
+```{r}
+glm.probs <- predict(logReg, newdata = test, type = "response")
+glm.preds <- ifelse(glm.probs > 0.5, 1, 0) #"Present", "Non-present") # Could also use these names. 
+conf.table.glm <- table(predicted = glm.preds, true = test$diabetes)
+conf.table.glm
+```
+The sensitivity is `r conf.table.glm[2,2]/(conf.table.glm[2,2]+conf.table.glm[1,2])` and the specificity is `r conf.table.glm[1,1]/(conf.table.glm[1,1]+conf.table.glm[2,1])`. (perhaps show the calculations more clearly in another way later.)
+
+## b)
+
+(i) (are we supposed to give estimates in this case?: "Explain what they are in the diabetes classification problem") $\pi_k$ is the prior probability, given by $\pi_k = P(y=k)$. $\boldsymbol{\mu}_k$ is the mean vector of class $k$, when we have assumed that each $f_k(\mathbf{x})$ is normal. In this case, the class $1$, i.e. presence of diabetes, has the mean vector $\boldsymbol{\mu}_1$ and the class $0$, i.e. non-presence of diabetes, has the mean vector $\boldsymbol{\mu}_0$. $\boldsymbol{\Sigma}$ is the covariance matrix of each class, when assumed that the distribution of each class are normal. In LDA $\boldsymbol{\Sigma}_k = \boldsymbol{\Sigma} \quad \forall k$, where as in QDA each $\boldsymbol{\Sigma}_k$ are allowed to be different. $f_k(x)$ is the density function of $X$ for an observation that comes from class $k$. These are assumed to be normal in LDA and QDA. 
+
+(ii) The fits are seen below
+
+```{r}
+lda.diabetes <- lda(diabetes~., data = train)
+qda.diabetes <- qda(diabetes~., data = train)
+
+lda.diabetes.probs <- predict(lda.diabetes, newdata = test)$posterior
+lda.preds <- ifelse(lda.diabetes.probs > 0.5, 1, 0)
+#conf.table.lda.diabetes <- table(predicted = lda.preds, true = test$diabetes)
+#conf.table.lda.diabetes
+
+# Why are the probs half the length of the test data? I cannot seem to find the reason! :(
+
+# Could also use $class below, but not sure how to set the cut-off probability in that case. 
+qda.diabetes.probs <- predict(qda.diabetes, newdata = test)$posterior
+qda.preds <- ifelse(qda.diabetes.probs > 0.5, 1, 0)
+#conf.table.qda.diabetes <- table(predicted = qda.preds, true = test$diabetes)
+#conf.table.qda.diabetes
+```
+
+The difference between the methods is that the covariances are equal across all classes (in this case: both classes) in LDA, which gives linear discriminant functions and a linear decision boundary. On the contrary, the covariances in each class when using QDA are allowed to be different, which gives a quadratic discriminant function in each class and a quadratic decision boundary. 
+
+## c)
+
+(i) In the KNN approach, a new observation is classified by using the $K$ nearest points (in Euclidean norm) to the observation in question to estimate the probability of the new point belonging to each of the different classes in the response. If the estimated probability of the point belonging to a class is larger than a pre-selected threshold (usually 0.5), the point is classified as belonging to this class. (perhaps it is just classified to the class that has the largest estimated probability?)
+
+(ii) I would probably use cross validation to test the predictive power for different $K$ (elaborate).
+
+(iii) The KNN classification fit can be seen below
+
+```{r}
+library(class)
+set.seed(123) # for reproducibility.
+knn.diabetes <- knn(train = train, test = test, cl = train$diabetes, k=25, prob=T)
+#table(predicted = knn.diabetes, true = train$diabetes) # Similar dimensionality problem as above!?!?
+
+```
+
+## d) ROC curves
+
+
+# Problem 4
+
+## a)
 
 
 
