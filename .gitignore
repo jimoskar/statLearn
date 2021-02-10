@@ -21,3 +21,7 @@ tmp_R_cache*
 unnamed-chunk*
 vignettes/*.md
 vignettes/figure
+
+# Ignore pdf for ease of use.
+**/*.pdf
+
