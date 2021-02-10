@@ -63,7 +63,7 @@ $$
 \begin{split}
 \mathsf{E}[(y_0 - \widetilde{f}(\mathbf{x}_0))^2] &= [\mathsf{E}(\widetilde{f}(\mathbf{x}_0)-f(\mathbf{x}_0)]^2+\mathsf{Var}(\widetilde{f}(\mathbf{x}_0) ) + \mathsf{Var}(\varepsilon) \\
 &= [\mathsf{E}(\widetilde{f}(\mathbf{x}_0)) - \mathsf{E}(f(\mathbf{x}_0))]^2 + \mathsf{Cov}(\widetilde{f}(\mathbf{x}_0)) + \sigma^2I \\
-&= [\mathbf{x}_0^T (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathbf{X}\boldsymbol{\beta} - \mathbf{x}_0^T\boldsymbol{\beta}]^2 + \sigma^2\mathbf{x}_0^T((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}) \mathbf{x}_0 + \sigma^2I \\
+&= [\mathbf{x}_0^T (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathbf{X}\boldsymbol{\beta} - \mathbf{x}_0^T\boldsymbol{\beta}]^2 + \sigma^2\mathbf{x}_0^T((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}) \mathbf{x}_0 + \sigma^2 \\
 \end{split}
 $$
 FOR NOE GRISERI
@@ -83,7 +83,7 @@ sigma
 
 ## d)
 
-The expression $\widetilde{\boldsymbol{\beta}}(\lambda) = ((1+\lambda)I)^{-1}\hat{\boldsymbol{\beta}}$ is inserted into `value` below. 
+The expression $\widetilde{\boldsymbol{\beta}}(\lambda) = ((1+\lambda)I)^{-1}\hat{\boldsymbol{\beta}}$ (\textcolor{red}{Where is this from?})is inserted into `value` below. 
 
 ```{r}
 library(ggplot2)
@@ -93,12 +93,19 @@ bias = function(lambda,X,x0,beta)
   lambda*diag(p)
   #value = mean(t(x0) %*% solve((1+lambda)*diag(p)) %*% beta - t(x0) %*% beta )^2
   #value = mean(t(x0) %*% solve(diag(p) + lambda*t(X) %*% X) %*% beta - t(x0) %*% beta )^2
-  value = mean(t(x0) %*% solve(t(X) %*% X + lambda*diag(p)) %*% t(X) %*% X %*% beta - t(x0) %*% beta)^2
+  #value = mean(t(x0) %*% solve(t(X) %*% X + lambda*diag(p)) %*% t(X) %*% X %*% beta - t(x0) %*%   #beta)^2
   # Tror dette skal være rett algebraisk, men synes resultatet er merkelig kanskje!
   # Kanskje oppgaven ovenfor burde fullføres først?
   #value = mean(t(x0) %*% (diag(p) + 1/lambda*t(X)%*%X)%*%beta - t(x0) %*% beta)^2
   
   # All of these give different plots!
+  
+  # Are we not just supposed to use the result from 1c) ? Like this:
+  
+  v1 <- t(x0) %*% solve(t(X) %*% X + lambda * diag(p)) %*% t(X) %*% X %*%         beta - t(x0) %*% beta
+  v2 <- sigma^2 * t(x0) %*% (solve(t(X) %*% X + lambda * diag(p)) %*% t(X)         %*% X %*% t(solve(t(X) %*% X + lambda * diag(p)))) %*% x0
+  v3 <- sigma^2 
+  value <-  v1^2 + v2 + v3  
   return(value)
 }
 lambdas = seq(0, 2, length.out = 500)
