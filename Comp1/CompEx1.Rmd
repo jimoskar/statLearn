@@ -150,6 +150,7 @@ Comments: Now we are able to conclude that the ridge regression estimator has a 
 # Problem 2
 
 ```{r}
+library(tidyverse)
 # read file
 id <- "1yYlEl5gYY3BEtJ4d7KWaFGIOEweJIn__" # google file ID
 d.corona <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id),header=T)
@@ -160,13 +161,22 @@ d.corona <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",
 Inspection of the data. Assuming that 0 = False and 1 = True (as usual), which means that a person has not deceased when `deceased` = 0 and vice versa.
 
 ```{r}
-knitr::kable(table(Deceased = d.corona$deceased)) # Prøvde å sette kolonne-navn, men fikk det ikke til.
 
-knitr::kable(table(d.corona$country, d.corona$sex))
+table1 <- summarise(d.corona, deceased = sum(d.corona$deceased),
+                   non_deceased = nrow(d.corona) - deceased)
+knitr::kable(table1) # Prøvde å sette kolonne-navn, men fikk det ikke til.
 
-knitr::kable(table(d.corona$deceased, d.corona$sex))
+table2 <- table(d.corona$country, d.corona$sex)
+knitr::kable(table2)
 
-knitr::kable(table(d.corona$country, d.corona$deceased)) # Må hente ut øverste raden herfra, men klarte det ikke. 
+table3 <- table(d.corona$deceased, d.corona$sex)
+rownames(table3) = c("non-deceased", "deceased")
+knitr::kable(table3)
+
+d.france <-  filter(d.corona, country == "France")
+table4 <- table(d.france$deceased, d.france$sex)
+rownames(table4) = c("non-deceased", "deceased")
+knitr::kable(table4) # Må hente ut øverste raden herfra, men klarte det ikke. 
 ```
 
 ## b) 
