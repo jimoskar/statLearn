@@ -17,11 +17,14 @@ knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.wh
 
 ## a)
 
-We assume that ${\bf Y}$ is a multivariate normal, which gives the distribution  ${\bf Y} \sim N_{n}({\bf X} {\boldsymbol\beta},\sigma^2 {\bf I})$.
+By extending the given univariate regression problem to a multivariate regression problem that allows for several observations, we have that ${\bf Y} = {\bf X} {\boldsymbol\beta} + \varepsilon I$, where $I$ is the identity matrix of the correct dimensions. Hence, we have $\mathsf{E}({\bf Y}) =  \mathsf{E}({\bf X}\boldsymbol{\beta} + \varepsilon) = \mathbf{X}\boldsymbol{\beta}$ and $\mathsf{Cov}({\bf Y}) = \sigma I$, without assuming anything else than that each of the $\varepsilon$'s are independent of each other. 
+
+<!-- Remove this for now, because it is not necessary to assume this at this stage -->
+<!-- We assume that ${\bf Y}$ is a multivariate normal, which gives the distribution  ${\bf Y} \sim N_{n}({\bf X} {\boldsymbol\beta},\sigma^2 {\bf I})$. -->
 
 $$
 \begin{split}
-\mathsf{E}(\widetilde{\boldsymbol \beta}) &= \mathsf{E}((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf Y}) = (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathsf{E}({\bf Y}) \\ &= (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathsf{E}({\bf X}\boldsymbol{\beta} + \varepsilon) = (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathbf{X}\boldsymbol{\beta}
+\mathsf{E}(\widetilde{\boldsymbol \beta}) &= \mathsf{E}((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf Y}) = (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathsf{E}({\bf Y}) = (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathbf{X}\boldsymbol{\beta}
 \end{split}
 $$
 
@@ -34,7 +37,7 @@ $$
 \end{split}
 $$
 
-where we have used that $(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1} = (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-T}$ in the last equality (USIKKER PÅ DENNE SISTE! DET BLIR I HVERT FALL HELT RIKTIG Å BEHOLDE -T).
+where we have used that $(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1} = (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-T}$ in the last equality.
 In both these equations it is apparent that the moments are equal to those of the OLS estimator when $\lambda = 0$. 
 
 ## b)
@@ -62,11 +65,11 @@ The expected MSE at $\mathbf{x}_0$ is
 $$
 \begin{split}
 \mathsf{E}[(y_0 - \widetilde{f}(\mathbf{x}_0))^2] &= [\mathsf{E}(\widetilde{f}(\mathbf{x}_0)-f(\mathbf{x}_0)]^2+\mathsf{Var}(\widetilde{f}(\mathbf{x}_0) ) + \mathsf{Var}(\varepsilon) \\
-&= [\mathsf{E}(\widetilde{f}(\mathbf{x}_0)) - \mathsf{E}(f(\mathbf{x}_0))]^2 + \mathsf{Cov}(\widetilde{f}(\mathbf{x}_0)) + \sigma^2I \\
+&= [\mathsf{E}(\widetilde{f}(\mathbf{x}_0)) - \mathsf{E}(f(\mathbf{x}_0))]^2 + \mathsf{Cov}(\widetilde{f}(\mathbf{x}_0)) + \sigma^2 \\
 &= [\mathbf{x}_0^T (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathbf{X}\boldsymbol{\beta} - \mathbf{x}_0^T\boldsymbol{\beta}]^2 + \sigma^2\mathbf{x}_0^T((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}) \mathbf{x}_0 + \sigma^2 \\
 \end{split}
 $$
-FOR NOE GRISERI
+FOR NOE GRISERI, UMULIG Å FORENKLE? SE PÅ DETTE SENERE. 
 
 ```{r, echo=TRUE, eval=TRUE}
 id <- "1X_8OKcoYbng1XvYFDirxjEWr7LtpNr1m" # google file ID
@@ -83,27 +86,11 @@ sigma
 
 ## d)
 
-The expression $\widetilde{\boldsymbol{\beta}}(\lambda) = ((1+\lambda)I)^{-1}\hat{\boldsymbol{\beta}}$ (\textcolor{red}{Where is this from?})is inserted into `value` below. 
-
 ```{r}
 library(ggplot2)
 bias = function(lambda,X,x0,beta)
 {
   p = ncol(X)
-  lambda*diag(p)
-  #value = mean(t(x0) %*% solve((1+lambda)*diag(p)) %*% beta - t(x0) %*% beta )^2
-  #value = mean(t(x0) %*% solve(diag(p) + lambda*t(X) %*% X) %*% beta - t(x0) %*% beta )^2
-  #value = mean(t(x0) %*% solve(t(X) %*% X + lambda*diag(p)) %*% t(X) %*% X %*% beta - t(x0) %*%   #beta)^2
-  # Tror dette skal være rett algebraisk, men synes resultatet er merkelig kanskje!
-  # Kanskje oppgaven ovenfor burde fullføres først?
-  #value = mean(t(x0) %*% (diag(p) + 1/lambda*t(X)%*%X)%*%beta - t(x0) %*% beta)^2
-  
-  # All of these give different plots!
-  # I think we are supposed to just copy the first term from 1c ? 
-  
-  v1 <- t(x0) %*% solve(t(X) %*% X + lambda * diag(p)) %*% t(X) %*% X %*%         beta - t(x0) %*% beta
-  v2 <- sigma^2 * t(x0) %*% (solve(t(X) %*% X + lambda * diag(p)) %*% t(X)         %*% X %*% t(solve(t(X) %*% X + lambda * diag(p)))) %*% x0
-
   value <-  (t(x0) %*% solve(t(X) %*% X + lambda * diag(p)) %*% t(X) %*% X %*% beta - t(x0) %*% beta)^2
   return(value)
 }
@@ -113,12 +100,13 @@ for (i in 1:length(lambdas)) BIAS[i] = bias(lambdas[i], X, x0, beta)
 dfBias = data.frame(lambdas = lambdas, bias = BIAS)
 ggplot(dfBias, aes(x = lambdas, y = bias)) + 
   geom_line(color = "red")+
+  
   xlab(expression(lambda))+
   ylab(expression(bias^2))
 ```
-
-Comments: I think this is wrong. Perhaps a good idea to finish c) first, to get a better expression for the bias also. I think the expression is correct however, despite it not being "forkortet", but this should be done later. However, I think the result is weird. 
  
+Comments: The graph shows that the bias of the ridge regression estimator increases as $\lambda$ grows. OLS is unbiased, so, as expected, the bias is zero when $\lambda = 0$. Note that $\lambda \approx 0.5$ appears to be a sweet spot for this estimator when comparing all $\lambda > 0$, since the bias is low there. Perhaps this can be useful later. 
+
 ### e) 
 
 ```{r}
@@ -126,7 +114,7 @@ variance = function(lambda, X, x0, sigma)
 {
   p = ncol(X)
   inv = solve(t(X)%*%X+lambda*diag(p))
-  value = sigma*t(x0) %*% (inv %*% t(X) %*% X %*% t(inv)) %*% x0
+  value = sigma^2*t(x0) %*% (inv %*% t(X) %*% X %*% t(inv)) %*% x0
   return(value)
 }
 lambdas = seq(0, 2, length.out = 500)
@@ -135,13 +123,12 @@ for (i in 1:length(lambdas)) VAR[i]=variance(lambdas[i], X, x0, sigma)
 dfVar = data.frame(lambdas = lambdas, var = VAR)
 ggplot(dfVar, aes(x = lambdas, y = var))+
   geom_line(color = "green4")+
+  
   xlab(expression(lambda))+
   ylab("variance")
 ```
 
-Comments: The variance decreases with lambda. It begins very high (which I do not know if holds with the regular estimator when $\lambda = 0$).
-
-## f)
+Comments: The variance begins at `r variance(0, X, x0, sigma)` and decreases with $\lambda$. Hence, it is apparent that the ridge regression estimator is advantageous compared to the OLS estimator, since the variance is decreasing with $\lambda$. In the end, when adding the changes in bias and variance, it is at this stage possible for the ridge regression estimator to have a lower MSE than the OLS estimator. However, we do not know if this is the case yet. 
 
 ```{r}
 exp_mse = BIAS + VAR + sigma^2
@@ -158,7 +145,7 @@ ggplot(dfAll)+
     ylab(expression(E(MSE)))
 ```
 
-Comments: Again, unsure if this is correct. 
+Comments: Now we are able to conclude that the ridge regression estimator has a lower MSE compared to the OLS estimator, as gathered from the blue line in the plot. The optimal value of $\lambda$, which minimizes MSE, is `r lambdas[which.min(exp_mse)]`. Hence, despite the fact that the bias is higher for the ridge regression estimator, the total expected MSE is lower, since the decrease in variance counters the increase in bias. 
 
 # Problem 2
 

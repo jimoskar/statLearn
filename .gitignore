@@ -23,5 +23,5 @@ vignettes/*.md
 vignettes/figure
 
 # Ignore pdf for ease of use.
-**/*.pdf
+*.pdf
 
