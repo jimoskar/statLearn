@@ -144,7 +144,7 @@ Comments: The variance decreases with lambda. It begins very high (which I do no
 ## f)
 
 ```{r}
-exp_mse = BIAS + VAR + sigma
+exp_mse = BIAS + VAR + sigma^2
 lambdas[which.min(exp_mse)]
 ```
 
