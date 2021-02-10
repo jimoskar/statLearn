@@ -139,6 +139,7 @@ lambdas[which.min(exp_mse)]
 dfAll = data.frame(lambda = lambdas, bias = BIAS, var = VAR, exp_mse = exp_mse)
 ggplot(dfAll)+
   geom_line(aes(x = lambda, y = exp_mse), color = "blue")+
+  
   geom_line(aes(x = lambda, y = bias), color = "red")+
   geom_line(aes(x = lambda, y = var), color = "green4")+
     xlab(expression(lambda))+
@@ -157,24 +158,21 @@ d.corona <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",
 
 ## a) 
 
-Inspection of the data. Assuming that 0 = False and 1 = True (as usual), which means that a person has not deceased when `deceased` = 0 and vice versa.
+The tables are reported below. 
 
 ```{r}
-knitr::kable(table(Deceased = d.corona$deceased)) # Prøvde å sette kolonne-navn, men fikk det ikke til.
+knitr::kable(table(Deceased = d.corona$deceased))
 
 knitr::kable(table(d.corona$country, d.corona$sex))
 
 knitr::kable(table(d.corona$deceased, d.corona$sex))
 
-knitr::kable(table(d.corona$country, d.corona$deceased)) # Må hente ut øverste raden herfra, men klarte det ikke. 
+knitr::kable(table(d.corona$country, d.corona$deceased))
 ```
 
 ## b) 
 
 ```{r}
-# Just in case they are not factors (this should perhaps be deleted later, since we could have checked if they were factors earlier).
-d.corona$sex = factor(d.corona$sex)
-d.corona$country = factor(d.corona$country)
 lm.fit <- lm(deceased ~ ., data = d.corona) # perhaps a linear model is not the correct model to use?
 summary(lm.fit)
 ```
@@ -193,11 +191,21 @@ predict(lm.fit, newdata = x0, type = "response")
 
 ## c) 
 
-(i) 
+```{r}
+log.fit1 <- glm(deceased ~., data = d.corona, family=binomial)
+summary(log.fit1)
+```
 
-(ii)
+(i) As seen above, the coefficient for male is positive (`r coefficients(log.fit1)[2]`), which means that a male has higher risk than a female. This is because the value of this coefficient is added on top of the interceipt, which corresponds to an individual that is in the reference level, i.e. a female. 
 
-I am guessing that "the appropriate model" would be to use linear regression, as used earlier, since this is the only regression-model we have learned thus far. Not quite sure if they want us to leave out some of the predictors however, or if they just want us to keep all of them in the model. 
+```{r}
+log.fit2 <- glm(deceased ~ sex + age*country, data = d.corona, family=binomial)
+summary(log.fit2)
+```
+
+(ii) As seen above, we have fitted a logistic regression with an interaction term between `age` and `country`, in addition to the rest of the terms, to see how the model predicts the risk factors of age and countries combined. Since `France` is the reference level, and the interaction-term coefficient `age:countryindonesia` has the value `r coefficients(log.fit2)[7]`, we can conclude that age is not a greater risk factor for the French population than for the Indonesian population. This is because the value of the coefficient is added on top of the reference level for the `age:contry`-set of coefficients, which, as already noted, is `France`.
+
+NOTE: I am not sure whether or not we should use logistic or linear regression for these Q's!!!
 
 ## d)
 
