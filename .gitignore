@@ -24,4 +24,5 @@ vignettes/figure
 
 # Ignore pdf for ease of use.
 *.pdf
+**/*.pdf
 
