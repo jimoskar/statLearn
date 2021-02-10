@@ -99,13 +99,12 @@ bias = function(lambda,X,x0,beta)
   #value = mean(t(x0) %*% (diag(p) + 1/lambda*t(X)%*%X)%*%beta - t(x0) %*% beta)^2
   
   # All of these give different plots!
-  
-  # Are we not just supposed to use the result from 1c) ? Like this:
+  # I think we are supposed to just copy the first term from 1c ? 
   
   v1 <- t(x0) %*% solve(t(X) %*% X + lambda * diag(p)) %*% t(X) %*% X %*%         beta - t(x0) %*% beta
   v2 <- sigma^2 * t(x0) %*% (solve(t(X) %*% X + lambda * diag(p)) %*% t(X)         %*% X %*% t(solve(t(X) %*% X + lambda * diag(p)))) %*% x0
-  v3 <- sigma^2 
-  value <-  v1^2 + v2 + v3  
+
+  value <-  (t(x0) %*% solve(t(X) %*% X + lambda * diag(p)) %*% t(X) %*% X %*% beta - t(x0) %*% beta)^2
   return(value)
 }
 lambdas = seq(0, 2, length.out = 500)
@@ -127,7 +126,7 @@ variance = function(lambda, X, x0, sigma)
 {
   p = ncol(X)
   inv = solve(t(X)%*%X+lambda*diag(p))
-  value = sigma*(inv%*%t(X)%*%X%*%inv)
+  value = sigma*t(x0) %*% (inv %*% t(X) %*% X %*% t(inv)) %*% x0
   return(value)
 }
 lambdas = seq(0, 2, length.out = 500)
