@@ -185,21 +185,30 @@ knitr::kable(table4)
 ## b) 
 
 ```{r}
-lm.fit <- lm(deceased ~ ., data = d.corona) # perhaps a linear model is not the correct model to use?
-summary(lm.fit)
+glm.fit <- glm(deceased ~ ., family = "binomial", data = d.corona)
+summary(glm.fit)
+
 ```
 
 (i) The probability to die of covid for a male age 75 living in Korea can be predicted from the model. The prediction is found by
 
 ```{r}
 x0 = data.frame(sex = "male", age = 75, country = "Korea")
-predict(lm.fit, newdata = x0, type = "response")
+predict(glm.fit, newdata = x0, type = "response")
 ```
 
 
-(ii) The p-value for `sexmale` is relatively small, but we would not say that there is clear evidence that males have higher probability to die than females. The p-value could be low by chance also, and since it is not amazingly small, we do not think it is appropriate evidence of the question.
-(iii) The p-value of `countryjapan` is the smallest of the country-coefficients, which shows that it could potentially be important as a predictor. In the least, it does not exclude this possibility.
-(iv) Quantify the odds 
+(ii) The p-value associated with `sexmale` is relatively small, and since the coefficient is positive, this constitutes evidence that males have a higher probability of dying.
+ER DU UENIG??
+(but we would not say that there is clear evidence that males have higher probability to die than females. The p-value could be low by chance also, and since it is not amazingly small, we do not think it is appropriate evidence of the question.)
+
+(iii) Yes. Both the `countryjapan` and `countryKorea` coefficients have low p-values and are negative, which evidence that the probabilty of decease is lower in Japan and Korea compared to the reference category, France. `countryIndonesia` is not significant (high p-value), so there is no evidence that the probability of decease is any higher in Indonesia than in France.
+HVA TENKER DU?
+
+(iv) Since we have used logistic regression, the odds of decease, given an observation $\boldsymbol{x}$ is 
+
+$$ \frac{p(\boldsymbol{x})}{1- p(\boldsymbol{x})} = e^{\boldsymbol{x}^T\hat{\boldsymbol{\beta}}}. $$
+Thus, the odds of decease increases by a factor of $e^{10 \hat{\beta_{\tt{age}}}} \approx 1.31$ when `age` increases by 10 and all other covariates are held constant.
 
 ## c) 
 

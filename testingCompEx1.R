@@ -54,3 +54,47 @@ ggplot(dfVar, aes(x = lambdas, y = var))+
   xlab(expression(lambda))+
   ylab("variance")
 
+exp_mse = BIAS + VAR + sigma^2
+lambdas[which.min(exp_mse)]
+
+dfAll = data.frame(lambda = lambdas, bias = BIAS, var = VAR, exp_mse = exp_mse)
+ggplot(dfAll)+
+  geom_line(aes(x = lambda, y = exp_mse), color = "blue")+
+  geom_line(aes(x = lambda, y = bias), color = "red")+
+  geom_line(aes(x = lambda, y = var), color = "green4")+
+  xlab(expression(lambda))+
+  ylab(expression(E(MSE)))
+
+
+id <- "1yYlEl5gYY3BEtJ4d7KWaFGIOEweJIn__" # google file ID
+d.corona <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id),header=T)
+
+#d.corona$sex = factor(d.corona$sex)
+#d.corona$country = factor(d.corona$country)
+lm.fit <- lm(deceased ~ ., data = d.corona) # perhaps a linear model is not the correct model to use?
+summary(lm.fit)
+
+newdata = data.frame(sex = "male", age = 75, country = "Korea")
+predict(lm.fit, newdata = newdata, type = "response")
+
+library(tidyverse)
+
+table <- summarise(d.corona, deceased = sum(d.corona$deceased), non_deceased = nrow(d.corona) - deceased)
+table
+
+group_by(d.corona, deceased)
+summarise(d.corona, deceased = sum(d))
+
+d.france <- filter(d.corona, country == "France")
+head(d.france)
+
+table <- table(d.corona$country, d.corona$deceased)
+table
+colnames(table) = c("hei", "på")
+table
+
+
+
+
+
+
