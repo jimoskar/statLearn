@@ -162,10 +162,6 @@ d.corona <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",
 The tables are reported below. 
 
 ```{r}
-<<<<<<< HEAD
-=======
-knitr::kable(table(Deceased = d.corona$deceased))
->>>>>>> e5d30fa88c2ed1391adcd779c72446ba3b42cfce
 
 table1 <- summarise(d.corona, deceased = sum(d.corona$deceased),
                    non_deceased = nrow(d.corona) - deceased)
@@ -174,7 +170,6 @@ knitr::kable(table1) # Prøvde å sette kolonne-navn, men fikk det ikke til.
 table2 <- table(d.corona$country, d.corona$sex)
 knitr::kable(table2)
 
-<<<<<<< HEAD
 table3 <- table(d.corona$deceased, d.corona$sex)
 rownames(table3) = c("non-deceased", "deceased")
 knitr::kable(table3)
@@ -183,9 +178,6 @@ d.france <-  filter(d.corona, country == "France")
 table4 <- table(d.france$deceased, d.france$sex)
 rownames(table4) = c("non-deceased", "deceased")
 knitr::kable(table4) # Må hente ut øverste raden herfra, men klarte det ikke. 
-=======
-knitr::kable(table(d.corona$country, d.corona$deceased))
->>>>>>> e5d30fa88c2ed1391adcd779c72446ba3b42cfce
 ```
 
 ## b) 
