@@ -9,6 +9,7 @@ output:
   
 ```{r setup, include=FALSE}
 library(knitr)
+library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
                       cache=TRUE, size="scriptsize",fig.width=4, fig.height=3)
 ```
@@ -162,10 +163,11 @@ d.corona <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",
 The tables are reported below. 
 
 ```{r}
+# knitr::kable(table(d.corona$deceased)) # Hvorfor ta bort de som fungerer?
 
 table1 <- summarise(d.corona, deceased = sum(d.corona$deceased),
                    non_deceased = nrow(d.corona) - deceased)
-knitr::kable(table1) # Prøvde å sette kolonne-navn, men fikk det ikke til.
+knitr::kable(table1)
 
 table2 <- table(d.corona$country, d.corona$sex)
 knitr::kable(table2)
@@ -174,10 +176,10 @@ table3 <- table(d.corona$deceased, d.corona$sex)
 rownames(table3) = c("non-deceased", "deceased")
 knitr::kable(table3)
 
-d.france <-  filter(d.corona, country == "France")
+d.france <- filter(d.corona, country == "France")
 table4 <- table(d.france$deceased, d.france$sex)
 rownames(table4) = c("non-deceased", "deceased")
-knitr::kable(table4) # Må hente ut øverste raden herfra, men klarte det ikke. 
+knitr::kable(table4)
 ```
 
 ## b) 
@@ -202,14 +204,14 @@ predict(lm.fit, newdata = x0, type = "response")
 ## c) 
 
 ```{r}
-log.fit1 <- glm(deceased ~., data = d.corona, family=binomial)
+log.fit1 <- glm(deceased ~., data = d.corona, family="binomial")
 summary(log.fit1)
 ```
 
 (i) As seen above, the coefficient for male is positive (`r coefficients(log.fit1)[2]`), which means that a male has higher risk than a female. This is because the value of this coefficient is added on top of the interceipt, which corresponds to an individual that is in the reference level, i.e. a female. 
 
 ```{r}
-log.fit2 <- glm(deceased ~ sex + age*country, data = d.corona, family=binomial)
+log.fit2 <- glm(deceased ~ sex + age*country, data = d.corona, family="binomial")
 summary(log.fit2)
 ```
 
@@ -253,8 +255,8 @@ EVENTUALLY THERE WILL ONLY BE TRUE OR FALSE IN EACH OF THESE, BUT I HAVE WRITTEN
 # Problem 3
 
 ```{r, eval=T}
-#read file
-id <- "1i1cQPeoLLC_FyAH0nnqCnnrSBpn05_hO" # google file ID
+# Read file.
+id <- "1i1cQPeoLLC_FyAH0nnqCnnrSBpn05_hO" # Google file ID.
 diab <- dget(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
 t = MASS::Pima.tr2
 train = diab$ctrain
@@ -268,12 +270,12 @@ logReg = glm(diabetes~., data = train, family = "binomial")
 summary(logReg)
 ```
 
-(i) (assuming they want us to do it theoretically, and not in R, e.g. by plotting) We have that 
+(i) We have that 
 
 $$
 \begin{split}
 p_i = \frac{e^{\beta_0 + \beta_1x_{i1} + \beta_2 x_{i2} + \dots + \beta_7 x_{i7}}}{ 1+ 
-e^{\beta_0 + \beta_1x_{i1} + \beta_2 x_{i2} + \dots + \beta_7 x_{i7}}} &= \frac{e^{\eta_i(x)}}{1+e^{\eta_i(x)}} \implies \frac{p_i}{1-p_i} = \frac{\frac{e^{\eta_i(x)}}{1+e^{\eta_i(x9)}}}{1-\frac{e^{\eta_i(x)}}{1+e^{\eta_i(x)}}} = e^{\eta_i(x)} \\ \implies  \mathsf{log}\left(\frac{p_i}{1-p_i}\right) &= \eta_i(x) = \beta_0 + \beta_1x_{i1} + \beta_2 x_{i2} + \dots + \beta_7 x_{i7}
+e^{\beta_0 + \beta_1x_{i1} + \beta_2 x_{i2} + \dots + \beta_7 x_{i7}}} &:= \frac{e^{\eta_i(x)}}{1+e^{\eta_i(x)}} \implies \frac{p_i}{1-p_i} = \frac{\frac{e^{\eta_i(x)}}{1+e^{\eta_i(x)}}}{1-\frac{e^{\eta_i(x)}}{1+e^{\eta_i(x)}}} = e^{\eta_i(x)} \\ \implies  \mathsf{logit}(p_i) = \mathsf{log}\left(\frac{p_i}{1-p_i}\right) &= \eta_i(x) = \beta_0 + \beta_1x_{i1} + \beta_2 x_{i2} + \dots + \beta_7 x_{i7}
 \end{split}
 $$
 
@@ -281,11 +283,12 @@ $$
 
 ```{r}
 glm.probs <- predict(logReg, newdata = test, type = "response")
-glm.preds <- ifelse(glm.probs > 0.5, 1, 0) #"Present", "Non-present") # Could also use these names. 
+glm.preds <- ifelse(glm.probs > 0.5, 1, 0) 
 conf.table.glm <- table(predicted = glm.preds, true = test$diabetes)
 conf.table.glm
 ```
-The sensitivity is `r conf.table.glm[2,2]/(conf.table.glm[2,2]+conf.table.glm[1,2])` and the specificity is `r conf.table.glm[1,1]/(conf.table.glm[1,1]+conf.table.glm[2,1])`. (perhaps show the calculations more clearly in another way later.)
+
+The sensitivity is `r conf.table.glm[2,2]`/(`r conf.table.glm[2,2]` + `r conf.table.glm[1,2]`) $\approx$ `r  round(conf.table.glm[2,2]/(conf.table.glm[2,2]+conf.table.glm[1,2]), digits = 3)` and the specificity is `r conf.table.glm[1,1]`/(`r conf.table.glm[1,1]` + `r conf.table.glm[2,1]`) $\approx$ `r round(conf.table.glm[1,1]/(conf.table.glm[1,1]+conf.table.glm[2,1]), digits = 3)`.
 
 ## b)
 
@@ -315,26 +318,92 @@ The difference between the methods is that the covariances are equal across all 
 
 ## c)
 
-(i) In the KNN approach, a new observation is classified by using the $K$ nearest points (in Euclidean norm) to the observation in question to estimate the probability of the new point belonging to each of the different classes in the response. If the estimated probability of the point belonging to a class is larger than a pre-selected threshold (usually 0.5), the point is classified as belonging to this class. (perhaps it is just classified to the class that has the largest estimated probability?)
+(i) In the KNN approach, a new observation is classified by using the $k$ nearest points (in Euclidean norm) to the observation in question, to estimate the probability of the new point belonging to each of the different classes in the response. The new point is classified to the class with the highest estimated probability. 
 
-(ii) I would probably use cross validation to test the predictive power for different $K$ (elaborate).
+(ii) I would probably use cross validation to test the predictive power for different $K$ (elaborate, saw it in the lecture on linear regression, but not quite sure how it is done in practice).
 
 (iii) The KNN classification fit can be seen below
 
 ```{r}
 library(class)
-set.seed(123) # for reproducibility.
+set.seed(123) # For reproducibility.
 knn.diabetes <- knn(train = train, test = test, cl = train$diabetes, k=25, prob=T)
-#table(predicted = knn.diabetes, true = train$diabetes) # Similar dimensionality problem as above!?!?
-
+conf.table.knn <- table(predicted = knn.diabetes, true = test$diabetes) 
+conf.table.knn
 ```
+
+The sensitivity is `r conf.table.knn[2,2]`/(`r conf.table.knn[2,2]` + `r conf.table.knn[1,2]`) $\approx$ `r  round(conf.table.knn[2,2]/(conf.table.knn[2,2]+conf.table.knn[1,2]), digits = 3)` and the specificity is `r conf.table.knn[1,1]`/(`r conf.table.knn[1,1]` + `r conf.table.knn[2,1]`) $\approx$ `r round(conf.table.knn[1,1]/(conf.table.knn[1,1]+conf.table.knn[2,1]), digits = 3)`.
 
 ## d) ROC curves
 
+Jeg hopper over denne nå, gidder ikke. 
 
 # Problem 4
 
 ## a)
 
+$$
+\begin{split}
+\hat y_{(-i)} &= \mathbf{x}_i^T \hat{\boldsymbol{\beta}}_{(-i)} \\
+&= \mathbf{x}_i^T (X_{(-i)}^T X_{(-i)})^{-1}X_{(-i)}^T \mathbf{y}_{(-i)} \\
+&= \mathbf{x}_i^T (X^TX - \mathbf{x}_i\mathbf{x}_i^T)^{-1}(X^T \mathbf{y}-\mathbf{x}_i y_i) \\
+&= \mathbf{x}_i^T\left[(X^TX)^{-1} + \frac{(X^TX)^{-1}\mathbf{x}_i\mathbf{x}_i^T(X^TX)^{-1}}{1-\mathbf{x}_i^T(X^TX)^{-1}\mathbf{x}_i}\right](X^T\mathbf{y}-\mathbf{x}_i y_i), \quad \text{Sherman-Morrison} \\
+&= \mathbf{x}_i^T\left[(X^TX)^{-1} + \frac{(X^TX)^{-1}\mathbf{x}_i\mathbf{x}_i^T(X^TX)^{-1}}{1-h_i}\right](X^T\mathbf{y}-\mathbf{x}_i y_i) \\
+&= \mathbf{x}_i^T(X^TX)^{-1}X^T\mathbf{y} - \mathbf{x}_i^T(X^TX)^{-1}\mathbf{x}_i y_i+\mathbf{x}_i^T\frac{(X^TX)^{-1}\mathbf{x}_i\mathbf{x}_i^T(X^TX)^{-1}}{1-h_i}X^T\mathbf{y}-\mathbf{x}_i^T\frac{(X^TX)^{-1}\mathbf{x}_i\mathbf{x}_i^T(X^TX)^{-1}}{1-h_i}\mathbf{x}_i y_i \\
+&= \mathbf{x}_i^T\hat{\boldsymbol{\beta}} - \mathbf{x}_i^T\hat{\beta}_i + \frac{1}{1-h_i}h_i\mathbf{x}_i^T\hat{\boldsymbol{\beta}} - \frac{1}{1-h_i}h_i\mathbf{x}_i^T\hat{\beta}_i \quad \text{Usikker på notasjon i 2. og 4. ledd}\\
+&= 
+\end{split}
+$$
 
+
+## b)
+
+(i) FALSE
+(ii) TRUE
+(iii) ?log-transform of the response??? (mener de logistic regression her?) (eller mener de transform av predictors?)
+(iv) FALSE (since the model is only fitted and trained on one combination of the two folds in the validation set approach, and not "the other way around" also, which would be the case in 2-fold cross validation.)
+
+# Problem 5
+
+```{r}
+id <- "19auu8YlUJJJUsZY8JZfsCTWzDm6doE7C" # google file ID
+d.bodyfat <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id),header=T)
+```
+
+## a)
+
+```{r}
+lm.fit5 <- lm(bodyfat ~ age + weight + bmi, data = d.bodyfat)
+summary(lm.fit5)
+```
+
+The $R^2$ is $\approx$ `r round(summary(lm.fit5)$r.squared, digits = 4)`.
+
+## b)
+
+DO THEY WANT US TO DO IT MANUALLY OR TO USE THE BOOTSTRAP-FUNCTIONS IN R?
+
+```{r}
+set.seed(4268)
+
+# Not sure how to tell it to calculated the r.squared statistic.
+# library(boot)
+# boot(d.bodyfat, r.squared, R=1000)
+
+# Doing it manually instead
+B <- 1000
+n <- 100 #e.g
+r.squared <- rep(NA, B)
+for (b in 1:B){
+  dat <- d.bodyfat[sample(x = nrow(d.bodyfat), size = n, replace = T), ]
+  fit <- lm(bodyfat ~ age + weight + bmi, data = dat)
+  r.squared[b] <- summary(fit)$r.squared
+}
+
+ggplot(data=data.frame(x=r.squared),aes(x=x))+
+  geom_density()
+
+# Derive the standard error and the 95% confidence interval. 
+# Interpret. 
+```
 
