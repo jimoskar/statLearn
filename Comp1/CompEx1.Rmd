@@ -384,6 +384,8 @@ $$
 (i) FALSE
 (ii) TRUE
 (iii) ?log-transform of the response??? (mener de logistic regression her?) (eller mener de transform av predictors?)
+Litt usikker på hva de mener. Formelen vil jo gjelde hvis for en $\tilde{y_i} = log(y_i)$, men 
+da gjelder den jo ikke for $y_i$.
 (iv) FALSE (since the model is only fitted and trained on one combination of the two folds in the validation set approach, and not "the other way around" also, which would be the case in 2-fold cross validation.)
 
 # Problem 5
