@@ -93,6 +93,9 @@ table
 colnames(table) = c("hei", "på")
 table
 
+glm.fit <- glm(deceased ~ ., family = "binomial", data = d.corona)
+x0 = data.frame(sex = "male", age = 75, country = "Korea")
+predict(glm.fit, newdata = x0, type = "response")
 
 
 

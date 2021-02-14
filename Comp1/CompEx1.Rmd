@@ -213,20 +213,19 @@ Thus, the odds of decease increases by a factor of $e^{10 \hat{\beta_{\tt{age}}}
 ## c) 
 
 ```{r}
-log.fit1 <- glm(deceased ~., data = d.corona, family="binomial")
+log.fit1 <- glm(deceased ~. + sex:age, data = d.corona, family="binomial")
 summary(log.fit1)
 ```
 
-(i) As seen above, the coefficient for male is positive (`r coefficients(log.fit1)[2]`), which means that a male has higher risk than a female. This is because the value of this coefficient is added on top of the interceipt, which corresponds to an individual that is in the reference level, i.e. a female. 
+(i) As the summary shows, the interaction effect between sexmale and age is not significant. Hence, although the coefficient is slightly positive, we cannot conclude that age is a greater risk factor for men.
+(As seen above, the coefficient for male is positive (`r coefficients(log.fit1)[2]`), which means that a male has higher risk than a female. This is because the value of this coefficient is added on top of the interceipt, which corresponds to an individual that is in the reference level, i.e. a female.)
 
 ```{r}
-log.fit2 <- glm(deceased ~ sex + age*country, data = d.corona, family="binomial")
+log.fit2 <- glm(deceased ~ . + age:country, data = d.corona, family="binomial")
 summary(log.fit2)
 ```
 
-(ii) As seen above, we have fitted a logistic regression with an interaction term between `age` and `country`, in addition to the rest of the terms, to see how the model predicts the risk factors of age and countries combined. Since `France` is the reference level, and the interaction-term coefficient `age:countryindonesia` has the value `r coefficients(log.fit2)[7]`, we can conclude that age is not a greater risk factor for the French population than for the Indonesian population. This is because the value of the coefficient is added on top of the reference level for the `age:contry`-set of coefficients, which, as already noted, is `France`.
-
-NOTE: I am not sure whether or not we should use logistic or linear regression for these Q's!!!
+(ii) As seen above, we have fitted the full logistic regression with an interaction term between `age` and `country`. Since `France` is the reference level, and the interaction-term coefficient `age:countryindonesia` has the value `r coefficients(log.fit2)[7]` with a relatively low p-value, we can infer that age is a greater risk factor for the French population than for the Indonesian population. 
 
 ## d)
 
