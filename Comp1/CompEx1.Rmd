@@ -10,15 +10,20 @@ output:
 ```{r setup, include=FALSE}
 library(knitr)
 library(ggplot2)
+library(MASS)
+library(tidyverse)
+library(class)
+library(pROC)
+#library(plotROC)
 knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
-                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3)
+                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3, comment = "#>", fig.align = "center")
 ```
 
 # Problem 1
 
 ## a)
 
-By extending the given univariate regression problem to a multivariate regression problem that allows for several observations, we have that ${\bf Y} = {\bf X} {\boldsymbol\beta} + \varepsilon I$, where $I$ is the identity matrix of the correct dimensions. Hence, we have $\mathsf{E}({\bf Y}) =  \mathsf{E}({\bf X}\boldsymbol{\beta} + \varepsilon) = \mathbf{X}\boldsymbol{\beta}$ and $\mathsf{Cov}({\bf Y}) = \sigma I$, without assuming anything else than that each of the $\varepsilon$'s are independent of each other. 
+By extending the given univariate regression problem to a multivariate regression problem that allows for several observations, we have that ${\bf Y} = {\bf X} {\boldsymbol\beta} + \varepsilon I$, where $I$ is the identity matrix of the correct dimensions. Hence, we have $\mathsf{E}({\bf Y}) =  \mathsf{E}({\bf X}\boldsymbol{\beta} + \varepsilon I) = \mathbf{X}\boldsymbol{\beta}$ and $\mathsf{Cov}({\bf Y}) = \sigma I$, without assuming anything else than that each of the $\varepsilon$'s are independent of each other. Then
 
 <!-- Remove this for now, because it is not necessary to assume this at this stage -->
 <!-- We assume that ${\bf Y}$ is a multivariate normal, which gives the distribution  ${\bf Y} \sim N_{n}({\bf X} {\boldsymbol\beta},\sigma^2 {\bf I})$. -->
@@ -33,7 +38,7 @@ and
 
 $$
 \begin{split}
-\mathsf{Cov}(\widetilde{\boldsymbol \beta}) &= \mathsf{Cov}((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf Y}) = ((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T)\mathsf{Cov}({\bf Y})((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T)^T \\ &= ((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T)\sigma^2 I({\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-T}) = \sigma^2((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-T}) \\
+\mathsf{Cov}(\widetilde{\boldsymbol \beta}) &= \mathsf{Cov}((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf Y}) = ((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T)\mathsf{Cov}({\bf Y})((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T)^T \\ &= ((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T)\sigma^2 I{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-T} = \sigma^2((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-T}) \\
 &= \sigma^2((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}),
 \end{split}
 $$
@@ -43,7 +48,7 @@ In both these equations it is apparent that the moments are equal to those of th
 
 ## b)
 
-The requested moments of $\widetilde{f}(\mathbf{x}_0)$ are 
+The requested moments of $\widetilde{f}(\mathbf{x}_0) = \mathbf{x}_0^T \widetilde{\boldsymbol{\beta}}$ are 
 
 $$
 \mathsf{E}(\widetilde{f}(\mathbf{x}_0)) = \mathsf{E}(\mathbf{x}_0^T \widetilde{\boldsymbol{\beta}}) = \mathbf{x}_0^T\mathsf{E}(\widetilde{\boldsymbol \beta}) = \mathbf{x}_0^T (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathbf{X}\boldsymbol{\beta}
@@ -67,10 +72,13 @@ $$
 \begin{split}
 \mathsf{E}[(y_0 - \widetilde{f}(\mathbf{x}_0))^2] &= [\mathsf{E}(\widetilde{f}(\mathbf{x}_0)-f(\mathbf{x}_0)]^2+\mathsf{Var}(\widetilde{f}(\mathbf{x}_0) ) + \mathsf{Var}(\varepsilon) \\
 &= [\mathsf{E}(\widetilde{f}(\mathbf{x}_0)) - \mathsf{E}(f(\mathbf{x}_0))]^2 + \mathsf{Cov}(\widetilde{f}(\mathbf{x}_0)) + \sigma^2 \\
-&= [\mathbf{x}_0^T (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathbf{X}\boldsymbol{\beta} - \mathbf{x}_0^T\boldsymbol{\beta}]^2 + \sigma^2\mathbf{x}_0^T((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}) \mathbf{x}_0 + \sigma^2 \\
+&= [\mathbf{x}_0^T (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathbf{X}\boldsymbol{\beta} - \mathbf{x}_0^T\boldsymbol{\beta}]^2 + \sigma^2\mathbf{x}_0^T((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}) \mathbf{x}_0 + \sigma^2. \\
 \end{split}
 $$
-FOR NOE GRISERI, UMULIG Å FORENKLE? SE PÅ DETTE SENERE. 
+
+Since there is no obvious way to simplify this, it will be left like this. This is also practical since it is easy to distinguish between the irreducible error, the variance of prediction and the squared bias. 
+
+## d)
 
 ```{r, echo=TRUE, eval=TRUE}
 id <- "1X_8OKcoYbng1XvYFDirxjEWr7LtpNr1m" # google file ID
@@ -85,10 +93,7 @@ sigma=values$sigma
 sigma
 ```
 
-## d)
-
 ```{r}
-library(ggplot2)
 bias = function(lambda,X,x0,beta)
 {
   p = ncol(X)
@@ -115,7 +120,7 @@ variance = function(lambda, X, x0, sigma)
 {
   p = ncol(X)
   inv = solve(t(X)%*%X+lambda*diag(p))
-  value = sigma^2*t(x0) %*% (inv %*% t(X) %*% X %*% t(inv)) %*% x0
+  value = sigma^2*t(x0) %*% (inv %*% t(X) %*% X %*% inv) %*% x0
   return(value)
 }
 lambdas = seq(0, 2, length.out = 500)
@@ -129,7 +134,9 @@ ggplot(dfVar, aes(x = lambdas, y = var))+
   ylab("variance")
 ```
 
-Comments: The variance begins at `r variance(0, X, x0, sigma)` and decreases with $\lambda$. Hence, it is apparent that the ridge regression estimator is advantageous compared to the OLS estimator, since the variance is decreasing with $\lambda$. In the end, when adding the changes in bias and variance, it is at this stage possible for the ridge regression estimator to have a lower MSE than the OLS estimator. However, we do not know if this is the case yet. 
+Comments: The variance begins at $\approx$ `r round(variance(0, X, x0, sigma), digits = 3)` and decreases with $\lambda$. Hence, it is apparent that the ridge regression estimator is advantageous, when looking at solely variance, compared to the OLS estimator, since the variance is decreasing with $\lambda$. Despite this, when adding the bias and the variance, the OLS estimator may still have a lower expected MSE than the ridge regression estimator. Finally, note that the changes in the variance are larger for $\lambda \in [0,2]$ than the changes in the bias (as seen in the plot in task d)), which indicates that the variance dominates the change in expected MSE for the ridge regression estimation. 
+
+## f)
 
 ```{r}
 exp_mse = BIAS + VAR + sigma^2
@@ -147,12 +154,11 @@ ggplot(dfAll)+
     ylab(expression(E(MSE)))
 ```
 
-Comments: Now we are able to conclude that the ridge regression estimator has a lower MSE compared to the OLS estimator, as gathered from the blue line in the plot. The optimal value of $\lambda$, which minimizes MSE, is `r lambdas[which.min(exp_mse)]`. Hence, despite the fact that the bias is higher for the ridge regression estimator, the total expected MSE is lower, since the decrease in variance counters the increase in bias. 
+Comments: Now we are able to conclude that the ridge regression estimator has a lower expected MSE compared to the OLS estimator, as gathered from the blue line in the plot. The optimal value of $\lambda$, which minimizes MSE, is $\approx$ `r round(lambdas[which.min(exp_mse)], digits = 3)`. Hence, despite the fact that the bias is higher for the ridge regression estimator, the total expected MSE is lower, since the decrease in variance counters the increase in bias. 
 
 # Problem 2
 
 ```{r}
-library(tidyverse)
 # read file
 id <- "1yYlEl5gYY3BEtJ4d7KWaFGIOEweJIn__" # google file ID
 d.corona <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id),header=T)
@@ -241,7 +247,6 @@ nrow(d.corona)
 # Ikke så greit å bruke indekser i d.corona tydeligvis. Kan se mer på dette senere dersom det virker 
 # som en fornuftig måte å løse oppgaven på...
 
-library(MASS)
 lda.fit <- lda(deceased ~ ., data = train)
 lda.fit.pred <- predict(lda.fit, newdata = test)$class
 table(predicted = lda.fit.pred, true = test$deceased)
@@ -334,7 +339,6 @@ The difference between the methods is that the covariances are equal across all 
 (iii) The KNN classification fit can be seen below
 
 ```{r}
-library(class)
 set.seed(123) # For reproducibility.
 knn.diabetes <- knn(train = train, test = test, cl = train$diabetes, k=25, prob=T)
 conf.table.knn <- table(predicted = knn.diabetes, true = test$diabetes) 
