@@ -323,7 +323,6 @@ conf.table.qda.diabetes
 
 The sensitivity and specificity for LDA are thus `r conf.table.lda.diabetes[2,2]/sum(conf.table.lda.diabetes[, 2])` and `r conf.table.lda.diabetes[1,1]/sum(conf.table.lda.diabetes[, 1])`, respectively. The sensitivity and specificity of QDA are `r conf.table.qda.diabetes[2,2]/sum(conf.table.qda.diabetes[, 2])` and `r conf.table.qda.diabetes[1,1]/sum(conf.table.qda.diabetes[, 1])`, respectively.
 
-\texcolor{red}{Skal dette være her?}
 The difference between the methods is that the covariances are equal across all classes (in this case: both classes) in LDA, which gives linear discriminant functions and a linear decision boundary. On the contrary, the covariances in each class when using QDA are allowed to be different, which gives a quadratic discriminant function in each class and a quadratic decision boundary. 
 
 ## c)
