@@ -310,20 +310,20 @@ The sensitivity is `r conf.table.glm[2,2]`/(`r conf.table.glm[2,2]` + `r conf.ta
 lda.diabetes <- lda(diabetes~., data = train)
 qda.diabetes <- qda(diabetes~., data = train)
 
-lda.diabetes.probs <- predict(lda.diabetes, newdata = test)$posterior
+lda.diabetes.probs <- predict(lda.diabetes, newdata = test)$posterior[, 2] # Only need the prob om diabetes present!
 lda.preds <- ifelse(lda.diabetes.probs > 0.5, 1, 0)
-#conf.table.lda.diabetes <- table(predicted = lda.preds, true = test$diabetes)
-#conf.table.lda.diabetes
+conf.table.lda.diabetes <- table(predicted = lda.preds, true = test$diabetes)
+conf.table.lda.diabetes
 
-# Why are the probs half the length of the test data? I cannot seem to find the reason! :(
-
-# Could also use $class below, but not sure how to set the cut-off probability in that case. 
-qda.diabetes.probs <- predict(qda.diabetes, newdata = test)$posterior
+qda.diabetes.probs <- predict(qda.diabetes, newdata = test)$posterior[, 2]
 qda.preds <- ifelse(qda.diabetes.probs > 0.5, 1, 0)
-#conf.table.qda.diabetes <- table(predicted = qda.preds, true = test$diabetes)
-#conf.table.qda.diabetes
+conf.table.qda.diabetes <- table(predicted = qda.preds, true = test$diabetes)
+conf.table.qda.diabetes
 ```
 
+The sensitivity and specificity for LDA are thus `r conf.table.lda.diabetes[2,2]/sum(conf.table.lda.diabetes[, 2])` and `r conf.table.lda.diabetes[1,1]/sum(conf.table.lda.diabetes[, 1])`, respectively. The sensitivity and specificity of QDA are `r conf.table.qda.diabetes[2,2]/sum(conf.table.qda.diabetes[, 2])` and `r conf.table.qda.diabetes[1,1]/sum(conf.table.qda.diabetes[, 1])`, respectively.
+
+\texcolor{red}{Skal dette være her?}
 The difference between the methods is that the covariances are equal across all classes (in this case: both classes) in LDA, which gives linear discriminant functions and a linear decision boundary. On the contrary, the covariances in each class when using QDA are allowed to be different, which gives a quadratic discriminant function in each class and a quadratic decision boundary. 
 
 ## c)
