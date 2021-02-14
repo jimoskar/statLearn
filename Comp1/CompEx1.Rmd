@@ -345,7 +345,17 @@ The sensitivity is `r conf.table.knn[2,2]`/(`r conf.table.knn[2,2]` + `r conf.ta
 
 ## d) ROC curves
 
-Jeg hopper over denne nå, gidder ikke. 
+```{r}
+knn.probs <- ifelse(knn.diabetes == 0, 1 - attributes(knn.diabetes)$prob, attributes(knn.diabetes)$prob)
+
+ldaroc = roc(response = test$diabetes, predictor = lda.diabetes.probs, direction = "<")
+qdaroc = roc(response = test$diabetes, predictor = qda.diabetes.probs, direction = "<")
+knnroc = roc(response = test$diabetes, predictor = knn.probs, direction = "<")
+
+
+ggroc(list(LDA  = ldaroc, QDA = qdaroc, KNN = knnroc))
+```
+ The area under the ROC curves is `r auc(ldaroc)` for LDA, `r auc(qdaroc)` for QDA and `r auc(knnroc)` for KNN. Based on this, LDA preforms the best. KNN is not very interpretable? logistic regression is most intepretable, but that is not included???
 
 # Problem 4
 
