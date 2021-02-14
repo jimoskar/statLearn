@@ -252,9 +252,11 @@ table(predicted = lda.fit.pred, true = test$deceased)
 
 EVENTUALLY THERE WILL ONLY BE TRUE OR FALSE IN EACH OF THESE, BUT I HAVE WRITTEN MY THOUGHTS HERE FIRST. 
 
-(i) `r length(d.corona$deceased[d.corona$deceased == T])/length(d.corona$deceased[d.corona$deceased == F]) * 100` % seems to be the percentage of deaths in the dataset. This is not equal to the percentage given in the question (by accident). If they were equal I would say that this statement is TRUE. because, as I have understood it, the "null rate" for misclassification can be obtained in this case by always classifying the individual as healthy. 
+(i) `r length(d.corona$deceased[d.corona$deceased == T])/(nrow(d.corona)) * 100` % \textcolor{green}{divided by the length of the whole dataset!} seems to be the percentage of deaths in the dataset. This is not equal to the percentage given in the question (by accident). If they were equal I would say that this statement is TRUE. because, as I have understood it, the "null rate" for misclassification can be obtained in this case by always classifying the individual as healthy. 
 
 (ii) Following the argumentation in the above point, LDA is useless if the misclassification rate is higher than approx 5 %. Need to make a LDA in code to test?
+\textcolor{green}{In this case, we are probably more interested in the probabilites than the classification, so LDA is not so relevant?}
+\textcolor{red}{spørre om dette på mandan!}
 
 (iii) Can we answer this from theory?
 
