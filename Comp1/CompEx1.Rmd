@@ -415,19 +415,38 @@ set.seed(4268)
 # boot(d.bodyfat, r.squared, R=1000)
 
 # Doing it manually instead
-B <- 1000
-n <- 100 #e.g
-r.squared <- rep(NA, B)
-for (b in 1:B){
-  dat <- d.bodyfat[sample(x = nrow(d.bodyfat), size = n, replace = T), ]
-  fit <- lm(bodyfat ~ age + weight + bmi, data = dat)
-  r.squared[b] <- summary(fit)$r.squared
+# B <- 1000
+# n <- 100 #e.g
+# r.squared <- rep(NA, B)
+# for (b in 1:B){
+#   dat <- d.bodyfat[sample(x = nrow(d.bodyfat), size = n, replace = T), ]
+#   fit <- lm(bodyfat ~ age + weight + bmi, data = dat)
+#   r.squared[b] <- summary(fit)$r.squared
+# }
+# 
+# ggplot(data=data.frame(x=r.squared),aes(x=x))+
+#   geom_density()
+
+## Why do you make n samller than the size of the dataset?
+# HEre is my version, which is a blueprint of ex.5
+
+boot.fn <-  function(data, index) {
+  return(summary(lm(bodyfat ~ age + weight + bmi, data = data, subset = index))$r.squared)
 }
 
-ggplot(data=data.frame(x=r.squared),aes(x=x))+
-  geom_density()
+B <- 1000
+r.squared <- rep(NA, B)
+for (b in 1:B){
+  r.squared[b] <- boot.fn(d.bodyfat, sample(nrow(d.bodyfat), nrow(d.bodyfat), replace = T))
+}
 
-# Derive the standard error and the 95% confidence interval. 
-# Interpret. 
+df = data.frame(r.squared = r.squared, norm_den = dnorm(r.squared, mean(r.squared),
+                                                        sd(r.squared)))
+ggplot(df) + geom_histogram(aes(x = r.squared, y = ..density..), fill = "grey80",color = "black") +
+   geom_line(aes(x = r.squared, y = norm_den), color = "red") +
+   theme_minimal()
+
+sd(r.squared)
+quantile(r.squared, c(0.025, 0.975))
 ```
 
