@@ -316,7 +316,7 @@ The difference between the methods is that the covariances are equal across all 
 
 (i) In the KNN approach, a new observation is classified by using the $k$ nearest points (in Euclidean norm) to the observation in question, to estimate the probability of the new point belonging to each of the different classes in the response. The new point is classified to the class with the highest estimated probability. 
 
-(ii) I would probably use cross validation to test the predictive power for different $K$ (elaborate, saw it in the lecture on linear regression, but not quite sure how it is done in practice). \textcolor{red}{Spørre om dette kanskje?! Jeg er veldig usikker på dette. }
+(ii) We would choose the tuning parameter $k$ based on a k-fold cross validation, with k somewhere between 5 and 10. \textcolor{green}{virket som om dette var nok!} (elaborate, saw it in the lecture on linear regression, but not quite sure how it is done in practice). \textcolor{red}{Spørre om dette kanskje?! Jeg er veldig usikker på dette. }
 
 (iii) The KNN classification fit can be seen below
 
