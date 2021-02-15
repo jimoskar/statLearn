@@ -77,27 +77,69 @@ summary(lm.fit)
 newdata = data.frame(sex = "male", age = 75, country = "Korea")
 predict(lm.fit, newdata = newdata, type = "response")
 
-library(tidyverse)
-
-table <- summarise(d.corona, deceased = sum(d.corona$deceased), non_deceased = nrow(d.corona) - deceased)
-table
-
-group_by(d.corona, deceased)
-summarise(d.corona, deceased = sum(d))
-
-d.france <- filter(d.corona, country == "France")
-head(d.france)
-
-table <- table(d.corona$country, d.corona$deceased)
-table
-colnames(table) = c("hei", "på")
-table
-
+l
 glm.fit <- glm(deceased ~ ., family = "binomial", data = d.corona)
 x0 = data.frame(sex = "male", age = 75, country = "Korea")
 predict(glm.fit, newdata = x0, type = "response")
 
 
+glm.fit <- glm(deceased ~ . + sex:age, family = "binomial", data = d.corona)
+summary(glm.fit)
 
+head(d.corona)
+sum(d.corona[,1] == 1) /nrow(d.corona)
+
+library(MASS)
+library(stats)
+library(class)
+library(pROC)
+library(ISLR)
+lda.fit <- lda(deceased ~ ., data = d.corona )
+summary(lda.fit)
+
+
+# 3
+
+id <- "1i1cQPeoLLC_FyAH0nnqCnnrSBpn05_hO" # Google file ID.
+diab <- dget(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+t = MASS::Pima.tr2
+train = diab$ctrain
+test = diab$ctest
+
+lda.diabetes <- lda(diabetes~., data = train)
+qda.diabetes <- qda(diabetes~., data = train)
+
+lda.diabetes.probs <- predict(lda.diabetes, newdata = test)$posterior[,2]
+lda.preds <- ifelse(lda.diabetes.probs > 0.5, 1, 0)
+lda.diabetes.probs
+length(test$diabetes)
+conf.table.lda.diabetes <- table(predicted = lda.preds, true = test$diabetes)
+conf.table.lda.diabetes
+
+qda.diabetes <- qda(diabetes~., data = train)
+qda.diabetes.probs <- predict(qda.diabetes, newdata = test)$posterior[, 2]
+qda.preds <- ifelse(qda.diabetes.probs > 0.5, 1, 0)
+conf.table.qda.diabetes <- table(predicted = qda.preds, true = test$diabetes)
+conf.table.qda.diabetes
+
+# 3.d
+
+library(pROC)
+library(class)
+library(ggplot2)
+
+set.seed(123) # For reproducibility.
+knn.diabetes <- knn(train = train, test = test, cl = train$diabetes, k=25, prob=T)
+knn.probs <- ifelse(knn.diabetes == 0, 1 - attributes(knn.diabetes)$prob, attributes(knn.diabetes)$prob)
+
+ldaroc = roc(response = test$diabetes, predictor = lda.diabetes.probs, direction = "<")
+qdaroc = roc(response = test$diabetes, predictor = qda.diabetes.probs, direction = "<")
+knnroc = roc(response = test$diabetes, predictor = knn.probs, direction = "<")
+
+
+ggroc(list(LDA  = ldaroc, QDA = qdaroc, KNN = knnroc))
+auc(ldaroc)
+auc(qdaroc)
+auc(knnroc)
 
 
