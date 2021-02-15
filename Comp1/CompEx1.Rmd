@@ -193,7 +193,7 @@ knitr::kable(table4)
 ```{r}
 glm.fit <- glm(deceased ~ ., family = "binomial", data = d.corona)
 summary(glm.fit)
-
+coef(glm.fit)[3]
 ```
 
 (i) The probability to die of covid for a male age 75 living in Korea can be predicted from the model. The prediction is found by
@@ -204,17 +204,14 @@ predict(glm.fit, newdata = x0, type = "response")
 ```
 
 
-(ii) The p-value associated with `sexmale` is relatively small, and since the coefficient is positive, this constitutes evidence that males have a higher probability of dying.
-ER DU UENIG??
-(but we would not say that there is clear evidence that males have higher probability to die than females. The p-value could be low by chance also, and since it is not amazingly small, we do not think it is appropriate evidence of the question.)
+(ii) The p-value associated with `sexmale` is relatively small, and since the coefficient is positive, this constitutes some evidence that males have a higher probability of dying. 
 
-(iii) Yes. Both the `countryjapan` and `countryKorea` coefficients have low p-values and are negative, which evidence that the probabilty of decease is lower in Japan and Korea compared to the reference category, France. `countryIndonesia` is not significant (high p-value), so there is no evidence that the probability of decease is any higher in Indonesia than in France.
-HVA TENKER DU?
+(iii) Yes. Both the `countryjapan` and `countryKorea` coefficients have relatively low p-values and are negative, which could be used as evidence that the probability of decease is lower in Japan and Korea compared to the reference category, France. `countryIndonesia` is not significant (large p-value), so there is no evidence that the probability of decease is any higher in Indonesia than in France.
 
 (iv) Since we have used logistic regression, the odds of decease, given an observation $\boldsymbol{x}$ is 
 
 $$ \frac{p(\boldsymbol{x})}{1- p(\boldsymbol{x})} = e^{\boldsymbol{x}^T\hat{\boldsymbol{\beta}}}. $$
-Thus, the odds of decease increases by a factor of $e^{10 \hat{\beta_{\tt{age}}}} \approx 1.31$ when `age` increases by 10 and all other covariates are held constant.
+Thus, the odds of decease increases by a factor of $e^{10 \hat{\beta_{\tt{age}}}} \approx$ `r round(exp(10*coef(glm.fit)[3]), digits = 3)` when `age` increases by 10 and all other covariates are held constant.
 
 ## c) 
 
@@ -223,45 +220,28 @@ log.fit1 <- glm(deceased ~. + sex:age, data = d.corona, family="binomial")
 summary(log.fit1)
 ```
 
-(i) As the summary shows, the interaction effect between sexmale and age is not significant. Hence, although the coefficient is slightly positive, we cannot conclude that age is a greater risk factor for men.
-(As seen above, the coefficient for male is positive (`r coefficients(log.fit1)[2]`), which means that a male has higher risk than a female. This is because the value of this coefficient is added on top of the interceipt, which corresponds to an individual that is in the reference level, i.e. a female.)
+(i) As the summary shows, the interaction effect between `sexmale` and `age` is not significant, since the p-value is large. Hence, although the coefficient is slightly positive, we cannot conclude that age is a greater risk factor for men.
 
 ```{r}
 log.fit2 <- glm(deceased ~ . + age:country, data = d.corona, family="binomial")
 summary(log.fit2)
 ```
 
-(ii) As seen above, we have fitted the full logistic regression with an interaction term between `age` and `country`. Since `France` is the reference level, and the interaction-term coefficient `age:countryindonesia` has the value `r coefficients(log.fit2)[7]` with a relatively low p-value, we can infer that age is a greater risk factor for the French population than for the Indonesian population. 
+(ii) As seen above, we have fitted the full logistic regression with an interaction term between `age` and `country`. Since `France` is the reference level, and the interaction-term coefficient `age:countryindonesia` has the value `r round(coefficients(log.fit2)[7], digits = 3)` with a relatively low p-value, we can infer that age is a greater risk factor for the French population than for the Indonesian population. 
 
 ## d)
 
-I will make the models before answering the questions, which can/will be deleted later (since these are multiple choice).
+TRUE, 
 
-```{r}
-# Make data sets.
-trainID = sample(x = 1:nrow(d.corona), size = 1500, replace = F) # E.g
-train = d.corona[trainID,]
-test = d.corona[!trainID,]
-nrow(d.corona)
+EVENTUALLY WE WILL ONLY LEAVE THE LINE ABOVE, BUT THOUGHTS ARE WRITTEN BELOW FIRST. 
 
-# Ikke så greit å bruke indekser i d.corona tydeligvis. Kan se mer på dette senere dersom det virker 
-# som en fornuftig måte å løse oppgaven på...
+\textcolor{blue}{Jeg tror vi må lage modeller for dette for å klare å besvare de siste 3 spmene!}
 
-lda.fit <- lda(deceased ~ ., data = train)
-lda.fit.pred <- predict(lda.fit, newdata = test)$class
-table(predicted = lda.fit.pred, true = test$deceased)
-
-# This did not work. 
-
-```
-
-EVENTUALLY THERE WILL ONLY BE TRUE OR FALSE IN EACH OF THESE, BUT I HAVE WRITTEN MY THOUGHTS HERE FIRST. 
-
-(i) `r length(d.corona$deceased[d.corona$deceased == T])/(nrow(d.corona)) * 100` % \textcolor{green}{divided by the length of the whole dataset!} seems to be the percentage of deaths in the dataset. This is not equal to the percentage given in the question (by accident). If they were equal I would say that this statement is TRUE. because, as I have understood it, the "null rate" for misclassification can be obtained in this case by always classifying the individual as healthy. 
+(i) `r length(d.corona$deceased[d.corona$deceased == T])/(nrow(d.corona)) * 100` % is the amount of deaths. Hence: TRUE
 
 (ii) Following the argumentation in the above point, LDA is useless if the misclassification rate is higher than approx 5 %. Need to make a LDA in code to test?
 \textcolor{green}{In this case, we are probably more interested in the probabilites than the classification, so LDA is not so relevant?}
-\textcolor{red}{spørre om dette på mandan!}
+\textcolor{red}{spørre om dette på mandan!} \textcolor{blue}{tja, men LDA kan fortsatt brukes til å finne posterior-sannsynlighetene også}
 
 (iii) Can we answer this from theory?
 
@@ -294,7 +274,7 @@ e^{\beta_0 + \beta_1x_{i1} + \beta_2 x_{i2} + \dots + \beta_7 x_{i7}}} &:= \frac
 \end{split}
 $$
 
-(ii) Can be seen below
+(ii) The classification is done below. 
 
 ```{r}
 glm.probs <- predict(logReg, newdata = test, type = "response")
@@ -307,7 +287,7 @@ The sensitivity is `r conf.table.glm[2,2]`/(`r conf.table.glm[2,2]` + `r conf.ta
 
 ## b)
 
-(i) (are we supposed to give estimates in this case?: "Explain what they are in the diabetes classification problem") $\pi_k$ is the prior probability, given by $\pi_k = P(y=k)$. $\boldsymbol{\mu}_k$ is the mean vector of class $k$, when we have assumed that each $f_k(\mathbf{x})$ is normal. In this case, the class $1$, i.e. presence of diabetes, has the mean vector $\boldsymbol{\mu}_1$ and the class $0$, i.e. non-presence of diabetes, has the mean vector $\boldsymbol{\mu}_0$. $\boldsymbol{\Sigma}$ is the covariance matrix of each class, when assumed that the distribution of each class are normal. In LDA $\boldsymbol{\Sigma}_k = \boldsymbol{\Sigma} \quad \forall k$, where as in QDA each $\boldsymbol{\Sigma}_k$ are allowed to be different. $f_k(x)$ is the density function of $X$ for an observation that comes from class $k$. These are assumed to be normal in LDA and QDA. 
+(i) \textcolor{red}{Skjønner ikke helt hvordan/hva de ønsker at vi skal forklare her. Det står jo explain in this case, men disse variablene har strengt tatt samme betydning uansett hvilken data vi ser på.}(are we supposed to give estimates in this case?: "Explain what they are in the diabetes classification problem") $\pi_k$ is the prior probability, given by $\pi_k = P(y=k)$. $\boldsymbol{\mu}_k$ is the mean vector of class $k$, when we have assumed that each $f_k(\mathbf{x})$ is normal. In this case, the class $1$, i.e. presence of diabetes, has the mean vector $\boldsymbol{\mu}_1$ and the class $0$, i.e. non-presence of diabetes, has the mean vector $\boldsymbol{\mu}_0$. $\boldsymbol{\Sigma}$ is the covariance matrix of each class, when assumed that the distribution of each class are normal. In LDA $\boldsymbol{\Sigma}_k = \boldsymbol{\Sigma} \quad \forall k$, where as in QDA each $\boldsymbol{\Sigma}_k$ are allowed to be different. $f_k(x)$ is the density function of $X$ for an observation that comes from class $k$. These are assumed to be normal in LDA and QDA. 
 
 (ii) The fits are seen below
 
@@ -315,18 +295,20 @@ The sensitivity is `r conf.table.glm[2,2]`/(`r conf.table.glm[2,2]` + `r conf.ta
 lda.diabetes <- lda(diabetes~., data = train)
 qda.diabetes <- qda(diabetes~., data = train)
 
-lda.diabetes.probs <- predict(lda.diabetes, newdata = test)$posterior[, 2] # Only need the prob om diabetes present!
+# Only need the prob if diabetes is present. 
+lda.diabetes.probs <- predict(lda.diabetes, newdata = test)$posterior[, 2]
 lda.preds <- ifelse(lda.diabetes.probs > 0.5, 1, 0)
 conf.table.lda.diabetes <- table(predicted = lda.preds, true = test$diabetes)
 conf.table.lda.diabetes
 
+# Only need the prob if diabetes is present. 
 qda.diabetes.probs <- predict(qda.diabetes, newdata = test)$posterior[, 2]
 qda.preds <- ifelse(qda.diabetes.probs > 0.5, 1, 0)
 conf.table.qda.diabetes <- table(predicted = qda.preds, true = test$diabetes)
 conf.table.qda.diabetes
 ```
 
-The sensitivity and specificity for LDA are thus `r conf.table.lda.diabetes[2,2]/sum(conf.table.lda.diabetes[, 2])` and `r conf.table.lda.diabetes[1,1]/sum(conf.table.lda.diabetes[, 1])`, respectively. The sensitivity and specificity of QDA are `r conf.table.qda.diabetes[2,2]/sum(conf.table.qda.diabetes[, 2])` and `r conf.table.qda.diabetes[1,1]/sum(conf.table.qda.diabetes[, 1])`, respectively.
+The sensitivity and specificity for LDA are thus `r conf.table.lda.diabetes[2,2]`/(`r conf.table.lda.diabetes[2,2]` + `r conf.table.lda.diabetes[1,2]`) $\approx$ `r round(conf.table.lda.diabetes[2,2]/sum(conf.table.lda.diabetes[, 2]), digits = 3)` and `r conf.table.lda.diabetes[1,1]`/(`r conf.table.lda.diabetes[1,1]` + `r conf.table.lda.diabetes[2,1]`) $\approx$ `r round(conf.table.lda.diabetes[1,1]/sum(conf.table.lda.diabetes[, 1]), digits = 3)`, respectively. The sensitivity and specificity of QDA are `r conf.table.qda.diabetes[2,2]`/(`r conf.table.qda.diabetes[2,2]` + `r conf.table.qda.diabetes[1,2]`) $\approx$ `r round(conf.table.qda.diabetes[2,2]/sum(conf.table.qda.diabetes[, 2]), digits = 3)` and `r conf.table.qda.diabetes[1,1]`/(`r conf.table.qda.diabetes[1,1]` + `r conf.table.qda.diabetes[2,1]`) $\approx$ `r round(conf.table.qda.diabetes[1,1]/sum(conf.table.qda.diabetes[, 1]), digits = 3)`, respectively.
 
 The difference between the methods is that the covariances are equal across all classes (in this case: both classes) in LDA, which gives linear discriminant functions and a linear decision boundary. On the contrary, the covariances in each class when using QDA are allowed to be different, which gives a quadratic discriminant function in each class and a quadratic decision boundary. 
 
@@ -334,7 +316,7 @@ The difference between the methods is that the covariances are equal across all 
 
 (i) In the KNN approach, a new observation is classified by using the $k$ nearest points (in Euclidean norm) to the observation in question, to estimate the probability of the new point belonging to each of the different classes in the response. The new point is classified to the class with the highest estimated probability. 
 
-(ii) I would probably use cross validation to test the predictive power for different $K$ (elaborate, saw it in the lecture on linear regression, but not quite sure how it is done in practice).
+(ii) I would probably use cross validation to test the predictive power for different $K$ (elaborate, saw it in the lecture on linear regression, but not quite sure how it is done in practice). \textcolor{red}{Spørre om dette kanskje?! Jeg er veldig usikker på dette. }
 
 (iii) The KNN classification fit can be seen below
 
@@ -359,7 +341,7 @@ knnroc = roc(response = test$diabetes, predictor = knn.probs, direction = "<")
 
 ggroc(list(LDA  = ldaroc, QDA = qdaroc, KNN = knnroc))
 ```
- The area under the ROC curves is `r auc(ldaroc)` for LDA, `r auc(qdaroc)` for QDA and `r auc(knnroc)` for KNN. Based on this, LDA preforms the best. KNN is not very interpretable? logistic regression is most intepretable, but that is not included???
+The area under the ROC curve is `r round(auc(ldaroc), digits = 3)` for LDA, `r round(auc(qdaroc), digits = 3)` for QDA and `r round(auc(knnroc), digits = 3)` for KNN. respectively. Based on this, LDA preforms the best. KNN is not very interpretable? logistic regression is most intepretable, but that is not included??? \textcolor{red}{Spørre om noe her? Jeg er enig i det du skriver, og det er litt merkelig at logistisk regresjon ikke er med.}
 
 # Problem 4
 
@@ -373,11 +355,28 @@ $$
 &= \mathbf{x}_i^T\left[(X^TX)^{-1} + \frac{(X^TX)^{-1}\mathbf{x}_i\mathbf{x}_i^T(X^TX)^{-1}}{1-\mathbf{x}_i^T(X^TX)^{-1}\mathbf{x}_i}\right](X^T\mathbf{y}-\mathbf{x}_i y_i), \quad \text{Sherman-Morrison} \\
 &= \mathbf{x}_i^T\left[(X^TX)^{-1} + \frac{(X^TX)^{-1}\mathbf{x}_i\mathbf{x}_i^T(X^TX)^{-1}}{1-h_i}\right](X^T\mathbf{y}-\mathbf{x}_i y_i) \\
 &= \mathbf{x}_i^T(X^TX)^{-1}X^T\mathbf{y} - \mathbf{x}_i^T(X^TX)^{-1}\mathbf{x}_i y_i+\mathbf{x}_i^T\frac{(X^TX)^{-1}\mathbf{x}_i\mathbf{x}_i^T(X^TX)^{-1}}{1-h_i}X^T\mathbf{y}-\mathbf{x}_i^T\frac{(X^TX)^{-1}\mathbf{x}_i\mathbf{x}_i^T(X^TX)^{-1}}{1-h_i}\mathbf{x}_i y_i \\
-&= \mathbf{x}_i^T\hat{\boldsymbol{\beta}} - \mathbf{x}_i^T\hat{\beta}_i + \frac{1}{1-h_i}h_i\mathbf{x}_i^T\hat{\boldsymbol{\beta}} - \frac{1}{1-h_i}h_i\mathbf{x}_i^T\hat{\beta}_i \quad \text{Usikker på notasjon i 2. og 4. ledd}\\
-&= 
+&= \mathbf{x}_i^T(X^TX)^{-1}X^T\mathbf{y} - \mathbf{x}_i^T\left[\frac{(X^TX)^{-1}\mathbf{x}_i}{1-h_i}\right]( y_i(1-h_i) - \mathbf{x}_i^T(X^TX)^{-1}X^T\mathbf{y} + h_iy_i) \\
+&= \mathbf{x}_i^T\hat{\boldsymbol{\beta}} - \mathbf{x}_i^T\left[\frac{(X^TX)^{-1}\mathbf{x}_i}{1-h_i}\right]( y_i - \mathbf{x}_i^T\hat{\boldsymbol{\beta}}). 
 \end{split}
 $$
 
+This gives 
+
+$$
+\begin{split}
+y_i - \hat y_{(-i)} &= y_i - \mathbf{x}_i^T\hat{\boldsymbol{\beta}} + \mathbf{x}_i^T\left[\frac{(X^TX)^{-1}\mathbf{x}_i}{1-h_i}\right]( y_i - \mathbf{x}_i^T\hat{\boldsymbol{\beta}}) \\
+&= (y_i - \mathbf{x}_i^T\hat{\boldsymbol{\beta}})\left(1+\frac{h_i}{1-h_i}\right) \\
+&= \frac{y_i - \hat y_i}{1-h_i}, 
+\end{split}
+$$
+
+which gives 
+
+$$
+CV = \frac{1}{N}\sum_{i = 1}^{N}(y_i - \hat y_{(-i)})^2 = \frac{1}{N}\sum_{i = 1}^{N}\left(\frac{y_i - \hat y_i}{1-h_i}\right)^2,
+$$
+
+which completes the proof. 
 
 ## b)
 
