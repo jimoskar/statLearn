@@ -93,7 +93,7 @@ sigma=values$sigma
 sigma
 ```
 
-```{r}
+```{r, fig.width=4, fig.height=2.5, out.width='70%'}
 bias = function(lambda,X,x0,beta)
 {
   p = ncol(X)
@@ -115,7 +115,7 @@ Comments: The graph shows that the bias of the ridge regression estimator increa
 
 ### e) 
 
-```{r}
+```{r, fig.width=4, fig.height=2.5, out.width='70%'}
 variance = function(lambda, X, x0, sigma)
 {
   p = ncol(X)
@@ -143,7 +143,7 @@ exp_mse = BIAS + VAR + sigma^2
 lambdas[which.min(exp_mse)]
 ```
 
-```{r}
+```{r, fig.width=4, fig.height=2.5, out.width='70%'}
 dfAll = data.frame(lambda = lambdas, bias = BIAS, var = VAR, exp_mse = exp_mse)
 ggplot(dfAll)+
   geom_line(aes(x = lambda, y = exp_mse), color = "blue")+
@@ -350,7 +350,7 @@ The sensitivity is `r conf.table.knn[2,2]`/(`r conf.table.knn[2,2]` + `r conf.ta
 
 ## d) ROC curves
 
-```{r}
+```{r, fig.width=4, fig.height=2.5, out.width='70%'}
 knn.probs <- ifelse(knn.diabetes == 0, 1 - attributes(knn.diabetes)$prob, attributes(knn.diabetes)$prob)
 glm.log.probs <- predict(logReg, newdata = test, type="response")
 
@@ -420,7 +420,7 @@ The $R^2$ is $\approx$ `r round(summary(lm.fit5)$r.squared, digits = 4)`.
 
 ## b)
 
-```{r}
+```{r, fig.width=4, fig.height=2.5, out.width='70%'}
 set.seed(4268)
 
 boot.fn <-  function(data, index) {
