@@ -340,7 +340,7 @@ The difference between the methods is that the covariances are equal across all 
 (iii) The KNN classification fit can be seen below
 
 ```{r}
-set.seed(123) # For reproducibility. USIKKER PÅ OM DENNE BURDE VÆRE MED!!?!??
+set.seed(123) # For reproducibility, e.g. in case of ties. 
 knn.diabetes <- knn(train = train, test = test, cl = train$diabetes, k=25, prob=T)
 conf.table.knn <- table(predicted = knn.diabetes, true = test$diabetes) 
 conf.table.knn
@@ -401,12 +401,7 @@ which completes the proof.
 
 ## b)
 
-(i) FALSE
-(ii) TRUE
-(iii) ?log-transform of the response??? (mener de logistic regression her?) (eller mener de transform av predictors?)
-Litt usikker på hva de mener. Formelen vil jo gjelde hvis for en $\tilde{y_i} = log(y_i)$, men 
-da gjelder den jo ikke for $y_i$.
-(iv) FALSE (since the model is only fitted and trained on one combination of the two folds in the validation set approach, and not "the other way around" also, which would be the case in 2-fold cross validation.)
+FALSE, TRUE, FALSE and FALSE. 
 
 # Problem 5
 
@@ -419,37 +414,14 @@ d.bodyfat <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download"
 
 ```{r}
 lm.fit5 <- lm(bodyfat ~ age + weight + bmi, data = d.bodyfat)
-summary(lm.fit5)
 ```
 
 The $R^2$ is $\approx$ `r round(summary(lm.fit5)$r.squared, digits = 4)`.
 
 ## b)
 
-DO THEY WANT US TO DO IT MANUALLY OR TO USE THE BOOTSTRAP-FUNCTIONS IN R?
-
 ```{r}
 set.seed(4268)
-
-# Not sure how to tell it to calculated the r.squared statistic.
-# library(boot)
-# boot(d.bodyfat, r.squared, R=1000)
-
-# Doing it manually instead
-# B <- 1000
-# n <- 100 #e.g
-# r.squared <- rep(NA, B)
-# for (b in 1:B){
-#   dat <- d.bodyfat[sample(x = nrow(d.bodyfat), size = n, replace = T), ]
-#   fit <- lm(bodyfat ~ age + weight + bmi, data = dat)
-#   r.squared[b] <- summary(fit)$r.squared
-# }
-# 
-# ggplot(data=data.frame(x=r.squared),aes(x=x))+
-#   geom_density()
-
-## Why do you make n samller than the size of the dataset?
-# HEre is my version, which is a blueprint of ex.5
 
 boot.fn <-  function(data, index) {
   return(summary(lm(bodyfat ~ age + weight + bmi, data = data, subset = index))$r.squared)
@@ -470,4 +442,6 @@ ggplot(df) + geom_histogram(aes(x = r.squared, y = ..density..), fill = "grey80"
 sd(r.squared)
 quantile(r.squared, c(0.025, 0.975))
 ```
+
+The standard deviation is `r round(sd(r.squared)/summary(lm.fit5)$r.squared*100, digits = 3)` % of $R^2$. Also, $R^2$ is contained in the confidence interval. 
 
