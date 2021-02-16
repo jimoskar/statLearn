@@ -134,7 +134,7 @@ ggplot(dfVar, aes(x = lambdas, y = var))+
   ylab("variance")
 ```
 
-Comments: The variance begins at $\approx$ `r round(variance(0, X, x0, sigma), digits = 3)` and decreases with $\lambda$. Hence, it is apparent that the ridge regression estimator is advantageous, when looking at solely variance, compared to the OLS estimator, since the variance is decreasing with $\lambda$. Despite this, when adding the bias and the variance, the OLS estimator may still have a lower expected MSE than the ridge regression estimator. Finally, note that the changes in the variance are larger for $\lambda \in [0,2]$ than the changes in the bias (as seen in the plot in task d)), which indicates that the variance dominates the change in expected MSE for the ridge regression estimation. 
+Comments: The variance begins at $\approx$ `r round(variance(0, X, x0, sigma), digits = 3)` and decreases with $\lambda$. Hence, it is apparent that the ridge regression estimator is advantageous, when looking at solely variance, compared to the OLS estimator, since the variance is decreasing with $\lambda$. Despite this, when adding the bias and the variance, the OLS estimator may still have a lower expected MSE than the ridge regression estimator. Finally, note that the changes in the variance are larger for $\lambda \in [0,2]$ than the changes in the bias (compared to the plot in task d)), which indicates that the variance dominates the change in expected MSE for the ridge regression estimation. 
 
 ## f)
 
@@ -220,22 +220,22 @@ log.fit1 <- glm(deceased ~. + sex:age, data = d.corona, family="binomial")
 summary(log.fit1)
 ```
 
-(i) As the summary shows, the interaction effect between `sexmale` and `age` is not significant, since the p-value is large. Hence, although the coefficient is slightly positive, we cannot conclude that age is a greater risk factor for men.
+(i) As seen above, we have fitted the full logistic regression with an interaction term between `age` and `sex`. As the summary shows, the interaction effect between `sexmale` and `age` is not significant, since the p-value is large. Hence, although the coefficient is slightly positive, we cannot conclude that age is a greater risk factor for men.
 
 ```{r}
 log.fit2 <- glm(deceased ~ . + age:country, data = d.corona, family="binomial")
 summary(log.fit2)
 ```
 
-(ii) As seen above, we have fitted the full logistic regression with an interaction term between `age` and `country`. Since `France` is the reference level, and the interaction-term coefficient `age:countryindonesia` has the value `r round(coefficients(log.fit2)[7], digits = 3)` with a relatively low p-value, we can infer that age is a greater risk factor for the French population than for the Indonesian population. 
+(ii) As seen above, we have fitted the full logistic regression with an interaction term between `age` and `country`. Since `France` is the reference level, and the interaction-term coefficient `age:countryindonesia` has the value `r round(coefficients(log.fit2)[7], digits = 3)` with a somewhat low p-value, we can infer that age is a greater risk factor for the French population than for the Indonesian population. 
 
 ## d)
 
-TRUE, 
+TRUE, TRUE, TRUE and FALSE. 
 
 EVENTUALLY WE WILL ONLY LEAVE THE LINE ABOVE, BUT THOUGHTS ARE WRITTEN BELOW FIRST. 
 
-\textcolor{blue}{Jeg tror vi må lage modeller for dette for å klare å besvare de siste 3 spmene!}
+\textcolor{blue}{Jeg tror vi må lage modeller for dette for å klare å besvare de siste 3 spmene!} \textcolor{green}{Modeller er lagt til nedenfor. Disse SKAL fjernes før innlevering!}
 
 (i) `r length(d.corona$deceased[d.corona$deceased == T])/(nrow(d.corona)) * 100` % is the amount of deaths. Hence: TRUE
 
@@ -243,9 +243,28 @@ EVENTUALLY WE WILL ONLY LEAVE THE LINE ABOVE, BUT THOUGHTS ARE WRITTEN BELOW FIR
 \textcolor{green}{In this case, we are probably more interested in the probabilites than the classification, so LDA is not so relevant?}
 \textcolor{red}{spørre om dette på mandan!} \textcolor{blue}{tja, men LDA kan fortsatt brukes til å finne posterior-sannsynlighetene også}
 
-(iii) Can we answer this from theory?
 
-(iv) The same concern goes for this statement as for the ones above. 
+```{r}
+lda.fit2 <- lda(deceased~., data = d.corona)
+prob <- predict(lda.fit2)$posterior
+cl <- predict(lda.fit2)$class
+table(predicted = cl, true = d.corona$deceased)
+```
+
+\textcolor{blue}{From the model above it can be seen that the LDA-fit classifies all non-deceased correctly, but it classifies none of the true deceased correctly. This means that the specificity is 1 and the sensitivity is 0. Hence, LDA is not very useful for this dataset, since it always predicts non-deceased (and hence has the null rate for misclassification as discussed above). } Hence: TRUE
+
+
+(iii) TRUE, as seen from the model above.
+
+(iv) As seen from the model below, the sensitivity of QDA is higher, since it classifies some true deceased correctly, opposite to LDA, which classifies none of the true deceased correctly. Hence: FALSE
+
+```{r}
+qda.fit2 <- qda(deceased~., data = d.corona)
+prob <- predict(qda.fit2)$posterior
+cl2 <- predict(qda.fit2)$class
+table(predicted = cl2, true = d.corona$deceased)
+```
+
 
 # Problem 3
 
