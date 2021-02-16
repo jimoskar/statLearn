@@ -306,7 +306,7 @@ The sensitivity is `r conf.table.glm[2,2]`/(`r conf.table.glm[2,2]` + `r conf.ta
 
 ## b)
 
-(i) \textcolor{red}{Skjønner ikke helt hvordan/hva de ønsker at vi skal forklare her. Det står jo explain in this case, men disse variablene har strengt tatt samme betydning uansett hvilken data vi ser på.}(are we supposed to give estimates in this case?: "Explain what they are in the diabetes classification problem") $\pi_k$ is the prior probability, given by $\pi_k = P(y=k)$. $\boldsymbol{\mu}_k$ is the mean vector of class $k$, when we have assumed that each $f_k(\mathbf{x})$ is normal. In this case, the class $1$, i.e. presence of diabetes, has the mean vector $\boldsymbol{\mu}_1$ and the class $0$, i.e. non-presence of diabetes, has the mean vector $\boldsymbol{\mu}_0$. $\boldsymbol{\Sigma}$ is the covariance matrix of each class, when assumed that the distribution of each class are normal. In LDA $\boldsymbol{\Sigma}_k = \boldsymbol{\Sigma} \quad \forall k$, whereas in QDA each $\boldsymbol{\Sigma}_k$ are allowed to be different. $f_k(x)$ is the density function of $X$ for an observation that comes from class $k$. These are assumed to be normal in LDA and QDA. 
+(i) $\pi_k$ is the prior probability for an observation, given by $\pi_k = P(y=k)$. $f_k(\mathbf{x})$ is the gaussian pdf for class $k$, with mean $\boldsymbol{\mu}_k$ and covariance matrix $\boldsymbol{\Sigma}_k$. In LDA $\boldsymbol{\Sigma}_k = \boldsymbol{\Sigma} \quad \forall k$, whereas in QDA each $\boldsymbol{\Sigma}_k$ are allowed to be different. In this case, the class $1$, i.e. presence of diabetes, has the mean vector $\boldsymbol{\mu}_1$ and the class $0$, i.e. non-presence of diabetes, has the mean vector $\boldsymbol{\mu}_0$. $\boldsymbol{\Sigma}$ is the covariance matrix of each class, since we are preforming LDA. $f_1(\mathbf{x})$ is the the gaussian pdf for class 1, with mean $\boldsymbol{\mu}_1$ and covariance matrix $\boldsymbol{\Sigma}$, while $f_0(\mathbf{x})$ is the the gaussian pdf for class 0, with mean $\boldsymbol{\mu}_0$ and covariance matrix $\boldsymbol{\Sigma}$. 
 
 (ii) The fits are seen below
 
@@ -335,7 +335,7 @@ The difference between the methods is that the covariances are equal across all 
 
 (i) In the KNN approach, a new observation is classified by using the $k$ nearest points (in Euclidean norm) to the observation in question, to estimate the probability of the new point belonging to each of the different classes in the response. The new point is classified to the class with the highest estimated probability. 
 
-(ii) We would choose the tuning parameter $k$ based on a $K$-fold cross validation, with $K = 5$ or $K = 10$. \textcolor{green}{virket som om dette var nok!} (elaborate, saw it in the lecture on linear regression, but not quite sure how it is done in practice).
+(ii) We would choose the tuning parameter $k$ based on a $\kappa$-fold cross validation, with $\kappa = 5$ or $\kappa = 10$. \textcolor{green}{virket som om dette var nok!} (elaborate, saw it in the lecture on linear regression, but not quite sure how it is done in practice).
 
 (iii) The KNN classification fit can be seen below
 
