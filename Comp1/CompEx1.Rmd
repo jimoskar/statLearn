@@ -23,7 +23,7 @@ knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.wh
 
 ## a)
 
-By extending the given univariate regression problem to a multivariate regression problem that allows for several observations, we have that ${\bf Y} = {\bf X} {\boldsymbol\beta} + \varepsilon I$, where $I$ is the identity matrix of the correct dimensions. Hence, we have $\mathsf{E}({\bf Y}) =  \mathsf{E}({\bf X}\boldsymbol{\beta} + \varepsilon I) = \mathbf{X}\boldsymbol{\beta}$ and $\mathsf{Cov}({\bf Y}) = \sigma I$, without assuming anything else than that each of the $\varepsilon$'s are independent of each other. Then
+By extending the given univariate regression problem to a multivariate regression problem that allows for several observations, we have that ${\bf Y} = {\bf X} {\boldsymbol\beta} + \boldsymbol{\varepsilon}$. Hence, we have $\mathsf{E}({\bf Y}) =  \mathsf{E}({\bf X}\boldsymbol{\beta} + \boldsymbol{\varepsilon}) = \mathbf{X}\boldsymbol{\beta}$ and $\mathsf{Cov}({\bf Y}) = \sigma^2 I$, without assuming anything else than that each of the $\varepsilon$'s are independent of each other. Then
 
 <!-- Remove this for now, because it is not necessary to assume this at this stage -->
 <!-- We assume that ${\bf Y}$ is a multivariate normal, which gives the distribution  ${\bf Y} \sim N_{n}({\bf X} {\boldsymbol\beta},\sigma^2 {\bf I})$. -->
@@ -70,7 +70,7 @@ The expected MSE at $\mathbf{x}_0$ is
 
 $$
 \begin{split}
-\mathsf{E}[(y_0 - \widetilde{f}(\mathbf{x}_0))^2] &= [\mathsf{E}(\widetilde{f}(\mathbf{x}_0)-f(\mathbf{x}_0)]^2+\mathsf{Var}(\widetilde{f}(\mathbf{x}_0) ) + \mathsf{Var}(\varepsilon) \\
+\mathsf{E}[(y_0 - \widetilde{f}(\mathbf{x}_0))^2] &= [\mathsf{E}(\widetilde{f}(\mathbf{x}_0)-f(\mathbf{x}_0))]^2+\mathsf{Var}(\widetilde{f}(\mathbf{x}_0) ) + \mathsf{Var}(\varepsilon) \\
 &= [\mathsf{E}(\widetilde{f}(\mathbf{x}_0)) - \mathsf{E}(f(\mathbf{x}_0))]^2 + \mathsf{Cov}(\widetilde{f}(\mathbf{x}_0)) + \sigma^2 \\
 &= [\mathbf{x}_0^T (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T\mathbf{X}\boldsymbol{\beta} - \mathbf{x}_0^T\boldsymbol{\beta}]^2 + \sigma^2\mathbf{x}_0^T((\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}\mathbf{X}^T{\bf X}(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1}) \mathbf{x}_0 + \sigma^2. \\
 \end{split}
