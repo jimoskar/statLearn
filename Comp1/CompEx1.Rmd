@@ -25,8 +25,6 @@ knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.wh
 
 By extending the given univariate regression problem to a multivariate regression problem that allows for several observations, we have that ${\bf Y} = {\bf X} {\boldsymbol\beta} + \boldsymbol{\varepsilon}$. Hence, we have $\mathsf{E}({\bf Y}) =  \mathsf{E}({\bf X}\boldsymbol{\beta} + \boldsymbol{\varepsilon}) = \mathbf{X}\boldsymbol{\beta}$ and $\mathsf{Cov}({\bf Y}) = \sigma^2 I$, assuming that $\boldsymbol{\varepsilon} \sim N(0, \sigma^2I)$. Then
 
-<!-- Remove this for now, because it is not necessary to assume this at this stage -->
-<!-- We assume that ${\bf Y}$ is a multivariate normal, which gives the distribution  ${\bf Y} \sim N_{n}({\bf X} {\boldsymbol\beta},\sigma^2 {\bf I})$. -->
 
 $$
 \begin{split}
@@ -43,7 +41,8 @@ $$
 \end{split}
 $$
 
-where we have used that $(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1} = (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-T}$ in the last equality.
+where we have used that $(\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-1} = (\mathbf{X}^T\mathbf{X}+\lambda {\bf I})^{-T}$ in the last equality, because $\mathbf{X}^T\mathbf{X}+\lambda {\bf I}$ is symmetric.
+
 In both these equations it is apparent that the moments are equal to those of the OLS estimator when $\lambda = 0$. 
 
 ## b)
@@ -81,7 +80,7 @@ Since there is no obvious way to simplify this, it will be left like this. This 
 ## d)
 
 ```{r, echo=TRUE, eval=TRUE}
-id <- "1X_8OKcoYbng1XvYFDirxjEWr7LtpNr1m" # google file ID
+id <- "1X_8OKcoYbng1XvYFDirxjEWr7LtpNr1m" # Google file ID.
 values <- dget(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
 X = values$X
 dim(X)
@@ -111,7 +110,7 @@ ggplot(dfBias, aes(x = lambdas, y = bias)) +
   ylab(expression(bias^2))
 ```
  
-Comments: The graph shows that the bias of the ridge regression estimator increases as $\lambda$ grows. OLS is unbiased, so, as expected, the bias is zero when $\lambda = 0$. Note that $\lambda \approx 0.5$ appears to be a sweet spot for this estimator when comparing all $\lambda > 0$, since the bias is low there. Perhaps this can be useful later. 
+The graph shows that the bias of the ridge regression estimator increases as $\lambda$ grows. OLS is unbiased, so, as expected, the bias is zero when $\lambda = 0$. Note that $\lambda \approx 0.5$ appears to be a sweet spot for this estimator when comparing all $\lambda > 0$, since the bias is low there. Perhaps this can be useful later. 
 
 ### e) 
 
@@ -134,7 +133,7 @@ ggplot(dfVar, aes(x = lambdas, y = var))+
   ylab("variance")
 ```
 
-Comments: The variance begins at $\approx$ `r round(variance(0, X, x0, sigma), digits = 3)` and decreases with $\lambda$. Hence, it is apparent that the ridge regression estimator is advantageous, when looking at solely variance, compared to the OLS estimator, since the variance is decreasing with $\lambda$. Despite this, when adding the bias and the variance, the OLS estimator may still have a lower expected MSE than the ridge regression estimator. Finally, note that the changes in the variance are larger for $\lambda \in [0,2]$ than the changes in the bias (compared to the plot in task d)), which indicates that the variance dominates the change in expected MSE for the ridge regression estimation. 
+The variance begins at $\approx$ `r round(variance(0, X, x0, sigma), digits = 3)` and decreases with $\lambda$. Hence, it is apparent that the ridge regression estimator is advantageous, when looking at solely variance, compared to the OLS estimator, since the variance is decreasing with $\lambda$. Despite this, when adding the bias and the variance, the OLS estimator may still have a lower expected MSE than the ridge regression estimator. Finally, note that the changes in the variance are larger for $\lambda \in [0,2]$ than the changes in the bias (compared to the plot in task d)), which indicates that the variance dominates the change in expected MSE for the ridge regression estimation. 
 
 ## f)
 
@@ -154,13 +153,13 @@ ggplot(dfAll)+
     ylab(expression(E(MSE)))
 ```
 
-Comments: Now we are able to conclude that the ridge regression estimator has a lower expected MSE compared to the OLS estimator, as gathered from the blue line in the plot. The optimal value of $\lambda$, which minimizes MSE, is $\approx$ `r round(lambdas[which.min(exp_mse)], digits = 3)`. Hence, despite the fact that the bias is higher for the ridge regression estimator, the total expected MSE is lower, since the decrease in variance counters the increase in bias. 
+Now we are able to conclude that the ridge regression estimator has a lower expected MSE compared to the OLS estimator, as gathered from the blue line in the plot. The optimal value of $\lambda$, which minimizes MSE, is $\approx$ `r round(lambdas[which.min(exp_mse)], digits = 3)`. Hence, despite the fact that the bias is higher for the ridge regression estimator, the total expected MSE is lower, since the decrease in variance counters the increase in bias. 
 
 # Problem 2
 
 ```{r}
-# read file
-id <- "1yYlEl5gYY3BEtJ4d7KWaFGIOEweJIn__" # google file ID
+# Read file.
+id <- "1yYlEl5gYY3BEtJ4d7KWaFGIOEweJIn__" # Google file ID.
 d.corona <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id),header=T)
 ```
 
@@ -169,8 +168,6 @@ d.corona <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",
 The tables are reported below. 
 
 ```{r}
-# knitr::kable(table(d.corona$deceased)) # Hvorfor ta bort de som fungerer?
-
 table1 <- summarise(d.corona, deceased = sum(d.corona$deceased),
                    non_deceased = nrow(d.corona) - deceased)
 knitr::kable(table1)
@@ -199,16 +196,18 @@ coef(glm.fit)[3]
 (i) The probability to die of covid for a male age 75 living in Korea can be predicted from the model. The prediction is found by
 
 ```{r}
-x0 = data.frame(sex = "male", age = 75, country = "Korea")
-predict(glm.fit, newdata = x0, type = "response")
+x0 <-  data.frame(sex = "male", age = 75, country = "Korea")
+pred <- predict(glm.fit, newdata = x0, type = "response")
+pred
 ```
 
+Hence, the probability to die of covid for a male age 75 living in Korea is $\approx$ `r round(pred, digits = 3)`.
 
 (ii) The p-value associated with `sexmale` is relatively small, and since the coefficient is positive, this constitutes some evidence that males have a higher probability of dying. 
 
 (iii) Yes. Both the `countryjapan` and `countryKorea` coefficients have relatively low p-values and are negative, which could be used as evidence that the probability of decease is lower in Japan and Korea compared to the reference category, France. `countryIndonesia` is not significant (large p-value), so there is no evidence that the probability of decease is any higher in Indonesia than in France.
 
-(iv) Since we have used logistic regression, the odds of decease, given an observation $\boldsymbol{x}$ is 
+(iv) Since we have used logistic regression, the odds of decease, given an observation $\boldsymbol{x}$, is 
 
 $$ \frac{p(\boldsymbol{x})}{1- p(\boldsymbol{x})} = e^{\boldsymbol{x}^T\hat{\boldsymbol{\beta}}}. $$
 Thus, the odds of decease increases by a factor of $e^{10 \hat{\beta_{\tt{age}}}} \approx$ `r round(exp(10*coef(glm.fit)[3]), digits = 3)` when `age` increases by 10 and all other covariates are held constant.
@@ -227,44 +226,11 @@ log.fit2 <- glm(deceased ~ . + age:country, data = d.corona, family="binomial")
 summary(log.fit2)
 ```
 
-(ii) As seen above, we have fitted the full logistic regression with an interaction term between `age` and `country`. Since `France` is the reference level, and the interaction-term coefficient `age:countryindonesia` has the value `r round(coefficients(log.fit2)[7], digits = 3)` with a somewhat low p-value, we can infer that age is a greater risk factor for the French population than for the Indonesian population. 
+(ii) As seen above, we have fitted the full logistic regression with an interaction term between `age` and `country`. Since `France` is the reference level, and the interaction-term coefficient `age:countryindonesia` has the value $\approx$ `r round(coefficients(log.fit2)[7], digits = 3)` with a somewhat low p-value, we can infer that age is a greater risk factor for the French population than for the Indonesian population. 
 
 ## d)
 
 TRUE, TRUE, TRUE, FALSE. 
-
-EVENTUALLY WE WILL ONLY LEAVE THE LINE ABOVE, BUT THOUGHTS ARE WRITTEN BELOW FIRST. 
-
-\textcolor{blue}{Jeg tror vi må lage modeller for dette for å klare å besvare de siste 3 spmene!} \textcolor{green}{Modeller er lagt til nedenfor. Disse SKAL fjernes før innlevering!}
-
-(i) `r length(d.corona$deceased[d.corona$deceased == T])/(nrow(d.corona)) * 100` % is the amount of deaths. Hence: TRUE
-
-(ii) Following the argumentation in the above point, LDA is useless if the misclassification rate is higher than approx 5 %. Need to make a LDA in code to test?
-\textcolor{green}{In this case, we are probably more interested in the probabilites than the classification, so LDA is not so relevant?}
-\textcolor{red}{spørre om dette på mandan!} \textcolor{blue}{tja, men LDA kan fortsatt brukes til å finne posterior-sannsynlighetene også}
-
-
-```{r}
-lda.fit2 <- lda(deceased~., data = d.corona)
-prob <- predict(lda.fit2)$posterior
-cl <- predict(lda.fit2)$class
-table(predicted = cl, true = d.corona$deceased)
-```
-
-\textcolor{blue}{From the model above it can be seen that the LDA-fit classifies all non-deceased correctly, but it classifies none of the true deceased correctly. This means that the specificity is 1 and the sensitivity is 0. Hence, LDA is not very useful for this dataset, since it always predicts non-deceased (and hence has the null rate for misclassification as discussed above). } Hence: TRUE
-
-
-(iii) TRUE, as seen from the model above.
-
-(iv) As seen from the model below, the sensitivity of QDA is higher, since it classifies some true deceased correctly, opposite to LDA, which classifies none of the true deceased correctly. Hence: FALSE
-
-```{r}
-qda.fit2 <- qda(deceased~., data = d.corona)
-prob <- predict(qda.fit2)$posterior
-cl2 <- predict(qda.fit2)$class
-table(predicted = cl2, true = d.corona$deceased)
-```
-
 
 # Problem 3
 
@@ -306,7 +272,7 @@ The sensitivity is `r conf.table.glm[2,2]`/(`r conf.table.glm[2,2]` + `r conf.ta
 
 ## b)
 
-(i) $\pi_k$ is the prior probability for an observation, given by $\pi_k = P(y=k)$. $f_k(\mathbf{x})$ is the gaussian pdf for class $k$, with mean $\boldsymbol{\mu}_k$ and covariance matrix $\boldsymbol{\Sigma}_k$. In LDA $\boldsymbol{\Sigma}_k = \boldsymbol{\Sigma} \quad \forall k$, whereas in QDA each $\boldsymbol{\Sigma}_k$ are allowed to be different. In this case, the class $1$, i.e. presence of diabetes, has the mean vector $\boldsymbol{\mu}_1$ and the class $0$, i.e. non-presence of diabetes, has the mean vector $\boldsymbol{\mu}_0$. $\boldsymbol{\Sigma}$ is the covariance matrix of each class, since we are preforming LDA. $f_1(\mathbf{x})$ is the the gaussian pdf for class 1, with mean $\boldsymbol{\mu}_1$ and covariance matrix $\boldsymbol{\Sigma}$, while $f_0(\mathbf{x})$ is the the gaussian pdf for class 0, with mean $\boldsymbol{\mu}_0$ and covariance matrix $\boldsymbol{\Sigma}$. 
+(i) $\pi_k$ is the prior probability for an observation, given by $\pi_k = P(y=k)$. $f_k(\mathbf{x})$ is the gaussian pdf for class $k$, with mean $\boldsymbol{\mu}_k$ and covariance matrix $\boldsymbol{\Sigma}_k$. In LDA $\boldsymbol{\Sigma}_k = \boldsymbol{\Sigma} \quad \forall k$, whereas in QDA each $\boldsymbol{\Sigma}_k$ are allowed to be different. In this case, the class $1$, i.e. presence of diabetes, has the mean vector $\boldsymbol{\mu}_1$ and the class $0$, i.e. non-presence of diabetes, has the mean vector $\boldsymbol{\mu}_0$. $\boldsymbol{\Sigma}$ is the covariance matrix of each class, since we are performing LDA. Hence, $f_1(\mathbf{x})$ is the gaussian pdf for class 1, with mean $\boldsymbol{\mu}_1$ and covariance matrix $\boldsymbol{\Sigma}$, while $f_0(\mathbf{x})$ is the gaussian pdf for class 0, with mean $\boldsymbol{\mu}_0$ and covariance matrix $\boldsymbol{\Sigma}$. 
 
 (ii) The fits are seen below
 
@@ -333,10 +299,8 @@ The difference between the methods is that the covariances are equal across all 
 
 ## c)
 
-(i) In the KNN approach, a new observation is classified by using the $k$ nearest points (in Euclidean norm) to the observation in question, to estimate the probability of the new point belonging to each of the different classes in the response. The new point is classified to the class with the highest estimated probability. 
-
-(ii) We would choose the tuning parameter $k$ based on a $\kappa$-fold cross validation, with $\kappa = 5$ or $\kappa = 10$. \textcolor{green}{virket som om dette var nok!} (elaborate, saw it in the lecture on linear regression, but not quite sure how it is done in practice).
-
+(i) In the KNN approach, a new observation is classified by using the $k$ nearest points (in Euclidean norm) to the observation in question, to estimate the probability of the new observation belonging to each of the different classes in the response. The new observation is classified to the class with the highest estimated probability. 
+(ii) We would choose the tuning parameter $k$ based on a $\kappa$-fold cross validation, with $\kappa = 5$ or $\kappa = 10$.
 (iii) The KNN classification fit can be seen below
 
 ```{r}
@@ -362,7 +326,7 @@ glm.logroc = roc(response = test$diabetes, predictor = glm.log.probs, direction 
 
 ggroc(list(LDA  = ldaroc, QDA = qdaroc, KNN = knnroc, LOG = glm.logroc))
 ```
-The area under the ROC curve is `r round(auc(ldaroc), digits = 3)` for LDA, `r round(auc(qdaroc), digits = 3)` for QDA, `r round(auc(knnroc), digits = 3)` for KNN and `r round(auc(glm.logroc), digits = 3)` for logistic regression (LOG). respectively. Based on this, LDA preforms the best. If the task is to create an interpretable model, we would choose the logistic regression, since the AUC is almost as high as for LDA, but the model is more interpretable. 
+The area under the ROC curve is `r round(auc(ldaroc), digits = 3)` for LDA, `r round(auc(qdaroc), digits = 3)` for QDA, `r round(auc(knnroc), digits = 3)` for KNN and `r round(auc(glm.logroc), digits = 3)` for logistic regression (LOG), respectively. Based on this, LDA performs the best. If the task is to create an interpretable model, we would choose the logistic regression, since the AUC is almost as high as for LDA, but the model is more interpretable. 
 
 # Problem 4
 
@@ -406,7 +370,7 @@ FALSE, TRUE, FALSE, FALSE.
 # Problem 5
 
 ```{r}
-id <- "19auu8YlUJJJUsZY8JZfsCTWzDm6doE7C" # google file ID
+id <- "19auu8YlUJJJUsZY8JZfsCTWzDm6doE7C" # Google file ID.
 d.bodyfat <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id),header=T)
 ```
 
@@ -436,11 +400,11 @@ for (b in 1:B){
 df = data.frame(r.squared = r.squared, norm_den = dnorm(r.squared, mean(r.squared),
                                                         sd(r.squared)))
 ggplot(df) + geom_histogram(aes(x = r.squared, y = ..density..), fill = "grey80",color = "black") +
-   geom_line(aes(x = r.squared, y = norm_den), color = "red") +
    theme_minimal()
 
 sd(r.squared)
 quantile(r.squared, c(0.025, 0.975))
 ```
 
-The standard deviation is `r round(sd(r.squared)/summary(lm.fit5)$r.squared*100, digits = 3)` % of $R^2$. Also, $R^2$ is contained in the confidence interval. 
+The standard error is `r round(sd(r.squared)/summary(lm.fit5)$r.squared*100, digits = 3)` % of $R^2$. Also, $R^2$ is contained in the confidence interval. This suggests that the bootstrap can be used to estimate the uncertainty of $R^2$. \textcolor{red}{Hva mer skal vi skrive i tolkningen? Også: Ikke 12 sider!}
+
