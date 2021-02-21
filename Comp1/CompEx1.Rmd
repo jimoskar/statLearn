@@ -23,7 +23,7 @@ knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.wh
 
 ## a)
 
-By extending the given univariate regression problem to a multivariate regression problem that allows for several observations, we have that ${\bf Y} = {\bf X} {\boldsymbol\beta} + \boldsymbol{\varepsilon}$. Hence, we have $\mathsf{E}({\bf Y}) =  \mathsf{E}({\bf X}\boldsymbol{\beta} + \boldsymbol{\varepsilon}) = \mathbf{X}\boldsymbol{\beta}$ and $\mathsf{Cov}({\bf Y}) = \sigma^2 I$, without assuming anything else than that each of the $\varepsilon$'s are independent of each other. Then
+By extending the given univariate regression problem to a multivariate regression problem that allows for several observations, we have that ${\bf Y} = {\bf X} {\boldsymbol\beta} + \boldsymbol{\varepsilon}$. Hence, we have $\mathsf{E}({\bf Y}) =  \mathsf{E}({\bf X}\boldsymbol{\beta} + \boldsymbol{\varepsilon}) = \mathbf{X}\boldsymbol{\beta}$ and $\mathsf{Cov}({\bf Y}) = \sigma^2 I$, assuming that $\boldsymbol{\varepsilon} \sim N(0, \sigma^2I)$. Then
 
 <!-- Remove this for now, because it is not necessary to assume this at this stage -->
 <!-- We assume that ${\bf Y}$ is a multivariate normal, which gives the distribution  ${\bf Y} \sim N_{n}({\bf X} {\boldsymbol\beta},\sigma^2 {\bf I})$. -->
@@ -231,7 +231,7 @@ summary(log.fit2)
 
 ## d)
 
-TRUE, TRUE, TRUE and FALSE. 
+TRUE, TRUE, TRUE, FALSE. 
 
 EVENTUALLY WE WILL ONLY LEAVE THE LINE ABOVE, BUT THOUGHTS ARE WRITTEN BELOW FIRST. 
 
@@ -401,7 +401,7 @@ which completes the proof.
 
 ## b)
 
-FALSE, TRUE, FALSE and FALSE. 
+FALSE, TRUE, FALSE, FALSE. 
 
 # Problem 5
 
@@ -444,4 +444,3 @@ quantile(r.squared, c(0.025, 0.975))
 ```
 
 The standard deviation is `r round(sd(r.squared)/summary(lm.fit5)$r.squared*100, digits = 3)` % of $R^2$. Also, $R^2$ is contained in the confidence interval. 
-
