@@ -186,11 +186,11 @@ knitr::kable(table4)
 ```
 
 ## b) 
+Since we want to understand the probability of decease of covid-19, we fit a logistic regression model as opposed a linear regression model.
 
 ```{r}
 glm.fit <- glm(deceased ~ ., family = "binomial", data = d.corona)
 summary(glm.fit)
-coef(glm.fit)[3]
 ```
 
 (i) The probability to die of covid for a male age 75 living in Korea can be predicted from the model. The prediction is found by
@@ -207,7 +207,7 @@ Hence, the probability to die of covid for a male age 75 living in Korea is $\ap
 
 (iii) Yes. Both the `countryjapan` and `countryKorea` coefficients have relatively low p-values and are negative, which could be used as evidence that the probability of decease is lower in Japan and Korea compared to the reference category, France. `countryIndonesia` is not significant (large p-value), so there is no evidence that the probability of decease is any higher in Indonesia than in France.
 
-(iv) Since we have used logistic regression, the odds of decease, given an observation $\boldsymbol{x}$, is 
+(iv) Since we have used logistic regression, the predicted odds of decease, given an observation $\boldsymbol{x}$, is 
 
 $$ \frac{p(\boldsymbol{x})}{1- p(\boldsymbol{x})} = e^{\boldsymbol{x}^T\hat{\boldsymbol{\beta}}}. $$
 Thus, the odds of decease increases by a factor of $e^{10 \hat{\beta_{\tt{age}}}} \approx$ `r round(exp(10*coef(glm.fit)[3]), digits = 3)` when `age` increases by 10 and all other covariates are held constant.
