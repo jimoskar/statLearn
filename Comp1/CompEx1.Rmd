@@ -294,11 +294,11 @@ conf.table.qda.diabetes
 
 The sensitivity and specificity for LDA are thus `r conf.table.lda.diabetes[2,2]`/(`r conf.table.lda.diabetes[2,2]` + `r conf.table.lda.diabetes[1,2]`) $\approx$ `r round(conf.table.lda.diabetes[2,2]/sum(conf.table.lda.diabetes[, 2]), digits = 3)` and `r conf.table.lda.diabetes[1,1]`/(`r conf.table.lda.diabetes[1,1]` + `r conf.table.lda.diabetes[2,1]`) $\approx$ `r round(conf.table.lda.diabetes[1,1]/sum(conf.table.lda.diabetes[, 1]), digits = 3)`, respectively. The sensitivity and specificity of QDA are `r conf.table.qda.diabetes[2,2]`/(`r conf.table.qda.diabetes[2,2]` + `r conf.table.qda.diabetes[1,2]`) $\approx$ `r round(conf.table.qda.diabetes[2,2]/sum(conf.table.qda.diabetes[, 2]), digits = 3)` and `r conf.table.qda.diabetes[1,1]`/(`r conf.table.qda.diabetes[1,1]` + `r conf.table.qda.diabetes[2,1]`) $\approx$ `r round(conf.table.qda.diabetes[1,1]/sum(conf.table.qda.diabetes[, 1]), digits = 3)`, respectively.
 
-The difference between the methods is that the covariance matrix is assumed to be equal across all classes (in this case: both classes) in LDA, which gives linear discriminant functions and a linear decision boundary, while in QDA the covaraince matrix is assumed to be class-specific, which gives a quadratic discriminant function for each class and a quadratic decision boundary. 
+The difference between the methods is that the covariance matrix is assumed to be equal across all classes (in this case: both classes) in LDA, which gives linear discriminant functions and a linear decision boundary, while in QDA the covariance matrix is assumed to be class-specific, which gives a quadratic discriminant function for each class and a quadratic decision boundary. 
 
 ## c)
 
-(i) In the KNN approach, a new observation is classified by using the $k$ nearest points (in Euclidean distance) to the observation in question. The new observation is classified to the most occuring class among the $k$ nearest points.
+(i) In the KNN approach, a new observation is classified by using the $k$ nearest points (in Euclidean distance) to the observation in question. The new observation is classified to the most occurring class among the $k$ nearest points, i.e. to the class with the highest estimated probability. 
 (ii) We would choose the tuning parameter $k$ based on a $\kappa$-fold cross validation, with $\kappa = 5$ or $\kappa = 10$.
 (iii) The KNN classification fit can be seen below
 
@@ -325,7 +325,7 @@ glm.logroc = roc(response = test$diabetes, predictor = glm.log.probs, direction 
 
 ggroc(list(LDA  = ldaroc, QDA = qdaroc, KNN = knnroc, LOG = glm.logroc))
 ```
-The area under the ROC curve is `r round(auc(ldaroc), digits = 3)` for LDA, `r round(auc(qdaroc), digits = 3)` for QDA, `r round(auc(knnroc), digits = 3)` for KNN and `r round(auc(glm.logroc), digits = 3)` for logistic regression (LOG). We see that LDA preforms the best with respect to the AUC, which indicates that a linear decision boundary is appropriate. Thus, if the task is to create an interpretable model, we would choose the logistic regression model, since it ahs almost as high AUC as LDA and is more interpretable with its readily available coefficients and associated formulas for probability and odds. 
+The area under the ROC curve is `r round(auc(ldaroc), digits = 3)` for LDA, `r round(auc(qdaroc), digits = 3)` for QDA, `r round(auc(knnroc), digits = 3)` for KNN and `r round(auc(glm.logroc), digits = 3)` for logistic regression (LOG). We see that LDA performs the best with respect to the AUC, which indicates that a linear decision boundary is appropriate. Despite this, if the task is to create an interpretable model, we would choose the logistic regression model, since it has almost as high AUC as LDA and is more interpretable with its readily available coefficients and associated formulas for probability and odds. 
 
 # Problem 4
 
