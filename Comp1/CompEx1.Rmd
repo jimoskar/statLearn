@@ -186,7 +186,7 @@ knitr::kable(table4)
 ```
 
 ## b) 
-Since we want to understand the probability of decease of covid-19, we fit a logistic regression model as opposed a linear regression model.
+Since we want to understand the probability of decease of covid-19, we fit a logistic regression model as opposed to a linear regression model.
 
 ```{r}
 glm.fit <- glm(deceased ~ ., family = "binomial", data = d.corona)
@@ -247,7 +247,6 @@ test = diab$ctest
 
 ```{r}
 logReg = glm(diabetes~., data = train, family = "binomial")
-summary(logReg)
 ```
 
 (i) We have that 
@@ -326,7 +325,7 @@ glm.logroc = roc(response = test$diabetes, predictor = glm.log.probs, direction 
 
 ggroc(list(LDA  = ldaroc, QDA = qdaroc, KNN = knnroc, LOG = glm.logroc))
 ```
-The area under the ROC curve is `r round(auc(ldaroc), digits = 3)` for LDA, `r round(auc(qdaroc), digits = 3)` for QDA, `r round(auc(knnroc), digits = 3)` for KNN and `r round(auc(glm.logroc), digits = 3)` for logistic regression (LOG). We see that LDA preforms the best with respect to the AUC, which indicates that a linear decision boundary is appropriate. Thus, if the task is to create an interpretable model, we would choose the logistic regression, since it is more interpretable than LDA with its readily available coefficients and associated formulas for probability and odds. 
+The area under the ROC curve is `r round(auc(ldaroc), digits = 3)` for LDA, `r round(auc(qdaroc), digits = 3)` for QDA, `r round(auc(knnroc), digits = 3)` for KNN and `r round(auc(glm.logroc), digits = 3)` for logistic regression (LOG). We see that LDA preforms the best with respect to the AUC, which indicates that a linear decision boundary is appropriate. Thus, if the task is to create an interpretable model, we would choose the logistic regression model, since it ahs almost as high AUC as LDA and is more interpretable with its readily available coefficients and associated formulas for probability and odds. 
 
 # Problem 4
 
@@ -406,5 +405,5 @@ sd(r.squared)
 quantile(r.squared, c(0.025, 0.975))
 ```
 
-The standard error is `r round(sd(r.squared)/summary(lm.fit5)$r.squared*100, digits = 3)` % of $R^2$. Also, $R^2$ is contained in the confidence interval. This suggests that the bootstrap can be used to estimate the uncertainty of $R^2$. \textcolor{red}{Hva mer skal vi skrive i tolkningen? Også: Ikke 12 sider!}
+The standard error estimated from the bootstrap is `r round(sd(r.squared)/summary(lm.fit5)$r.squared*100, digits = 3)` % of $R^2$. This gives us a measure of the uncertainty in $R^2$, which illustrates that the proportion of variance explained by the linear regression is not a fixed number, but depends on the training data. 
 
