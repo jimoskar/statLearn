@@ -97,6 +97,10 @@ library(ISLR)
 lda.fit <- lda(deceased ~ ., data = d.corona )
 summary(lda.fit)
 
+# 2.d
+
+
+
 
 # 3
 
@@ -141,5 +145,31 @@ ggroc(list(LDA  = ldaroc, QDA = qdaroc, KNN = knnroc))
 auc(ldaroc)
 auc(qdaroc)
 auc(knnroc)
+
+
+# 5
+
+id <- "19auu8YlUJJJUsZY8JZfsCTWzDm6doE7C" # google file ID
+d.bodyfat <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id),header=T)
+
+set.seed(123)
+boot.fn <-  function(data, index) {
+  return(summary(lm(bodyfat ~ age + weight + bmi, data = data, subset = index))$r.squared)
+}
+
+B <- 1000
+r.squared <- rep(NA, B)
+for (b in 1:B){
+  r.squared[b] <- boot.fn(d.bodyfat, sample(nrow(d.bodyfat), nrow(d.bodyfat), replace = T))
+}
+
+df = data.frame(r.squared = r.squared, norm_den = dnorm(r.squared, mean(r.squared),
+                                                        sd(r.squared)))
+ggplot(df) + geom_histogram(aes(x = r.squared, y = ..density..), fill = "grey80",color = "black") +
+   geom_line(aes(x = r.squared, y = norm_den), color = "red") +
+   theme_minimal()
+
+sd(r.squared)
+quantile(r.squared, c(0.025, 0.975))
 
 

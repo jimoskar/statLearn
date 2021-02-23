@@ -191,6 +191,7 @@ Since we want to understand the probability of decease of covid-19, we fit a log
 ```{r}
 glm.fit <- glm(deceased ~ ., family = "binomial", data = d.corona)
 summary(glm.fit)
+anova(glm.fit, test = "Chisq")
 ```
 
 (i) The probability to die of covid for a male age 75 living in Korea can be predicted from the model. The prediction is found by
@@ -205,7 +206,7 @@ Hence, the probability to die of covid for a male age 75 living in Korea is $\ap
 
 (ii) The p-value associated with `sexmale` is relatively small, and since the coefficient is positive, this constitutes some evidence that males have a higher probability of dying. 
 
-(iii) Yes. Both the `countryjapan` and `countryKorea` coefficients have relatively low p-values and are negative, which could be used as evidence that the probability of decease is lower in Japan and Korea compared to the reference category, France. `countryIndonesia` is not significant (large p-value), so there is no evidence that the probability of decease is any higher in Indonesia than in France.
+(iii) Yes. From the output of `anova` we see that `country` has a low p-value, which could be used as evidence that the country of residence has an influence on the probability of decease. Additionally, we see that both the `countryjapan` and `countryKorea` coefficients from the summary have relatively low p-values and are negative, which could be used as evidence that the probability of decease is lower in Japan and Korea compared to the reference category, France. `countryIndonesia` is not significant (large p-value), so there is no evidence that the probability of decease is any higher in Indonesia than in France.
 
 (iv) Since we have used logistic regression, the predicted odds of decease, given an observation $\boldsymbol{x}$, is 
 
