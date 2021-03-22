@@ -3,12 +3,14 @@ subtitle: "TMA4268 Statistical Learning V2021"
 title: "Compulsory exercise 2: Group 39"
 author: "Alexander J. Ohrt, Jim Totland"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: 
-  pdf_document
+output: pdf_document
 ---
+
 
 ```{r setup, include=FALSE}
 library(knitr)
+library(rmarkdown)
+library(tidyverse)
 library(ggplot2)
 library(ggfortify)
 library(leaps)
@@ -24,9 +26,9 @@ library(MASS)
 
 knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
                       cache=TRUE, size="scriptsize",fig.width=4, fig.height=3, comment = "#>", fig.align = "center")
-
 ```
 
 # Problem 1
-
+## a)
+FALSE, TRUE, TRUE, FALSE
 
