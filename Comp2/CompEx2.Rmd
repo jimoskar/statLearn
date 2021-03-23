@@ -25,10 +25,91 @@ library(gbm)
 library(MASS)
 
 knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
-                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3, comment = "#>", fig.align = "center")
+                      cache=TRUE, size="scriptsize",fig.width=5, fig.height=5, comment = "#>", fig.align = "center")
 ```
 
 # Problem 1
 ## a)
 FALSE, TRUE, TRUE, FALSE
+
+## b)
+First we make plots for the $R_\mathrm{adj}^2$, $BIC$, $C_p$ and cross validated prediction error.
+
+```{r, echo = F}
+id <- "1iI6YaqgG0QJW5onZ_GTBsCvpKPExF30G"  # google file ID
+catdat <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id), 
+                   header = T)
+
+set.seed(4268)
+train.ind = sample(1:nrow(catdat), 0.5 * nrow(catdat))
+catdat.train = catdat[train.ind, ]
+catdat.test = catdat[-train.ind, ]
+
+
+# Perform best subset selection using all the predictors and the training data
+n <-  ncol(catdat.train) - 1 # Number of predictors
+bss.obj  <- regsubsets(birds~., catdat.train, nvmax= n)
+
+# Save summary obj
+sum <-  summary(bss.obj)
+
+
+# Adjusted Rˆ2, C_p, BIC and CV prediction error
+par(mar=c(1,1,1,1))
+par(mfrow=c(2,2))
+
+
+# adjRsq
+plot(sum$adjr2, xlab="Number of Variables", ylab="Adjusted RSq", type= "l")
+bss.adjr2 = which.max(sum$adjr2)
+points(bss.adjr2,sum$adjr2[bss.adjr2], col="red",cex=2,pch = 20)
+
+# Cp
+plot(sum$cp, xlab="Number of Variables", ylab="Cp", type='l')
+bss.cp <- which.min(sum$cp)
+points(bss.cp, sum$cp[bss.cp], col="red", cex=2, pch=20)
+
+#BIC
+bss.bic <- which.min(sum$bic)
+plot(sum$bic, xlab="Number of Variables", ylab="BIC", type='l')
+points(bss.bic, sum$bic[bss.bic], col="red", cex=2, pch=20)
+
+
+
+# Cross-validated prediction error
+# Create a prediction function to make predictions for regsubsets with id predictors included
+predict.regsubsets <- function(object,newdata,id,...){
+  form=as.formula(object$call[[2]])
+  mat=model.matrix(form,newdata)
+  coefi=coef(object,id=id)
+  xvars=names(coefi)
+  mat[,xvars]%*%coefi
+}
+
+# Create indexes to divide the data between folds
+k <- 10
+folds <-  sample(1:k, nrow(catdat.train), replace=TRUE)
+cv.errors <- matrix(NA, k, n, dimnames=list(NULL, paste(1:n)))
+
+# Perform CV
+for(j in 1:k){
+  bss.obj<- regsubsets(birds~., data = catdat.train[folds != j,],nvmax = n)
+  for(i in 1:n){
+    pred <- predict(bss.obj, catdat.train[folds==j,], id=i)
+    cv.errors[j,i] <-  mean( (catdat.train$birds[folds==j]-pred)^2)
+  }
+}
+
+# Compute mean cv errors for each model size
+mean.cv.errors=apply(cv.errors,2,mean)
+bss.cv <- which.min(mean.cv.errors) 
+
+# Plot the mean cv errors
+plot(mean.cv.errors, xlab = "Number of Variables", ylab = "CV", type='l')
+points(bss.cv, mean.cv.errors[bss.cv], col="red", cex=2, pch=20)
+
+```
+
+The optimal number og predictors with respect to  $R_\mathrm{adj}^2$ is `r bss.adjr2`, for $BIC$ it is `r bss.bic`, for $C_p$ it is `r bss.cp` and for cross validated prediction error it is `r bss.cv`.
+
 
