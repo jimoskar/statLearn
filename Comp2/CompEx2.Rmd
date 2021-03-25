@@ -32,6 +32,8 @@ knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.wh
 ## a)
 FALSE, TRUE, TRUE, FALSE
 
+\textcolor{red}{Ikke sikker på om den første er så opplagt, siden krymping elle fjerning av kovariater burde øke bias, noe som gjør at jeg tenker at MSE for treningsdataen generelt godt kan øke. De tre andre er jeg enig i :)}
+
 ## b)
 First we make plots for the $R_\mathrm{adj}^2$, $BIC$, $C_p$ and cross validated prediction error.
 
@@ -55,11 +57,10 @@ sum <-  summary(bss.obj)
 
 
 # Adjusted Rˆ2, C_p, BIC and CV prediction error
-par(mar=c(1,1,1,1))
 par(mfrow=c(2,2))
 
 
-# adjRsq
+# adjRsq 
 plot(sum$adjr2, xlab="Number of Variables", ylab="Adjusted RSq", type= "l")
 bss.adjr2 = which.max(sum$adjr2)
 points(bss.adjr2,sum$adjr2[bss.adjr2], col="red",cex=2,pch = 20)
@@ -75,9 +76,8 @@ plot(sum$bic, xlab="Number of Variables", ylab="BIC", type='l')
 points(bss.bic, sum$bic[bss.bic], col="red", cex=2, pch=20)
 
 
-
-# Cross-validated prediction error
-# Create a prediction function to make predictions for regsubsets with id predictors included
+# Cross-validated prediction error. 
+# Create a prediction function to make predictions for regsubsets with id predictors included.
 predict.regsubsets <- function(object,newdata,id,...){
   form=as.formula(object$call[[2]])
   mat=model.matrix(form,newdata)
@@ -86,30 +86,110 @@ predict.regsubsets <- function(object,newdata,id,...){
   mat[,xvars]%*%coefi
 }
 
-# Create indexes to divide the data between folds
+# Create indices to divide the data between folds.
 k <- 10
 folds <-  sample(1:k, nrow(catdat.train), replace=TRUE)
 cv.errors <- matrix(NA, k, n, dimnames=list(NULL, paste(1:n)))
 
-# Perform CV
+# Perform CV.
 for(j in 1:k){
   bss.obj<- regsubsets(birds~., data = catdat.train[folds != j,],nvmax = n)
   for(i in 1:n){
-    pred <- predict(bss.obj, catdat.train[folds==j,], id=i)
+    pred <- predict(bss.obj, catdat.train[folds==j,], id=i) # Skal ikke noe test-data brukes her?
     cv.errors[j,i] <-  mean( (catdat.train$birds[folds==j]-pred)^2)
   }
 }
 
-# Compute mean cv errors for each model size
+# Compute mean cv errors for each model size.
 mean.cv.errors=apply(cv.errors,2,mean)
 bss.cv <- which.min(mean.cv.errors) 
 
-# Plot the mean cv errors
+# Plot the mean cv errors.
 plot(mean.cv.errors, xlab = "Number of Variables", ylab = "CV", type='l')
 points(bss.cv, mean.cv.errors[bss.cv], col="red", cex=2, pch=20)
 
+par(mfrow=c(1,1))
+
+# Best model, based on amount of variables chosen by cv.
+reg.best <- regsubsets(birds~., data = catdat)
+coef(reg.best, bss.cv) # Selected variables.
+fit <- lm(birds~weight+wetfood+daily.playtime+children.13+urban+bell+daily.outdoortime, data = catdat)
+# Kan man få ut den beste modellen fra reg.best i stedet for å fit på nytt?
+pred.regbest <- predict(fit, newdata = catdat.test)
+mse.regbest <- mean((pred.regbest - catdat.test$birds)^2) # Test Mean Square Error.
+mse.regbest
 ```
 
-The optimal number og predictors with respect to  $R_\mathrm{adj}^2$ is `r bss.adjr2`, for $BIC$ it is `r bss.bic`, for $C_p$ it is `r bss.cp` and for cross validated prediction error it is `r bss.cv`.
+The optimal number of predictors with respect to  $R_\mathrm{adj}^2$ is `r bss.adjr2`, for $BIC$ it is `r bss.bic`, for $C_p$ it is `r bss.cp` and for cross validated prediction error it is `r bss.cv`. We would argue that cross-validation is a more reliable way of selecting among the models, since it is a resampling method, compared to only running one best subset selection on the training data and choosing based on the other model selection criterions. Hence, the selected variables are as shown below. The test MSE is calculated as `r mse.regbest`.
 
+## c)
+Using Lasso regression on the same data set leads to the following. 
+
+```{r}
+x.train <-model.matrix(birds~., data = catdat.train)
+y.train <- catdat.train$birds
+x.test <- model.matrix(birds~., data = catdat.test)
+y.test <- catdat.test$birds
+
+grid <- 10^seq(10, -2, length = 100)
+lasso.mod <- glmnet(x.train, y.train, alpha = 1, lambda = grid) # alpha = 1 specifies Lasso regression. 
+# Rakk ikke å lese noe mer om dette i laben akkurat nå!
+
+mse.lasso <- 1 # Satt til 1 for nå, slik at koden nedenfor fungerer :)
+```
+
+## d)
+When $\lambda \longrightarrow \infty$, the Lasso regression gives the null model, i.e. the model where all the coefficients are zero. When $\lambda = 0$, the Lasso regression simply gives the least squares fit. 
+
+## e)
+ i)
+```{r}
+# A model with only intercept.
+only.intercept <- lm(birds~1, data = catdat.train)
+yhat.intercept <- predict(only.intercept, newdata = catdat.test)
+mse.intercept <- mean((yhat.intercept - catdat.test$birds)^2) # Test Mean Square Error.
+mse.intercept
+```
+ii)
+```{r}
+# A simple linear regression. Hvilken kovariat skal vi velge da? Antar at de mener vanlig multippel regresjon, full modell?
+least.sq <- lm(birds~., data = catdat.train)
+yhat.least.sq <- predict(least.sq, newdata = catdat.test)
+mse.least.sq <- mean((yhat.least.sq - catdat.test$birds)^2) # Test Mean Square Error.
+mse.least.sq
+```
+
+## f)
+
+A table with the test MSE values from best subset selection, lasso regression, intercept-only and ordinary linear regression is shown below. 
+
+```{r}
+# Code from exercise9 for making the table (after we are done with all the models above.)
+msrate <- rbind(c(mse.regbest), c(mse.lasso), c(mse.intercept), c(mse.least.sq))
+rownames(msrate) <- c("Best Subset", "Lasso", "Intercept-only", "Least Squares")
+colnames(msrate) <- c("Test MSE")
+msrate
+```
+
+We observe that ...
+
+# Problem 2
+
+## a) 
+
+Husker ikke akkurat nå lol.
+
+## b) 
+
+The basis functions for a cubic spline with knots at the quartiles $q_1$ and $q_2$ of variable $X$ are 
+
+## c)
+
+(i)
+
+```{r}
+
+```
+
+(ii)
 
