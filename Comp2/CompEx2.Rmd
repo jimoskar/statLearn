@@ -35,9 +35,9 @@ FALSE, TRUE, TRUE, FALSE
 \textcolor{red}{Ikke sikker på om den første er så opplagt, siden krymping elle fjerning av kovariater burde øke bias, noe som gjør at jeg tenker at MSE for treningsdataen generelt godt kan øke. De tre andre er jeg enig i :)}
 
 ## b)
-First we make plots for the $R_\mathrm{adj}^2$, $BIC$, $C_p$ and cross validated prediction error.
+First we make plots for the $R_\mathrm{adj}^2$, $BIC$, $C_p$ and cross validated prediction error. The red dots show the best amount of variables used in the subset, according to each of the different model choice criteria. 
 
-```{r, echo = F}
+```{r}
 id <- "1iI6YaqgG0QJW5onZ_GTBsCvpKPExF30G"  # google file ID
 catdat <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id), 
                    header = T)
@@ -50,7 +50,7 @@ catdat.test = catdat[-train.ind, ]
 
 # Perform best subset selection using all the predictors and the training data
 n <-  ncol(catdat.train) - 1 # Number of predictors
-bss.obj  <- regsubsets(birds~., catdat.train, nvmax= n)
+bss.obj  <- regsubsets(birds~., catdat.train, nvmax = n)
 
 # Save summary obj
 sum <-  summary(bss.obj)
@@ -120,23 +120,45 @@ mse.regbest <- mean((pred.regbest - catdat.test$birds)^2) # Test Mean Square Err
 mse.regbest
 ```
 
-The optimal number of predictors with respect to  $R_\mathrm{adj}^2$ is `r bss.adjr2`, for $BIC$ it is `r bss.bic`, for $C_p$ it is `r bss.cp` and for cross validated prediction error it is `r bss.cv`. We would argue that cross-validation is a more reliable way of selecting among the models, since it is a resampling method, compared to only running one best subset selection on the training data and choosing based on the other model selection criterions. Hence, the selected variables are as shown below. The test MSE is calculated as `r mse.regbest`.
+The optimal number of predictors with respect to  $R_\mathrm{adj}^2$ is `r bss.adjr2`, for $BIC$ it is `r bss.bic`, for $C_p$ it is `r bss.cp` and for cross validated prediction error it is `r bss.cv`. We would argue that cross-validation is a more reliable way of selecting among the models, since it is a resampling method, compared to only running one best subset selection on the training data and choosing based on the other model selection criteria. Hence, the selected variables are as shown below. The test MSE is calculated as `r mse.regbest`.
 
 ## c)
-Using Lasso regression on the same data set leads to the following. 
+Using Lasso regression on the same data set leads to the following. In order to choose an optimal value of $\lambda$, cross-validation is used (10-fold). 
 
 ```{r}
-x.train <-model.matrix(birds~., data = catdat.train)
+x.train <- model.matrix(birds~., data = catdat.train)
 y.train <- catdat.train$birds
 x.test <- model.matrix(birds~., data = catdat.test)
 y.test <- catdat.test$birds
 
 grid <- 10^seq(10, -2, length = 100)
-lasso.mod <- glmnet(x.train, y.train, alpha = 1, lambda = grid) # alpha = 1 specifies Lasso regression. 
-# Rakk ikke å lese noe mer om dette i laben akkurat nå!
+lasso.mod <- glmnet(x.train, y.train, alpha = 1, lambda = grid) 
+# alpha = 1 specifies Lasso regression. 
 
-mse.lasso <- 1 # Satt til 1 for nå, slik at koden nedenfor fungerer :)
+# Perform cross validation. 
+set.seed(4268)
+cv.out <- cv.glmnet(x.train, y.train, alpha = 1)
+plot(cv.out)
+bestlam <- cv.out$lambda.min
+bestlam # Lambda ble veldig lik least squares (0)!
+
+lasso.pred <- predict(lasso.mod, s = bestlam, newx = x.test)
+mse.lasso <- mean((lasso.pred - y.test)^2)
+mse.lasso
+
+# Report the non-zero coefficients. Refit model on entire data-set, with lambdabest.
+x <- model.matrix(birds~., data = catdat)
+y <- catdat$birds
+full.lasso <- glmnet(x, y, alpha = 1) # Skal lambda = grid være med her?
+# Estimatene blir litt annerledes avhengig av om lamba = grid er med eller ikke!
+lasso.coeff <- predict(full.lasso, type = "coefficients", s = bestlam)
+lasso.coeff
+
+# Non-zero coefficients.
+lasso.coeff[lasso.coeff != 0]
 ```
+
+As seen in the output above, the test MSE is `r mse.lasso`. Moreover, all coefficients, except `fellow.cats` and `owner.age` are non-zero. The best lambda according to the cross-validation is close to 0, which means that the Lasso regression model is very similar to the linear least squares model, which is confirmed by the fact that only two coefficients are non-zero. \textcolor{red}{Hvorfor er det to intercept-verdier ovenfor? (én er null og den andre har et estimat!)}
 
 ## d)
 When $\lambda \longrightarrow \infty$, the Lasso regression gives the null model, i.e. the model where all the coefficients are zero. When $\lambda = 0$, the Lasso regression simply gives the least squares fit. 
@@ -149,6 +171,11 @@ only.intercept <- lm(birds~1, data = catdat.train)
 yhat.intercept <- predict(only.intercept, newdata = catdat.test)
 mse.intercept <- mean((yhat.intercept - catdat.test$birds)^2) # Test Mean Square Error.
 mse.intercept
+
+# This should be the same as predicting each y has the mean of the training data.
+# This is a better way of doing it IMO!
+mse.intercept2 <- mean((mean(catdat.train$birds)-catdat.test$birds)^2) 
+mse.intercept2
 ```
 ii)
 ```{r}
@@ -171,25 +198,152 @@ colnames(msrate) <- c("Test MSE")
 msrate
 ```
 
-We observe that ...
+We observe that the intercept-only model is clearly the worst, which is as expected, since it predicts the mean of the `birds`-values always. Moreover, the best subset is best by a small margin, while lasso and least squares are almost equal in MSE, where lasso is slightly better. As expected, the regularization methods give better results compared to standard least squares. 
 
 # Problem 2
 
 ## a) 
 
-Husker ikke akkurat nå lol.
+TRUE, TRUE, FALSE, FALSE (Tror den har 7 basis-funksjoner.)  
+
+\textcolor{red}{Usikker på om (ii) er et lurespm eller ikke.}
 
 ## b) 
 
 The basis functions for a cubic spline with knots at the quartiles $q_1$ and $q_2$ of variable $X$ are 
 
+$$
+X, X^2, X^3, (X-q_1)^3 \text{ and } (X-q_2)^3.
+$$
+
 ## c)
 
 (i)
+```{r}
+# First plot birds against daily.outdoortime.
+#plot(birds~daily.outdoortime, data = catdat)
+
+# Fit polynomial regression with training data.
+attach(catdat.train)
+time.range <- range(daily.outdoortime)
+time.grid <- seq(from = time.range[1], to = time.range[2])
+plot(birds~daily.outdoortime, data = catdat, main = "Polynomial Regression", xlab = "Outdoor Time", ylab="Birds")
+deg <- 10
+col <- seq(from = 10, to = deg + 10) 
+mse.train <- seq(from = 1, to = deg)
+for (d in 1:deg){
+  fit <- lm(birds~poly(daily.outdoortime, d), data = catdat.train)
+  preds <- predict(fit, newdata = list(daily.outdoortime = time.grid))
+  lines(time.grid, preds, type = "l", col = col[d], pch = 20)
+  mse.train[d] = mean((preds - catdat.train$birds)^2)
+}
+legend(60, 540, legend=seq(from = 1, to = deg), col = col, pch = 20)
+
+mse.train # MSE from training data.
+which.min(mse.train)
+```
+
+(ii) The MSE on the training data is reported above. The MSE is lowest for the regular linear model, then it increases and fluctuates around a relatively stable value. The explanation for this is that ... \textcolor{red}{Hva kan forklaringen på dette være?}
+
+
+# Problem 3
+
+## a)
+
+TRUE, TRUE, FALSE, FALSE (velger vel alltid den minste modellen, da jeg synes de tre siste ser like gode ut. )
+
+## b)
+
+Based solely on the tree above, a tree pruned down to three leaves should consist of `age < 46.5`, `country: indonesia, japan, Korea` and `country: France`. The reason behind this is that these keep the splits that are futhest to the top in the tree, which signals that these are the most important splits (they differentiate the most of the data compared to all other splits). \textcolor{red}{Dette må finskrives, men tror du skjønner poenget ;) Kan ikke konse skikkelig i dag. Kan også tegne en figure etter hvert hvis vi ønsker det ;)}
+
+## c)
+
+```{r}
+id <- "1Fv6xwKLSZHldRAC1MrcK2mzdOYnbgv0E" # Google file ID.
+d.diabetes <- dget(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+d.train <-d.diabetes$ctrain
+d.test <- d.diabetes$ctest
+d.train$diabetes <- as.factor(d.train$diabetes) # La til denne for å få til klassifisering?!
+d.test$diabetes <- as.factor(d.test$diabetes) # La til denne for å få til klassifisering?!
+```
+
+(i)
+
+```{r}
+# Simple classification tree.
+set.seed(1)
+simple.tree <- tree(diabetes~., data = d.train)
+summary(simple.tree)
+plot(simple.tree)
+text(simple.tree, pretty = 1)
+
+# Calculate classification error for the unpruned tree.
+yhat.simple <- predict(simple.tree, newdata = d.test, type = "class")
+conf.table.simple <- table(yhat.simple, d.test$diabetes)
+conf.table.simple
+class.rate.simple <-  1-sum(diag(conf.table.simple))/(sum(conf.table.simple))
+class.rate.simple
+
+# Apply cost complexity pruning. 
+cv.diabetes <- cv.tree(simple.tree, FUN = prune.misclass) # 10-fold cv is default. Vet ikke om vi burde bruke prune.misclass!?
+# Å bruke default, som er deviance, gir helt andre resultater!
+best <- which.min(cv.diabetes$dev) # Finds best model.
+plot(cv.diabetes$size, cv.diabetes$dev, type = "b")
+points(cv.diabetes$size[best], cv.diabetes$dev[best], col = "red", pch = 20)
+#plot(cv.diabetes$k, cv.diabetes$dev, type = "b") # Vet ikke helt hva k er?
+#best.tree <- prune.tree(simple.tree, best = cv.diabetes$size[best]) # Bruk hvis deviance brukes over.
+best.tree <- prune.misclass(simple.tree, best = 6)
+summary(best.tree)
+plot(best.tree)
+text(best.tree, pretty = 1)
+
+# Calculate classification error for the pruned tree.
+yhat.pruned <- predict(best.tree, newdata = d.test, type = "class")
+conf.table.pruned <- table(yhat.pruned, d.test$diabetes)
+conf.table.pruned
+class.rate.pruned <-  1-sum(diag(conf.table.pruned))/(sum(conf.table.pruned))
+class.rate.pruned
+```
+
+Despite the fact that the largest tree is the best, we choose to prune the tree to 6 leaves, since this is not that much worse and is much more interpretable than the larger model with 17 leaves. 
+
+Also, we can se that the misclassification error is reported below. This is very similar for the unpruned and the pruned tree, which suggests that a more advanced method perhaps will make larger improvements on the simple classification tree. 
+
+(ii)
+
+A more advanced method for constructing the classification tree could be bagging, random forests or boosting. Which should we choose and why?
 
 ```{r}
 
 ```
 
-(ii)
 
+# Problem 4
+
+## a)
+
+TRUE, Perhaps (usikker her), FALSE (usikker), TRUE
+
+## b)
+
+```{r}
+id <- "1x_E8xnmz9CMHh_tMwIsWP94czPa1Fpsj"# Google file ID.
+d.leukemia <-read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",id), header = T)
+set.seed(2399)
+t.samples <-sample(1:60, 15, replace = F)
+d.leukemia$Category <-as.factor(d.leukemia$Category)
+d.leukemia.test <- d.leukemia[t.samples, ]
+d.leukemia.train <- d.leukemia[-t.samples, ]
+```
+
+(i) A support vector machine (SVM) is more suitable than a logistic regression here, because \textcolor{red}{The data should be in clear boxes, which is hard for logistic regression? (utydelig skrevet, kaos i hodet)}
+
+
+
+# Problem 5
+
+## a)
+
+TRUE, FALSE, FALSE, FALSE
+
+## b)
