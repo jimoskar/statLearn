@@ -33,6 +33,7 @@ knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.wh
 FALSE, TRUE, TRUE, FALSE
 
 \textcolor{red}{Ikke sikker på om den første er så opplagt, siden krymping elle fjerning av kovariater burde øke bias, noe som gjør at jeg tenker at MSE for treningsdataen generelt godt kan øke. De tre andre er jeg enig i :)}
+\textcolor{green}{Se første svar her :)  https://stats.stackexchange.com/questions/347730/why-ridge-regression-increase-and-not-decrease-the-models-error}
 
 ## b)
 First we make plots for the $R_\mathrm{adj}^2$, $BIC$, $C_p$ and cross validated prediction error. The red dots show the best amount of variables used in the subset, according to each of the different model choice criteria. 
@@ -95,7 +96,7 @@ cv.errors <- matrix(NA, k, n, dimnames=list(NULL, paste(1:n)))
 for(j in 1:k){
   bss.obj<- regsubsets(birds~., data = catdat.train[folds != j,],nvmax = n)
   for(i in 1:n){
-    pred <- predict(bss.obj, catdat.train[folds==j,], id=i) # Skal ikke noe test-data brukes her?
+    pred <- predict(bss.obj, catdat.train[folds==j,], id=i) # Skal ikke noe test-data brukes her? NEI! test dataen brukes vel bare helt til slutt?
     cv.errors[j,i] <-  mean( (catdat.train$birds[folds==j]-pred)^2)
   }
 }
@@ -111,10 +112,10 @@ points(bss.cv, mean.cv.errors[bss.cv], col="red", cex=2, pch=20)
 par(mfrow=c(1,1))
 
 # Best model, based on amount of variables chosen by cv.
-reg.best <- regsubsets(birds~., data = catdat)
-coef(reg.best, bss.cv) # Selected variables.
-fit <- lm(birds~weight+wetfood+daily.playtime+children.13+urban+bell+daily.outdoortime, data = catdat)
+coef(bss.obj, bss.cv) # Selected variables.
+fit <- lm(birds~weight+wetfood+daily.playtime+children.13+urban+bell+daily.outdoortime, data = catdat.train)
 # Kan man få ut den beste modellen fra reg.best i stedet for å fit på nytt?
+# Trur ikkje det :(
 pred.regbest <- predict(fit, newdata = catdat.test)
 mse.regbest <- mean((pred.regbest - catdat.test$birds)^2) # Test Mean Square Error.
 mse.regbest
@@ -327,13 +328,13 @@ TRUE, Perhaps (usikker her), FALSE (usikker), TRUE
 ## b)
 
 ```{r}
-id <- "1x_E8xnmz9CMHh_tMwIsWP94czPa1Fpsj"# Google file ID.
-d.leukemia <-read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",id), header = T)
-set.seed(2399)
-t.samples <-sample(1:60, 15, replace = F)
-d.leukemia$Category <-as.factor(d.leukemia$Category)
-d.leukemia.test <- d.leukemia[t.samples, ]
-d.leukemia.train <- d.leukemia[-t.samples, ]
+#  id <- "1x_E8xnmz9CMHh_tMwIsWP94czPa1Fpsj"  # google file ID
+#  d.leukemia <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id), header = T)
+# set.seed(2399)
+# t.samples <- sample(1:60, 15, replace = F)
+# d.leukemia$Category <- as.factor(d.leukemia$Category)
+# d.leukemia.test <- d.leukemia[t.samples, ]
+# d.leukemia.train <- d.leukemia[-t.samples, ]
 ```
 
 (i) A support vector machine (SVM) is more suitable than a logistic regression here, because \textcolor{red}{The data should be in clear boxes, which is hard for logistic regression? (utydelig skrevet, kaos i hodet)}
