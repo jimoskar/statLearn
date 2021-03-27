@@ -127,9 +127,9 @@ The optimal number of predictors with respect to  $R_\mathrm{adj}^2$ is `r bss.a
 Using Lasso regression on the same data set leads to the following. In order to choose an optimal value of $\lambda$, cross-validation is used (10-fold). 
 
 ```{r}
-x.train <- model.matrix(birds~., data = catdat.train)
+x.train <- model.matrix(birds~., data = catdat.train)[, -1]
 y.train <- catdat.train$birds
-x.test <- model.matrix(birds~., data = catdat.test)
+x.test <- model.matrix(birds~., data = catdat.test)[, -1]
 y.test <- catdat.test$birds
 
 grid <- 10^seq(10, -2, length = 100)
@@ -143,23 +143,29 @@ plot(cv.out)
 bestlam <- cv.out$lambda.min
 bestlam # Lambda ble veldig lik least squares (0)!
 
-lasso.pred <- predict(lasso.mod, s = bestlam, newx = x.test)
-mse.lasso <- mean((lasso.pred - y.test)^2)
-mse.lasso
-
 # Report the non-zero coefficients. Refit model on entire data-set, with lambdabest.
-x <- model.matrix(birds~., data = catdat)
-y <- catdat$birds
-full.lasso <- glmnet(x, y, alpha = 1) # Skal lambda = grid være med her?
+# Why do you refit on the entire dataset?? We need the test set to compute MSE afterwards??
+#x <- model.matrix(birds~., data = catdat)
+#y <- catdat$birds
+#full.lasso <- glmnet(x, y, alpha = 1) # Skal lambda = grid være med her?
 # Estimatene blir litt annerledes avhengig av om lamba = grid er med eller ikke!
-lasso.coeff <- predict(full.lasso, type = "coefficients", s = bestlam)
+#lasso.coeff <- predict(lasso.mod, type = "coefficients", s = bestlam)
+#lasso.coeff
+
+# Think this is a better way to display coefficients.
+lasso.coeff = coef(cv.out, s = "lambda.min")
 lasso.coeff
 
 # Non-zero coefficients.
+# Trenger ikke denne vel?
 lasso.coeff[lasso.coeff != 0]
+
+lasso.pred <- predict(lasso.mod, s = bestlam, newx = x.test)
+mse.lasso <- mean((lasso.pred - y.test)^2)
+mse.lasso
 ```
 
-As seen in the output above, the test MSE is `r mse.lasso`. Moreover, all coefficients, except `fellow.cats` and `owner.age` are non-zero. The best lambda according to the cross-validation is close to 0, which means that the Lasso regression model is very similar to the linear least squares model, which is confirmed by the fact that only two coefficients are non-zero. \textcolor{red}{Hvorfor er det to intercept-verdier ovenfor? (én er null og den andre har et estimat!)}
+As seen in the output above, the test MSE is `r mse.lasso`. Moreover, all coefficients, except `fellow.cats` and `owner.age` are non-zero. The best lambda according to the cross-validation is close to 0, which means that the Lasso regression model is very similar to the linear least squares model, which is confirmed by the fact that only two coefficients are non-zero. \textcolor{red}{Hvorfor er det to intercept-verdier ovenfor? (én er null og den andre har et estimat!)} \textcolor{green}{tror jeg fiksa det. stilte også spm på piazza om det :)}
 
 ## d)
 When $\lambda \longrightarrow \infty$, the Lasso regression gives the null model, i.e. the model where all the coefficients are zero. When $\lambda = 0$, the Lasso regression simply gives the least squares fit. 
