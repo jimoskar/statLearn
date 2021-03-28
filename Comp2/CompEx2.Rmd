@@ -192,7 +192,7 @@ yhat.least.sq <- predict(least.sq, newdata = catdat.test)
 mse.least.sq <- mean((yhat.least.sq - catdat.test$birds)^2) # Test Mean Square Error.
 mse.least.sq
 ```
-We see that using only an intercept yields an MSE of `r mse.intercept`, while a standard linear regression yields an MSE of `r mse.least.sq`. On the other hand, best subset selection resulted in a test MSE of `r mse.regbest` and lasso regression resultet in a test MSE of `r mse.lasso`. We see that both models form a) and b) are superier to the ones introduced here, with regard to the test MSE.
+We see that using only an intercept yields a test MSE of `r mse.intercept`, while a standard linear regression yields a test MSE of `r mse.least.sq`. On the other hand, best subset selection resulted in a test MSE of `r mse.regbest` and lasso regression resultet in a test MSE of `r mse.lasso`. We see that both models form a) and b) are superier to the ones introduced here, with regard to the test MSE.
 
 
 ## f)
@@ -207,7 +207,7 @@ colnames(msrate) <- c("Test MSE")
 msrate
 ```
 
-We observe that the intercept-only model is clearly the worst, which is as expected, since it predicts the mean of the `birds`-values always. Moreover, the best subset is best by a small margin, while lasso and least squares are almost equal in MSE, where lasso is slightly better. As expected, the regularization methods give better results compared to standard least squares. 
+We observe that the intercept-only model is clearly the worst, which is as expected, since it predicts the mean of the `birds`-values always. Moreover, the best subset is best by a small margin, while lasso and least squares are almost equal in MSE, where lasso is slightly better. As expected \textcolor{red}{why is this expected?}, the regularization methods give better results compared to standard least squares. 
 
 # Problem 2
 
@@ -242,8 +242,11 @@ col <- seq(from = 10, to = deg + 10)
 mse.train <- seq(from = 1, to = deg)
 for (d in 1:deg){
   fit <- lm(birds~poly(daily.outdoortime, d), data = catdat.train)
-  preds <- predict(fit, newdata = list(daily.outdoortime = time.grid))
-  lines(time.grid, preds, type = "l", col = col[d], pch = 20)
+  #Hvorfor bruker du time.grid? Skal man ikke bruke treningsdataene?
+  # Endra litt på det, tror det gir riktigere resultat
+  preds.plot <- predict(fit, newdata = list(daily.outdoortime = time.grid))
+  lines(time.grid, preds.plot, type = "l", col = col[d], pch = 20)
+  preds <- predict(fit, newdata = list(daily.outdoortime))
   mse.train[d] = mean((preds - catdat.train$birds)^2)
 }
 legend(60, 540, legend=seq(from = 1, to = deg), col = col, pch = 20)
@@ -252,7 +255,7 @@ mse.train # MSE from training data.
 which.min(mse.train)
 ```
 
-(ii) The MSE on the training data is reported above. The MSE is lowest for the regular linear model, then it increases and fluctuates around a relatively stable value. The explanation for this is that ... \textcolor{red}{Hva kan forklaringen på dette være?}
+(ii) We see that the training MSE decreases steadily as the degree of the polynomial regression increases. This is because we increase the flexibility of the model when we increment the polynomial degree.
 
 
 # Problem 3
