@@ -192,6 +192,8 @@ yhat.least.sq <- predict(least.sq, newdata = catdat.test)
 mse.least.sq <- mean((yhat.least.sq - catdat.test$birds)^2) # Test Mean Square Error.
 mse.least.sq
 ```
+We see that using only an intercept yields an MSE of `r mse.intercept`, while a standard linear regression yields an MSE of `r mse.least.sq`. On the other hand, best subset selection resulted in a test MSE of `r mse.regbest` and lasso regression resultet in a test MSE of `r mse.lasso`. We see that both models form a) and b) are superier to the ones introduced here, with regard to the test MSE.
+
 
 ## f)
 
