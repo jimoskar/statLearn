@@ -262,7 +262,7 @@ which.min(mse.train)
 
 ## a)
 
-TRUE, TRUE, FALSE, FALSE (velger vel alltid den minste modellen, da jeg synes de tre siste ser like gode ut. )
+TRUE, TRUE, FALSE \textcolor{red}{men cv brukes i kombinasjon med CCP?}, FALSE (velger vel alltid den minste modellen, da jeg synes de tre siste ser like gode ut. )
 
 ## b)
 
@@ -285,29 +285,32 @@ d.test$diabetes <- as.factor(d.test$diabetes) # La til denne for å få til klas
 # Simple classification tree.
 set.seed(1)
 simple.tree <- tree(diabetes~., data = d.train)
+#Kan kanskje fjerne summary?
+# Teksten må eventuelt justers på i plottet
 summary(simple.tree)
 plot(simple.tree)
-text(simple.tree, pretty = 1)
+text(simple.tree, cex = 0.5, pretty = 0)
 
 # Calculate classification error for the unpruned tree.
 yhat.simple <- predict(simple.tree, newdata = d.test, type = "class")
 conf.table.simple <- table(yhat.simple, d.test$diabetes)
 conf.table.simple
-class.rate.simple <-  1-sum(diag(conf.table.simple))/(sum(conf.table.simple))
+class.rate.simple <-  1 - 
+  sum(diag(conf.table.simple))/(sum(conf.table.simple))
 class.rate.simple
 
 # Apply cost complexity pruning. 
-cv.diabetes <- cv.tree(simple.tree, FUN = prune.misclass) # 10-fold cv is default. Vet ikke om vi burde bruke prune.misclass!?
-# Å bruke default, som er deviance, gir helt andre resultater!
+cv.diabetes <- cv.tree(simple.tree, FUN = prune.misclass) # 10-fold cv is default. Vet ikke om vi burde bruke prune.misclass!? Jo tror det er riktig
 best <- which.min(cv.diabetes$dev) # Finds best model.
 plot(cv.diabetes$size, cv.diabetes$dev, type = "b")
 points(cv.diabetes$size[best], cv.diabetes$dev[best], col = "red", pch = 20)
 #plot(cv.diabetes$k, cv.diabetes$dev, type = "b") # Vet ikke helt hva k er?
+# k er samme som alpha i CCP.
 #best.tree <- prune.tree(simple.tree, best = cv.diabetes$size[best]) # Bruk hvis deviance brukes over.
 best.tree <- prune.misclass(simple.tree, best = 6)
 summary(best.tree)
 plot(best.tree)
-text(best.tree, pretty = 1)
+text(best.tree, cex = 0.7, pretty = 0)
 
 # Calculate classification error for the pruned tree.
 yhat.pruned <- predict(best.tree, newdata = d.test, type = "class")
@@ -318,6 +321,7 @@ class.rate.pruned
 ```
 
 Despite the fact that the largest tree is the best, we choose to prune the tree to 6 leaves, since this is not that much worse and is much more interpretable than the larger model with 17 leaves. 
+\textcolor{red}{Synes det er litt rart at den mest komplekse modellen gir best CV-error. Men poenget med oppgaven er kanskje at vi skal prioritere tolkning og enkelhet? Synes vi bør spørre om dette.}
 
 Also, we can se that the misclassification error is reported below. This is very similar for the unpruned and the pruned tree, which suggests that a more advanced method perhaps will make larger improvements on the simple classification tree. 
 
