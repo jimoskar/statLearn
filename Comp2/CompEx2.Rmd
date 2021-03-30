@@ -115,7 +115,7 @@ par(mfrow=c(1,1))
 coef(bss.obj, bss.cv) # Selected variables.
 fit <- lm(birds~weight+wetfood+daily.playtime+children.13+urban+bell+daily.outdoortime, data = catdat.train)
 # Kan man få ut den beste modellen fra reg.best i stedet for å fit på nytt?
-# Trur ikkje det :(
+# Se øving 6 for hvordan dette kan gjøres!!
 pred.regbest <- predict(fit, newdata = catdat.test)
 mse.regbest <- mean((pred.regbest - catdat.test$birds)^2) # Test Mean Square Error.
 mse.regbest
@@ -132,7 +132,7 @@ y.train <- catdat.train$birds
 x.test <- model.matrix(birds~., data = catdat.test)[, -1]
 y.test <- catdat.test$birds
 
-grid <- 10^seq(10, -2, length = 100)
+grid <- 10^seq(10, -2, length = 100) # Usikker på om grid er nødvendig å ha med!?
 lasso.mod <- glmnet(x.train, y.train, alpha = 1, lambda = grid) 
 # alpha = 1 specifies Lasso regression. 
 
@@ -222,7 +222,16 @@ TRUE, TRUE, FALSE, FALSE (Tror den har 7 basis-funksjoner.)
 The basis functions for a cubic spline with knots at the quartiles $q_1$ and $q_2$ of variable $X$ are 
 
 $$
-X, X^2, X^3, (X-q_1)^3 \text{ and } (X-q_2)^3.
+X, X^2, X^3, (X-q_1)^3_+ \text{ and } (X-q_2)^3_+, 
+$$
+
+where 
+
+$$
+  (X-c_j)^d_+ = \begin{cases}
+    (x-c_j)^d &, x > c_j\\
+    0&,\text{otherwise.} 
+  \end{cases}
 $$
 
 ## c)
