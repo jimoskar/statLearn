@@ -326,13 +326,28 @@ Despite the fact that the largest tree is the best, we choose to prune the tree 
 Also, we can se that the misclassification error is reported below. This is very similar for the unpruned and the pruned tree, which suggests that a more advanced method perhaps will make larger improvements on the simple classification tree. 
 
 (ii)
-
-A more advanced method for constructing the classification tree could be bagging, random forests or boosting. Which should we choose and why?
+For the more advanced method, we consider the random forest approach. We choose the number of trees, $B = 1000$, since this amount seems to be suffcient for the test error to settle. Furthermore, since $p = 7$, we choose $m = 3 \approx \sqrt{p}$, because this is recommended in ISLR. \textcolor{red}{usikker på hvor mye rettferdigjørelse de forventer her...}
 
 ```{r}
+set.seed(1)
+B = 1000
+m = 3
+rf.d = randomForest(diabetes ~ ., d.train, mtry = m, ntree = B, importance = T)
+
+yhat = predict(rf.d, newdata = d.test, type = "class")
+response.test = d.test$diabetes
+d.misclass = table(yhat, response.test)
+d.misclass
+rf.misclass <- 1 - sum(diag(d.misclass))/sum(d.misclass)
 
 ```
-
+The resulting test misclassification rate is `r rf.misclass`. This is slightly lower than for the simple tree. Next, we find the most influential variables in this classification problem.
+```{r}
+# Find the most important variables.
+importance(rf.d)
+varImpPlot(rf.d)
+```
+We see that `glu` and `bmi` are the most influential.
 
 # Problem 4
 
