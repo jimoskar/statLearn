@@ -186,7 +186,7 @@ mse.intercept2
 ```
 ii)
 ```{r}
-# A simple linear regression. Hvilken kovariat skal vi velge da? Antar at de mener vanlig multippel regresjon, full modell?
+# A multiple linear regression.
 least.sq <- lm(birds~., data = catdat.train)
 yhat.least.sq <- predict(least.sq, newdata = catdat.test)
 mse.least.sq <- mean((yhat.least.sq - catdat.test$birds)^2) # Test Mean Square Error.
@@ -246,10 +246,10 @@ attach(catdat.train)
 time.range <- range(daily.outdoortime)
 time.grid <- seq(from = time.range[1], to = time.range[2])
 plot(birds~daily.outdoortime, data = catdat, main = "Polynomial Regression", xlab = "Outdoor Time", ylab="Birds")
-deg <- 10
-col <- seq(from = 10, to = deg + 10) 
-mse.train <- seq(from = 1, to = deg)
-for (d in 1:deg){
+deg <- 1:10
+col <- rainbow(n = length(deg))
+mse.train <- seq(from = 1, to = length(deg))
+for (d in 1:length(deg)){ # Kan også bruke en sapply her (se øving 7).
   fit <- lm(birds~poly(daily.outdoortime, d), data = catdat.train)
   #Hvorfor bruker du time.grid? Skal man ikke bruke treningsdataene?
   # Endra litt på det, tror det gir riktigere resultat
@@ -258,7 +258,7 @@ for (d in 1:deg){
   preds <- predict(fit, newdata = list(daily.outdoortime))
   mse.train[d] = mean((preds - catdat.train$birds)^2)
 }
-legend(60, 540, legend=seq(from = 1, to = deg), col = col, pch = 20)
+legend("topleft", legend=paste("d = ", deg), col = col, pch = 20)
 
 mse.train # MSE from training data.
 which.min(mse.train)
