@@ -362,7 +362,7 @@ We see that `glu` and `bmi` are the most influential.
 
 ## a)
 
-TRUE, Perhaps (usikker her), FALSE (usikker), TRUE
+TRUE, Perhaps (usikker her, \textcolor{green}{Ja, det skal vel være lett å finne en separating hyperplane siden p >> n, så kanksje FALSE er riktig?}), FALSE (usikker, \textcolor{green}{logreg bryter jo sammen når p >n, men det finnes vel ridge-metoder for logreg som gjør at det funker?}), TRUE
 
 ## b)
 
