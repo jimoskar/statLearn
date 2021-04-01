@@ -367,18 +367,38 @@ TRUE, Perhaps (usikker her, \textcolor{green}{Ja, det skal vel være lett å fin
 ## b)
 
 ```{r}
-#  id <- "1x_E8xnmz9CMHh_tMwIsWP94czPa1Fpsj"  # google file ID
-#  d.leukemia <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id), header = T)
-# set.seed(2399)
-# t.samples <- sample(1:60, 15, replace = F)
-# d.leukemia$Category <- as.factor(d.leukemia$Category)
-# d.leukemia.test <- d.leukemia[t.samples, ]
-# d.leukemia.train <- d.leukemia[-t.samples, ]
+ id <- "1x_E8xnmz9CMHh_tMwIsWP94czPa1Fpsj"  # google file ID
+ d.leukemia <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id), header = T)
+set.seed(2399)
+t.samples <- sample(1:60, 15, replace = F)
+d.leukemia$Category <- as.factor(d.leukemia$Category)
+d.leukemia.test <- d.leukemia[t.samples, ]
+d.leukemia.train <- d.leukemia[-t.samples, ]
 ```
 
-(i) A support vector machine (SVM) is more suitable than a logistic regression here, because \textcolor{red}{The data should be in clear boxes, which is hard for logistic regression? (utydelig skrevet, kaos i hodet)}
+(i) A support vector machine (SVM) is more suitable than a logistic regression here, because $p > n$. We could also use linear and quadratic discriminant analysis, in addition to logistic regression variations with a penalty term (similar to e.g. ridge regression).
 
+(ii) The paper intends to demonstrate a new method for identifying the subset of genes (predictors) which capture the necessary information in order to classify patients into different groups (response). They introduce the Ensemble SVM-Recursive Feature Elimination (ESVM-RFE), which combines the ensamble and bagging methods used in random forests with SVMs and a bakcward elimination strategy.
 
+(iii)
+```{r}
+svcfit <-  svm(Category~., data = d.leukemia.train, kernel = "linear", cost = 1, scale = F)
+
+train.yhat <- predict(svcfit, newdata = d.leukemia.train)
+train.misclass <- table(predict = train.yhat, truth = d.leukemia.train$Category)
+train.misclass
+1 - sum(diag(train.misclass)) / sum(train.misclass)
+
+test.yhat <- predict(svcfit, newdata = d.leukemia.test) 
+test.misclass <- table(predict = test.yhat, truth = d.leukemia.test$Category)
+test.misclass
+```
+
+The misclassification error rates are `r 1 - sum(diag(train.misclass)) / sum(train.misclass)` for the training data and `r 1 - sum(diag(test.misclass)) / sum(test.misclass)` for the test data.
+
+The training error rate is not surprising, as finding a spearaitng hyperplane when $p >> n$ is easy. The support vector classifier has 3 false positives and 3 false negatives on the test set. \textcolor{red}{kanskje det ikke er riktig?}
+
+(iv)
 
 # Problem 5
 
