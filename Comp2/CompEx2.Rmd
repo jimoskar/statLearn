@@ -382,7 +382,7 @@ d.leukemia.train <- d.leukemia[-t.samples, ]
 
 (iii)
 ```{r}
-svcfit <-  svm(Category~., data = d.leukemia.train, kernel = "linear", cost = 1, scale = F)
+svcfit <-  svm(Category~., data = d.leukemia.train, kernel = "linear", cost = 1, scale = T)
 
 train.yhat <- predict(svcfit, newdata = d.leukemia.train)
 train.misclass <- table(predict = train.yhat, truth = d.leukemia.train$Category)
