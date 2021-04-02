@@ -401,9 +401,17 @@ The training error rate is not surprising, as finding a spearaitng hyperplane wh
 (iv)
 
 ## c)
-
-
-
+$$
+\begin{split}
+K(\boldsymbol{x}_i, \boldsymbol{x}_i') &= (1 + \sum_{j=1}^2x_{ij}x_{ij}')^2 \\ &= (x_{i1}x_{i1}' + x_{i2}x_{i2}' + 1)^2 \\
+&= (x_{i1}x_{i1}')^2 + (x_{i2}x_{i2}')^2 + 2x_{i1}x_{i2}\cdot x_{i1}'x_{i2}' + 2x_{i1}x_{i1}' + 2x_{i2}x_{i2}' + 1 \\
+&= \langle h(\boldsymbol{x}_i), h(\boldsymbol{x}_i')\rangle,
+\end{split}
+$$
+where
+$$
+h(\boldsymbol{x}_i) = (x_{i1}^2, x_{i2}^2,\sqrt{2}x_{i1}x_{i2}, \sqrt{2}x_{i1}, \sqrt{2}x_{i2}, 1)^T.
+$$
 # Problem 5
 
 ## a)
