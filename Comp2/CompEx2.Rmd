@@ -366,7 +366,7 @@ TRUE, Perhaps (usikker her, \textcolor{green}{Ja, det skal vel være lett å fin
 
 ## b)
 
-```{r}
+```{r 4b}
  id <- "1x_E8xnmz9CMHh_tMwIsWP94czPa1Fpsj"  # google file ID
  d.leukemia <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id), header = T)
 set.seed(2399)
@@ -399,6 +399,10 @@ The misclassification error rates are `r 1 - sum(diag(train.misclass)) / sum(tra
 The training error rate is not surprising, as finding a spearaitng hyperplane when $p >> n$ is easy. The support vector classifier has 3 false positives and 3 false negatives on the test set. \textcolor{red}{kanskje det ikke er riktig?}
 
 (iv)
+
+## c)
+
+
 
 # Problem 5
 
