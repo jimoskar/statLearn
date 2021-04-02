@@ -453,3 +453,34 @@ centroids <- as.data.frame(rbind(c1,c2))
 plt + geom_point(data = centroids, aes(V1,V2, color = "centroid")) 
 ```
 
+(iii)
+```{r}
+dist <- function(x, y) {
+  d <- length(x) # dimension
+  sum = 0
+  for(i in 1:d) {
+    sum = sum + (x[i] - y[i])^2
+  }
+  return(sqrt(sum))
+}
+
+reassign <- function(df, centroids){
+  n = nrow(df)
+  for(i in 1:n) {
+    dist1 <-  dist(df[i, 1:2], centroids[1, ])
+    dist2 <- dist(df[i, 1:2], centroids[2, ])
+    if(dist1 > dist2) {
+    df[i, 3]  <- 2
+    } else {
+      df[i, 3] <- 1
+    }
+  }
+  return(df)
+}
+
+df <- reassign(df, centroids)
+ggplot(data = df, aes(x1, x2, color = cluster) ) + 
+  geom_point() +
+  theme_bw()
+```
+
