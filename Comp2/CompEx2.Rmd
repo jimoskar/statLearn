@@ -431,8 +431,25 @@ cluster <-  sample(1:K, length(x1), replace = T)
 df = as.data.frame(cbind(x1, x2, cluster))
 df$cluster = as.factor(df$cluster)
 
-ggplot(data = df, aes(x1, x2, color = cluster) ) +
-  geom_point() +
-  theme_bw()
+plt <- ggplot(data = df, aes(x1, x2, color = cluster) ) +
+        geom_point() +
+        theme_bw()
+plt
+```
+
+(ii) \textcolor{red}{mulig at dette kan gjøres på en bedre måte, for nå endrer fargene seg og det er ikke tydelig hvilken cluster sentroidene tilhører i plottet.}
+```{r}
+calc_centr <- function(k, df) {
+  feats <- df[df$cluster == k, 1:2]
+  mean.1 <- mean(feats[, 1])
+  mean.2 <- mean(feats[, 2])
+  return(c(mean.1, mean.2))
+}
+
+c1 <- calc_centr(1, df)
+c2 <- calc_centr(2, df)
+centroids <- as.data.frame(rbind(c1,c2))
+
+plt + geom_point(data = centroids, aes(V1,V2, color = "centroid")) 
 ```
 
