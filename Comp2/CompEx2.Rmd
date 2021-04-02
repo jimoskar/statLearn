@@ -416,6 +416,23 @@ $$
 
 ## a)
 
-TRUE, FALSE, FALSE, FALSE
+TRUE, FALSE, FALSE\textcolor{red}{hva menes med robust da?}, FALSE
 
 ## b)
+
+(i)
+```{r}
+set.seed(1)
+x1 <- c(1, 2, 0, 4, 5, 6)
+x2 <- c(5, 4, 3, 1, 1, 2)
+
+K = 2
+cluster <-  sample(1:K, length(x1), replace = T)
+df = as.data.frame(cbind(x1, x2, cluster))
+df$cluster = as.factor(df$cluster)
+
+ggplot(data = df, aes(x1, x2, color = cluster) ) +
+  geom_point() +
+  theme_bw()
+```
+
