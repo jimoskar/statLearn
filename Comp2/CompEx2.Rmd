@@ -456,9 +456,11 @@ plt + geom_point(data = centroids, aes(V1,V2, color = "centroid"))
 
 (iii)
 ```{r}
-dist <- function(x, y) {
+eucl.dist <- function(x, y) {
   d <- length(x) # dimension
   sum = 0
+  x
+  y
   for(i in 1:d) {
     sum = sum + (x[i] - y[i])^2
   }
@@ -468,8 +470,8 @@ dist <- function(x, y) {
 reassign <- function(df, centroids){
   n = nrow(df)
   for(i in 1:n) {
-    dist1 <-  dist(df[i, 1:2], centroids[1, ])
-    dist2 <- dist(df[i, 1:2], centroids[2, ])
+    dist1 <-  eucl.dist(df[i, 1:2], centroids[1, ])
+    dist2 <- eucl.dist(df[i, 1:2], centroids[2, ])
     if(dist1 > dist2) {
     df[i, 3]  <- 2
     } else {
@@ -484,4 +486,51 @@ ggplot(data = df, aes(x1, x2, color = cluster) ) +
   geom_point() +
   theme_bw()
 ```
+
+## c)
+
+```{r}
+id <- "1VfVCQvWt121UN39NXZ4aR9Dmsbj-p9OU"  # google file ID
+GeneData <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", 
+                             id), header = F)
+colnames(GeneData)[1:20] = paste(rep("H", 20), c(1:20), sep = "")
+colnames(GeneData)[21:40] = paste(rep("D", 20), c(1:20), sep = "")
+row.names(GeneData) = paste(rep("G", 1000), c(1:1000), sep = "")
+GeneData = t(GeneData)
+GeneData <- scale(GeneData)
+n = ncol(GeneData)
+GeneData[,n]
+
+hc.euc.complete <- hclust(dist(GeneData), method = "complete")
+hc.euc.single <- hclust(dist(GeneData), method = "single")
+hc.euc.average <- hclust(dist(GeneData), method = "average")
+par(mfrow = c(1, 3))
+plot(hc.euc.complete, main = "Complete Linkage", xlab = " ", sub = " ", cex = 0.5)
+plot(hc.euc.single, main = "Single Linkage", xlab = " ", sub = " ", cex = 0.5)
+plot(hc.euc.average, main = "Average Linkage", xlab = " ", sub = " ", cex = 0.5)
+
+# Skjønner ikke helt hvorfor Gendata skal transponeres..
+dd <- as.dist(1 - cor(t(GeneData)))
+hc.cor.complete <- hclust(dd, method = "complete")
+hc.cor.single <- hclust(dd, method = "single")
+hc.cor.average <- hclust(dd, method = "average")
+par(mfrow = c(1, 3))
+plot(hc.cor.complete, cex.main = 0.7, main = "CL with Correlation-based Distance", xlab = " ", sub = " ", cex = 0.5)
+plot(hc.cor.single, cex.main = 0.7, main = "SL with Correlation-based Distance", xlab = " ", sub = " ", cex = 0.5)
+plot(hc.cor.average, cex.main = 0.7, main = "AL with Correlation-based Distance", xlab = " ", sub = " ", cex = 0.5)
+
+```
+
+## d)
+
+```{r}
+cutree(hc.euc.complete, 2)
+cutree(hc.euc.single, 2)
+cutree(hc.euc.average, 2)
+
+cutree(hc.cor.complete, 2)
+cutree(hc.cor.single, 2)
+cutree(hc.cor.average, 2)
+```
+ \textcolor{red}{Every method classifies everything correctly!!?}
 
