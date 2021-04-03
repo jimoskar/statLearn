@@ -34,12 +34,13 @@ FALSE, TRUE, TRUE, FALSE
 
 \textcolor{red}{Ikke sikker på om den første er så opplagt, siden krymping elle fjerning av kovariater burde øke bias, noe som gjør at jeg tenker at MSE for treningsdataen generelt godt kan øke. De tre andre er jeg enig i :)}
 \textcolor{green}{Se første svar her :)  https://stats.stackexchange.com/questions/347730/why-ridge-regression-increase-and-not-decrease-the-models-error}
+\textcolor{red}{Jepp, enig i dette ;) Dermed enig i FALSE.}
 
 ## b)
-First we make plots for the $R_\mathrm{adj}^2$, $BIC$, $C_p$ and cross validated prediction error. The red dots show the best amount of variables used in the subset, according to each of the different model choice criteria. 
+Best subset selection is used to identify a satisfactory model that uses a subset of the variables. Plots for the following model selection criteria are made: $R_\mathrm{adj}^2$, $BIC$, $C_p$ and cross validated prediction error. The red dots show the best amount of variables used in the subset, according to each criterion. 
 
 ```{r}
-id <- "1iI6YaqgG0QJW5onZ_GTBsCvpKPExF30G"  # google file ID
+id <- "1iI6YaqgG0QJW5onZ_GTBsCvpKPExF30G"  # Google file ID.
 catdat <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id), 
                    header = T)
 
@@ -48,34 +49,30 @@ train.ind = sample(1:nrow(catdat), 0.5 * nrow(catdat))
 catdat.train = catdat[train.ind, ]
 catdat.test = catdat[-train.ind, ]
 
+# Perform best subset selection using all the predictors and the training data.
+n <- ncol(catdat.train) - 1 # Number of predictors.
+bss.obj <- regsubsets(birds~., catdat.train, nvmax = n) # Best subset selection. 
 
-# Perform best subset selection using all the predictors and the training data
-n <-  ncol(catdat.train) - 1 # Number of predictors
-bss.obj  <- regsubsets(birds~., catdat.train, nvmax = n)
-
-# Save summary obj
+# Save summary obj.
 sum <-  summary(bss.obj)
 
+# Adjusted Rˆ2, C_p, BIC and CV prediction error.
+par(mfrow=c(2,2)) # Adjust settings for plotting. 
 
-# Adjusted Rˆ2, C_p, BIC and CV prediction error
-par(mfrow=c(2,2))
-
-
-# adjRsq 
+# adjRsq. 
 plot(sum$adjr2, xlab="Number of Variables", ylab="Adjusted RSq", type= "l")
 bss.adjr2 = which.max(sum$adjr2)
 points(bss.adjr2,sum$adjr2[bss.adjr2], col="red",cex=2,pch = 20)
 
-# Cp
+# Cp.
 plot(sum$cp, xlab="Number of Variables", ylab="Cp", type='l')
 bss.cp <- which.min(sum$cp)
 points(bss.cp, sum$cp[bss.cp], col="red", cex=2, pch=20)
 
-#BIC
+# BIC.
 bss.bic <- which.min(sum$bic)
 plot(sum$bic, xlab="Number of Variables", ylab="BIC", type='l')
 points(bss.bic, sum$bic[bss.bic], col="red", cex=2, pch=20)
-
 
 # Cross-validated prediction error. 
 # Create a prediction function to make predictions for regsubsets with id predictors included.
@@ -94,34 +91,38 @@ cv.errors <- matrix(NA, k, n, dimnames=list(NULL, paste(1:n)))
 
 # Perform CV.
 for(j in 1:k){
-  bss.obj<- regsubsets(birds~., data = catdat.train[folds != j,],nvmax = n)
+  bss.obj <- regsubsets(birds~., data = catdat.train[folds != j,],nvmax = n)
   for(i in 1:n){
-    pred <- predict(bss.obj, catdat.train[folds==j,], id=i) # Skal ikke noe test-data brukes her? NEI! test dataen brukes vel bare helt til slutt?
-    cv.errors[j,i] <-  mean( (catdat.train$birds[folds==j]-pred)^2)
+    pred <- predict(bss.obj, catdat.train[folds==j,], id=i)
+    cv.errors[j,i] <- mean((catdat.train$birds[folds==j]-pred)^2)
   }
 }
 
 # Compute mean cv errors for each model size.
-mean.cv.errors=apply(cv.errors,2,mean)
+mean.cv.errors <- apply(cv.errors,2,mean)
 bss.cv <- which.min(mean.cv.errors) 
 
 # Plot the mean cv errors.
 plot(mean.cv.errors, xlab = "Number of Variables", ylab = "CV", type='l')
 points(bss.cv, mean.cv.errors[bss.cv], col="red", cex=2, pch=20)
+```
 
-par(mfrow=c(1,1))
+The optimal number of predictors (in addition to the intercept) with respect to $R_\mathrm{adj}^2$ is `r bss.adjr2`, for $BIC$ it is `r bss.bic`, for $C_p$ it is `r bss.cp` and according to the cross validated prediction error it is `r bss.cv`. We would argue that cross-validation is a more reliable way of selecting among the models, since it is a resampling method, compared to only running one best subset selection on the training data and choosing based on the other model selection criteria. Hence, the selected variables are as shown below.
+
+```{r}
+par(mfrow=c(1,1)) # Adjust settings for plotting. 
 
 # Best model, based on amount of variables chosen by cv.
 coef(bss.obj, bss.cv) # Selected variables.
 fit <- lm(birds~weight+wetfood+daily.playtime+children.13+urban+bell+daily.outdoortime, data = catdat.train)
 # Kan man få ut den beste modellen fra reg.best i stedet for å fit på nytt?
-# Se øving 6 for hvordan dette kan gjøres!!
+# Se øving 6 for hvordan dette kan gjøres! Kan også bare la det stå sånn tenker jeg. 
 pred.regbest <- predict(fit, newdata = catdat.test)
 mse.regbest <- mean((pred.regbest - catdat.test$birds)^2) # Test Mean Square Error.
 mse.regbest
 ```
 
-The optimal number of predictors with respect to  $R_\mathrm{adj}^2$ is `r bss.adjr2`, for $BIC$ it is `r bss.bic`, for $C_p$ it is `r bss.cp` and for cross validated prediction error it is `r bss.cv`. We would argue that cross-validation is a more reliable way of selecting among the models, since it is a resampling method, compared to only running one best subset selection on the training data and choosing based on the other model selection criteria. Hence, the selected variables are as shown below. The test MSE is calculated as `r mse.regbest`.
+The test MSE is calculated as `r mse.regbest`. \textcolor{red}{Burde kanskje sjekke at de andre test MSE er litt lavere? Jeg tenker at de i hvert fall burde være det ;)}
 
 ## c)
 Using Lasso regression on the same data set leads to the following. In order to choose an optimal value of $\lambda$, cross-validation is used (10-fold). 
@@ -275,7 +276,7 @@ TRUE, TRUE, FALSE \textcolor{red}{men cv brukes i kombinasjon med CCP?}, FALSE (
 
 ## b)
 
-Based solely on the tree above, a tree pruned down to three leaves should consist of `age < 46.5`, `country: indonesia, japan, Korea` and `country: France`. The reason behind this is that these keep the splits that are futhest to the top in the tree, which signals that these are the most important splits (they differentiate the most of the data compared to all other splits). \textcolor{red}{Dette må finskrives, men tror du skjønner poenget ;) Kan ikke konse skikkelig i dag. Kan også tegne en figure etter hvert hvis vi ønsker det ;)}
+Based solely on the tree above, a tree pruned down to three leaves should consist of `age < 46.5`, `country: indonesia, japan, Korea` and `country: France`. The reason behind this is that these keep the splits that are furthest to the top in the tree, which signals that these are the most important splits (they differentiate the most of the data compared to all other splits). \textcolor{red}{Dette må finskrives, men tror du skjønner poenget ;) Kan ikke konse skikkelig i dag. Kan også tegne en figure etter hvert hvis vi ønsker det ;)}
 
 ## c)
 
@@ -416,7 +417,7 @@ $$
 
 ## a)
 
-TRUE, FALSE, FALSE\textcolor{red}{hva menes med robust da?}, FALSE
+TRUE, FALSE, FALSE\textcolor{red}{hva menes med robust da?} \textcolor{green}{Alex: Her tenker jeg at de lurer på om resultatet K-means clustering avhenger sterkt av den initielle randomiseringen av punktene i ulike clusters. Jeg tenker at dette er FALSE, nettopp fordi algoritmen kjøres for mange ulike randomiseringer, før den beste velges. Dette viser jo at den avhenger av det tilfeldige valget i starten, og er dermed ikke robust mot dette valget. Vi kan også spørre om dette er rett tolkning eventuelt ;)}, FALSE
 
 ## b)
 
