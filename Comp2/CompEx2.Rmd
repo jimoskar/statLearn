@@ -534,3 +534,21 @@ cutree(hc.cor.average, 2)
 ```
  \textcolor{red}{Every method classifies everything correctly!!?}
 
+## e)
+
+(i) \textcolor{red}{JEg tror ikke vi skal bruke biplot slik som jeg har gjort her, det blit jo bare ei suppe}
+```{r}
+pr.out <- prcomp(GeneData, scale = T)
+biplot(pr.out, scale = 0, cex = 0.4)
+```
+
+(ii)
+```{r}
+pr.var <-  pr.out$sdev^2
+prop <- sum(pr.var[1:5]) / sum(pr.var)
+```
+The proportion of variance explained by the first 5 PCs is `r round(100 * prop, 2)`%.`
+
+## f)
+
+
