@@ -32,12 +32,8 @@ knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.wh
 ## a)
 FALSE, TRUE, TRUE, FALSE
 
-\textcolor{red}{Ikke sikker på om den første er så opplagt, siden krymping elle fjerning av kovariater burde øke bias, noe som gjør at jeg tenker at MSE for treningsdataen generelt godt kan øke. De tre andre er jeg enig i :)}
-\textcolor{green}{Se første svar her :)  https://stats.stackexchange.com/questions/347730/why-ridge-regression-increase-and-not-decrease-the-models-error}
-\textcolor{red}{Jepp, enig i dette ;) Dermed enig i FALSE.}
-
 ## b)
-Best subset selection is used to identify a satisfactory model that uses a subset of the variables. Plots for the following model selection criteria are made: $R_\mathrm{adj}^2$, $BIC$, $C_p$ and cross validated prediction error. The red dots show the best amount of variables used in the subset, according to each criterion. 
+Best subset selection is used to identify a satisfactory model that uses a subset of the variables. Plots for $R_\mathrm{adj}^2$, $BIC$, $C_p$ and cross validated prediction error as model selection criteria are made. The red dots show the best amount of variables used in the subset, according to each criterion. \textcolor{red}{Dersom vi får for mange sider: Tenker at vi kan ta bort alle disse andre former for model selection criteria og kun ha med cv. Kan da også ev kommentere på at vi har testet disse tre andre metodene og at de alle gir ulike modeller med ulike kovariater, samt høyere test MSE i dette tilfellet (Dette har jeg testet for alle sammen ;))}
 
 ```{r}
 id <- "1iI6YaqgG0QJW5onZ_GTBsCvpKPExF30G"  # Google file ID.
@@ -111,9 +107,9 @@ The optimal number of predictors (in addition to the intercept) with respect to 
 
 ```{r}
 par(mfrow=c(1,1)) # Adjust settings for plotting. 
-
+bss.obj2 <- regsubsets(birds~., data = catdat.train, nvmax = n)
 # Best model, based on amount of variables chosen by cv.
-coef(bss.obj, bss.cv) # Selected variables.
+coef(bss.obj2, bss.cv) # Selected variables.
 fit <- lm(birds~weight+wetfood+daily.playtime+children.13+urban+bell+daily.outdoortime, data = catdat.train)
 # Kan man få ut den beste modellen fra reg.best i stedet for å fit på nytt?
 # Se øving 6 for hvordan dette kan gjøres! Kan også bare la det stå sånn tenker jeg. 
@@ -122,10 +118,10 @@ mse.regbest <- mean((pred.regbest - catdat.test$birds)^2) # Test Mean Square Err
 mse.regbest
 ```
 
-The test MSE is calculated as `r mse.regbest`. \textcolor{red}{Burde kanskje sjekke at de andre test MSE er litt lavere? Jeg tenker at de i hvert fall burde være det ;)}
+The test MSE is calculated as `r mse.regbest`.
 
 ## c)
-Using Lasso regression on the same data set leads to the following. In order to choose an optimal value of $\lambda$, cross-validation is used (10-fold). 
+Using Lasso regression on the same data set leads to the following. In order to choose an optimal value of $\lambda$, 10-fold cross-validation is used. 
 
 ```{r}
 x.train <- model.matrix(birds~., data = catdat.train)[, -1]
@@ -133,8 +129,7 @@ y.train <- catdat.train$birds
 x.test <- model.matrix(birds~., data = catdat.test)[, -1]
 y.test <- catdat.test$birds
 
-grid <- 10^seq(10, -2, length = 100) # Usikker på om grid er nødvendig å ha med!?
-lasso.mod <- glmnet(x.train, y.train, alpha = 1, lambda = grid) 
+lasso.mod <- glmnet(x.train, y.train, alpha = 1) 
 # alpha = 1 specifies Lasso regression. 
 
 # Perform cross validation. 
@@ -142,59 +137,36 @@ set.seed(4268)
 cv.out <- cv.glmnet(x.train, y.train, alpha = 1)
 plot(cv.out)
 bestlam <- cv.out$lambda.min
-bestlam # Lambda ble veldig lik least squares (0)!
+bestlam # Lambda is small, so the fit is relatively similar to least squares. 
 
-# Report the non-zero coefficients. Refit model on entire data-set, with lambdabest.
-# Why do you refit on the entire dataset?? We need the test set to compute MSE afterwards??
-#x <- model.matrix(birds~., data = catdat)
-#y <- catdat$birds
-#full.lasso <- glmnet(x, y, alpha = 1) # Skal lambda = grid være med her?
-# Estimatene blir litt annerledes avhengig av om lamba = grid er med eller ikke!
-#lasso.coeff <- predict(lasso.mod, type = "coefficients", s = bestlam)
-#lasso.coeff
-
-# Think this is a better way to display coefficients.
-lasso.coeff = coef(cv.out, s = "lambda.min")
+lasso.coeff <- coef(cv.out, s = "lambda.min")
 lasso.coeff
-
-# Non-zero coefficients.
-# Trenger ikke denne vel?
-lasso.coeff[lasso.coeff != 0]
 
 lasso.pred <- predict(lasso.mod, s = bestlam, newx = x.test)
 mse.lasso <- mean((lasso.pred - y.test)^2)
 mse.lasso
 ```
 
-As seen in the output above, the test MSE is `r mse.lasso`. Moreover, all coefficients, except `fellow.cats` and `owner.age` are non-zero. The best lambda according to the cross-validation is close to 0, which means that the Lasso regression model is very similar to the linear least squares model, which is confirmed by the fact that only two coefficients are non-zero. \textcolor{red}{Hvorfor er det to intercept-verdier ovenfor? (én er null og den andre har et estimat!)} \textcolor{green}{tror jeg fiksa det. stilte også spm på piazza om det :)}
+As seen in the output above, the test MSE is `r mse.lasso`. Moreover, all coefficients, except `sex`, `age`, `fellow.cats` and `daily.catnip` are non-zero. The best lambda according to the cross-validation is relatively close to 0, which suggests that the Lasso regression model is likely similar to the linear least squares model. This is confirmed by the fact that four coefficients are zero, while the rest are non-zero, which means that some variable selection has been made.  
 
 ## d)
 When $\lambda \longrightarrow \infty$, the Lasso regression gives the null model, i.e. the model where all the coefficients are zero. When $\lambda = 0$, the Lasso regression simply gives the least squares fit. 
 
 ## e)
- i)
+ i) A model with only intercept always predicts the mean of the response in the training data. Hence, the test MSE for this model is calculated as below. 
 ```{r}
-# A model with only intercept.
-only.intercept <- lm(birds~1, data = catdat.train)
-yhat.intercept <- predict(only.intercept, newdata = catdat.test)
-mse.intercept <- mean((yhat.intercept - catdat.test$birds)^2) # Test Mean Square Error.
+mse.intercept <- mean((mean(catdat.train$birds)-catdat.test$birds)^2) 
 mse.intercept
-
-# This should be the same as predicting each y has the mean of the training data.
-# This is a better way of doing it IMO!
-mse.intercept2 <- mean((mean(catdat.train$birds)-catdat.test$birds)^2) 
-mse.intercept2
 ```
 ii)
 ```{r}
 # A multiple linear regression.
 least.sq <- lm(birds~., data = catdat.train)
 yhat.least.sq <- predict(least.sq, newdata = catdat.test)
-mse.least.sq <- mean((yhat.least.sq - catdat.test$birds)^2) # Test Mean Square Error.
+mse.least.sq <- mean((yhat.least.sq - catdat.test$birds)^2) 
 mse.least.sq
 ```
-We see that using only an intercept yields a test MSE of `r mse.intercept`, while a standard linear regression yields a test MSE of `r mse.least.sq`. On the other hand, best subset selection resulted in a test MSE of `r mse.regbest` and lasso regression resultet in a test MSE of `r mse.lasso`. We see that both models form a) and b) are superier to the ones introduced here, with regard to the test MSE.
-
+We see that using only an intercept yields a test MSE of `r mse.intercept`, while a standard linear regression yields a test MSE of `r mse.least.sq`. On the other hand, best subset selection resulted in a test MSE of `r mse.regbest` and lasso regression resulted in a test MSE of `r mse.lasso`. We see that both models from a) and b) are superior to the ones introduced here, in terms the test MSE.
 
 ## f)
 
@@ -208,15 +180,15 @@ colnames(msrate) <- c("Test MSE")
 msrate
 ```
 
-We observe that the intercept-only model is clearly the worst, which is as expected, since it predicts the mean of the `birds`-values always. Moreover, the best subset is best by a small margin, while lasso and least squares are almost equal in MSE, where lasso is slightly better. As expected \textcolor{red}{why is this expected?}, the regularization methods give better results compared to standard least squares. 
+We observe that the intercept-only model is clearly the worst, which is as expected, since it always predicts the mean of the `birds`-values. Moreover, best subset selection yields the best results by a small margin, while lasso and least squares are almost equal in MSE, where lasso is slightly better. The regularization methods give better results compared to standard least squares. The results are as expected. First of all, best subset selection is an exhaustive search on all possible models with the covariates, which means that it should find the best possible linear model. This could lead to overfitting, because of the large search space, but has yielded good results in this case. Secondly, shrinkage methods, like Lasso regression, are used to reduce overfitting to the training data. Then, the test MSE might be reduced, since the variance might have been reduced more than the bias has increased (bias-variance trade-off) after regularization. In this case, this has given good results, compared to the least squares regression. Finally, given the assumption that the covariates have a somewhat linear relationship to the response, it is expected that the linear regression has smaller test MSE compared to the intercept-only model. 
 
 # Problem 2
 
 ## a) 
 
-TRUE, TRUE, FALSE, FALSE (Tror den har 7 basis-funksjoner.)  
+TRUE, TRUE, FALSE, FALSE. 
 
-\textcolor{red}{Usikker på om (ii) er et lurespm eller ikke.}
+\textcolor{red}{Usikker på om (ii) er et lurespm eller ikke. Tenker at vi burde spørre om dette! Den penalizer to integralet til den dobbeltderiverte kvadrert. }
 
 ## b) 
 
@@ -229,8 +201,8 @@ $$
 where 
 
 $$
-  (X-c_j)^d_+ = \begin{cases}
-    (x-c_j)^d &, x > c_j\\
+  (X-q_j)^d_+ = \begin{cases}
+    (x-q_j)^d &, x > q_j\\
     0&,\text{otherwise.} 
   \end{cases}
 $$
@@ -238,34 +210,29 @@ $$
 ## c)
 
 (i)
-```{r}
-# First plot birds against daily.outdoortime.
-#plot(birds~daily.outdoortime, data = catdat)
-
+```{r, fig.height=3.7}
 # Fit polynomial regression with training data.
-attach(catdat.train)
-time.range <- range(daily.outdoortime)
-time.grid <- seq(from = time.range[1], to = time.range[2])
-plot(birds~daily.outdoortime, data = catdat, main = "Polynomial Regression", xlab = "Outdoor Time", ylab="Birds")
+outdoor.data <- catdat.train[c("daily.outdoortime", "birds")] # Pick out necessary training data. 
+par(mar=c(4, 3, 3, 4.5), xpd=TRUE) # Change margins of plots. 
+plot(outdoor.data, 
+     main = "Polynomial Regression", xlab = "Outdoor Time", ylab="Birds")
 deg <- 1:10
 col <- rainbow(n = length(deg))
 mse.train <- seq(from = 1, to = length(deg))
+
 for (d in 1:length(deg)){ # Kan også bruke en sapply her (se øving 7).
-  fit <- lm(birds~poly(daily.outdoortime, d), data = catdat.train)
-  #Hvorfor bruker du time.grid? Skal man ikke bruke treningsdataene?
-  # Endra litt på det, tror det gir riktigere resultat
-  preds.plot <- predict(fit, newdata = list(daily.outdoortime = time.grid))
-  lines(time.grid, preds.plot, type = "l", col = col[d], pch = 20)
-  preds <- predict(fit, newdata = list(daily.outdoortime))
-  mse.train[d] = mean((preds - catdat.train$birds)^2)
+  fit <- lm(birds~poly(daily.outdoortime, d), data = outdoor.data)
+  lines(sort(outdoor.data[, 1]), fit$fit[order(outdoor.data[, 1])], col = col[d])
+  mse.train[d] = mean((predict(fit, outdoor.data) - outdoor.data[, 2])^2)
 }
-legend("topleft", legend=paste("d = ", deg), col = col, pch = 20)
+
+legend("topright", inset = c(-0.25, 0), legend=paste("d = ", deg), col = col, pch = 20)
 
 mse.train # MSE from training data.
 which.min(mse.train)
 ```
 
-(ii) We see that the training MSE decreases steadily as the degree of the polynomial regression increases. This is because we increase the flexibility of the model when we increment the polynomial degree.
+(ii) We see that the training MSE decreases steadily as the degree of the polynomial regression increases. This is because we increase the flexibility of the model when we increment the polynomial degree. This increases the likelihood of overfitting, i.e. reduces the training MSE. 
 
 
 # Problem 3
