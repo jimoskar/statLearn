@@ -123,7 +123,7 @@ The test MSE is calculated as `r mse.regbest`.
 ## c)
 Using Lasso regression on the same data set leads to the following. In order to choose an optimal value of $\lambda$, 10-fold cross-validation is used. 
 
-```{r}
+```{r, fig.height = 3.5}
 x.train <- model.matrix(birds~., data = catdat.train)[, -1]
 y.train <- catdat.train$birds
 x.test <- model.matrix(birds~., data = catdat.test)[, -1]
@@ -239,11 +239,22 @@ which.min(mse.train)
 
 ## a)
 
-TRUE, TRUE, FALSE \textcolor{red}{men cv brukes i kombinasjon med CCP?}, FALSE (velger vel alltid den minste modellen, da jeg synes de tre siste ser like gode ut. )
+TRUE, TRUE, FALSE, FALSE 
 
 ## b)
 
-Based solely on the tree above, a tree pruned down to three leaves should consist of `age < 46.5`, `country: indonesia, japan, Korea` and `country: France`. The reason behind this is that these keep the splits that are furthest to the top in the tree, which signals that these are the most important splits (they differentiate the most of the data compared to all other splits). \textcolor{red}{Dette må finskrives, men tror du skjønner poenget ;) Kan ikke konse skikkelig i dag. Kan også tegne en figure etter hvert hvis vi ønsker det ;)}
+Based solely on the tree above, a tree pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. A figure is shown below, where the terminal nodes are denoted with each of their respective probabilities. The terminal nodes denoted by the names above are shown from left to right. This is the best way to prune the tree down to three leaves because this leads to the most coarse stratification of the covariate space. `age` and `country`, in that order, can be interpreted as the most important covariates when determining the probability of dying. \textcolor{red}{Men hvorfor skal den andre splitten til høyre beholdes og ikke den til venstre? Har vi en grunn til hvorfor dette?}
+
+
+```{r, echo = F, fig.height=3}
+set.seed(1)
+id <- "1yYlEl5gYY3BEtJ4d7KWaFGIOEweJIn__" # Google file ID.
+d.corona <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id),header=T)
+t.corona <- tree(deceased~., data = d.corona) 
+plot(t.corona)
+text(t.corona, pretty = 0)
+```
+
 
 ## c)
 
@@ -252,6 +263,8 @@ id <- "1Fv6xwKLSZHldRAC1MrcK2mzdOYnbgv0E" # Google file ID.
 d.diabetes <- dget(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
 d.train <-d.diabetes$ctrain
 d.test <- d.diabetes$ctest
+
+# Spør om hvorfor dette må med!
 d.train$diabetes <- as.factor(d.train$diabetes) # La til denne for å få til klassifisering?!
 d.test$diabetes <- as.factor(d.test$diabetes) # La til denne for å få til klassifisering?!
 ```
@@ -261,11 +274,8 @@ d.test$diabetes <- as.factor(d.test$diabetes) # La til denne for å få til klas
 ```{r}
 # Simple classification tree.
 set.seed(1)
-simple.tree <- tree(diabetes~., data = d.train)
-#Kan kanskje fjerne summary?
-# Teksten må eventuelt justers på i plottet
-summary(simple.tree)
-plot(simple.tree)
+simple.tree <- tree(diabetes~., data = d.train, split = "deviance")
+plot(simple.tree, type = "proportional")
 text(simple.tree, cex = 0.5, pretty = 0)
 
 # Calculate classification error for the unpruned tree.
@@ -277,18 +287,22 @@ class.rate.simple <-  1 -
 class.rate.simple
 
 # Apply cost complexity pruning. 
-cv.diabetes <- cv.tree(simple.tree, FUN = prune.misclass) # 10-fold cv is default. Vet ikke om vi burde bruke prune.misclass!? Jo tror det er riktig
+cv.diabetes <- cv.tree(simple.tree, FUN = prune.misclass) # 10-fold cv is default. 
+# Classification error rate is used to guide the pruning process, 
+# since prediction accuracy of the final pruned tree is the goal. 
 best <- which.min(cv.diabetes$dev) # Finds best model.
-plot(cv.diabetes$size, cv.diabetes$dev, type = "b")
+```
+
+```{r, fig.height=3}
+plot(cv.diabetes$size, cv.diabetes$dev, type = "b", xlab = "Terminal Nodes", ylab = "Misclassifications")
 points(cv.diabetes$size[best], cv.diabetes$dev[best], col = "red", pch = 20)
-#plot(cv.diabetes$k, cv.diabetes$dev, type = "b") # Vet ikke helt hva k er?
-# k er samme som alpha i CCP.
-#best.tree <- prune.tree(simple.tree, best = cv.diabetes$size[best]) # Bruk hvis deviance brukes over.
+
 best.tree <- prune.misclass(simple.tree, best = 6)
-summary(best.tree)
 plot(best.tree)
 text(best.tree, cex = 0.7, pretty = 0)
+```
 
+```{r}
 # Calculate classification error for the pruned tree.
 yhat.pruned <- predict(best.tree, newdata = d.test, type = "class")
 conf.table.pruned <- table(yhat.pruned, d.test$diabetes)
@@ -297,46 +311,47 @@ class.rate.pruned <-  1-sum(diag(conf.table.pruned))/(sum(conf.table.pruned))
 class.rate.pruned
 ```
 
-Despite the fact that the largest tree is the best, we choose to prune the tree to 6 leaves, since this is not that much worse and is much more interpretable than the larger model with 17 leaves. 
-\textcolor{red}{Synes det er litt rart at den mest komplekse modellen gir best CV-error. Men poenget med oppgaven er kanskje at vi skal prioritere tolkning og enkelhet? Synes vi bør spørre om dette.}
 
-Also, we can se that the misclassification error is reported below. This is very similar for the unpruned and the pruned tree, which suggests that a more advanced method perhaps will make larger improvements on the simple classification tree. 
 
-(ii)
-For the more advanced method, we consider the random forest approach. We choose the number of trees, $B = 1000$, since this amount seems to be suffcient for the test error to settle. Furthermore, since $p = 7$, we choose $m = 3 \approx \sqrt{p}$, because this is recommended in ISLR. \textcolor{red}{usikker på hvor mye rettferdigjørelse de forventer her...}
+Despite the fact that the largest tree is the best, according to the cross-validation error, we choose to prune the tree to 6 leaves, since it is much more interpretable than the larger model with 17 leaves. 
+\textcolor{red}{Synes det er litt rart at den mest komplekse modellen gir best CV-error. Men poenget med oppgaven er kanskje at vi skal prioritere tolkning og enkelhet? SPM HER!} \textcolor{green}{Tror kanskje at det er overfitting her? Siden test-error-raten er lavere for pruned tree, til tross for at cv error sier at den burde vært større. }
+
+The misclassification error for the pruned tree is reported above. Despite the fact that the CV-error is best for the largest model, it is apparent that the misclassification error on the test set is slightly lower for the pruned tree with 6 terminal nodes, compared to the unpruned tree. Despite this, the errors are very similar, which suggests that a more advanced method should be tested. 
+
+(ii) \textcolor{red}{SPM: Hvorfor bruke random forest her, og ikke bagging eller boosting?}
+For the more advanced method, a random forest approach is considered. The number of trees is chosen to be $B = 1000$, since this amount seems to be sufficient for the test error to settle. Furthermore, since $p = 7$, we choose $m = 3 \approx \sqrt{p}$, because this is recommended in ISLR. \textcolor{red}{SPM: spør om hvor mye rettferdiggjørelse som kreves her!}
 
 ```{r}
 set.seed(1)
-B = 1000
-m = 3
-rf.d = randomForest(diabetes ~ ., d.train, mtry = m, ntree = B, importance = T)
+B <- 1000
+m <- 3
+rf.d <- randomForest(diabetes ~ ., d.train, mtry = m, ntree = B, importance = T)
 
-yhat = predict(rf.d, newdata = d.test, type = "class")
-response.test = d.test$diabetes
-d.misclass = table(yhat, response.test)
+yhat <- predict(rf.d, newdata = d.test, type = "class")
+response.test <- d.test$diabetes
+d.misclass <- table(yhat, response.test)
 d.misclass
 rf.misclass <- 1 - sum(diag(d.misclass))/sum(d.misclass)
-
+rf.misclass
 ```
 The resulting test misclassification rate is `r rf.misclass`. This is slightly lower than for the simple tree. Next, we find the most influential variables in this classification problem.
-```{r}
+```{r, fig.height=3.5}
 # Find the most important variables.
-importance(rf.d)
-varImpPlot(rf.d)
+varImpPlot(rf.d, main = "")
 ```
-We see that `glu` and `bmi` are the most influential.
+Based on both metrics in the plots above, it is apparent that `glu` and `bmi` are the most influential, as expected based on the simple trees from earlier. 
 
 # Problem 4
 
 ## a)
 
-TRUE, Perhaps (usikker her, \textcolor{green}{Ja, det skal vel være lett å finne en separating hyperplane siden p >> n, så kanksje FALSE er riktig?}), FALSE (usikker, \textcolor{green}{logreg bryter jo sammen når p >n, men det finnes vel ridge-metoder for logreg som gjør at det funker?}), TRUE
+TRUE, TRUE \textcolor{red}{Jeg tenker TRUE her, siden variansen senkes med soft-margin, slik at overfitting kan bli mindre.} \textcolor{green}{Ja, det skal vel være lett å finne en separating hyperplane siden p >> n, så kanksje FALSE er riktig?}, FALSE (usikker, \textcolor{green}{logreg bryter jo sammen når p >n, men det finnes vel ridge-metoder for logreg som gjør at det funker?} \textcolor{red}{Siden logreg bryter sammen så regner jeg med at svaret er FALSE. Tror ikke de regner med andre metoder for optimering, da vi egt ikke har gjennomgått dette.}), TRUE
 
 ## b)
 
 ```{r 4b}
- id <- "1x_E8xnmz9CMHh_tMwIsWP94czPa1Fpsj"  # google file ID
- d.leukemia <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id), header = T)
+id <- "1x_E8xnmz9CMHh_tMwIsWP94czPa1Fpsj"  # Google file ID.
+d.leukemia <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id), header = T)
 set.seed(2399)
 t.samples <- sample(1:60, 15, replace = F)
 d.leukemia$Category <- as.factor(d.leukemia$Category)
@@ -344,29 +359,89 @@ d.leukemia.test <- d.leukemia[t.samples, ]
 d.leukemia.train <- d.leukemia[-t.samples, ]
 ```
 
-(i) A support vector machine (SVM) is more suitable than a logistic regression here, because $p > n$. We could also use linear and quadratic discriminant analysis, in addition to logistic regression variations with a penalty term (similar to e.g. ridge regression).
+(i) A support vector machine (SVM) is more suitable than a logistic regression here, because $p > n$. This means that the parameters in the logistic regression model cannot be estimated. Linear or quadratic discriminant analysis could also be used in this case, in addition to regularized logistic regression variants, i.e. with added penalty term when optimizing (similar to e.g. ridge regression). \textcolor{green}{Kan bagging/randomForests/boosting bruker her også?}
 
-(ii) The paper intends to demonstrate a new method for identifying the subset of genes (predictors) which capture the necessary information in order to classify patients into different groups (response). They introduce the Ensemble SVM-Recursive Feature Elimination (ESVM-RFE), which combines the ensamble and bagging methods used in random forests with SVMs and a bakcward elimination strategy.
+(ii) The paper intends to demonstrate a new method for identifying the subset of genes (predictors) which capture the necessary information in order to classify patients into different groups (response). They introduce the Ensemble SVM-Recursive Feature Elimination (ESVM-RFE), which combines the ensemble and bagging methods used in random forests with SVMs and a backward elimination strategy.
 
 (iii)
-```{r}
-svcfit <-  svm(Category~., data = d.leukemia.train, kernel = "linear", cost = 1, scale = T)
 
+```{r}
+svcfit <- svm(Category~., data = d.leukemia.train, kernel = "linear", cost = 1, scale = T)
+
+# Confusion table from training. 
 train.yhat <- predict(svcfit, newdata = d.leukemia.train)
 train.misclass <- table(predict = train.yhat, truth = d.leukemia.train$Category)
 train.misclass
+# Misclassification error rate from training. 
 1 - sum(diag(train.misclass)) / sum(train.misclass)
 
+# Confusion table from testing. 
 test.yhat <- predict(svcfit, newdata = d.leukemia.test) 
 test.misclass <- table(predict = test.yhat, truth = d.leukemia.test$Category)
 test.misclass
+# Misclassification error rate from testing.
+1 - sum(diag(test.misclass)) / sum(test.misclass)
 ```
+
 
 The misclassification error rates are `r 1 - sum(diag(train.misclass)) / sum(train.misclass)` for the training data and `r 1 - sum(diag(test.misclass)) / sum(test.misclass)` for the test data.
 
-The training error rate is not surprising, as finding a spearaitng hyperplane when $p >> n$ is easy. The support vector classifier has 3 false positives and 3 false negatives on the test set. \textcolor{red}{kanskje det ikke er riktig?}
+The training error rate is not surprising, as finding a separating hyperplane when $p >> n$ is easy \textcolor{red}{SPM: Men lav cost betyr høy margin. Er C = 1 en lav eller høy cost her?}. The support vector classifier has 1 false positive and 4 false negatives on the test set. This means that a false negative is the most common type of error that is seen in the test set. 
+
+Despite this, the classification method is successful, since it performs slightly better than always predicting the most frequently occurring class, which is `Non-Relapse`. The output below substantiates this argument. 
+
+```{r}
+# Most occurring class is "Non-Relapse".
+summary(d.leukemia.train$Category)
+# Confusion table from predicting most occuring class. 
+test.misclass.most <- table(predict = rep("Non-Relapse", length(d.leukemia.test$Category)), truth = d.leukemia.test$Category)
+test.misclass.most
+# Misclassification error rate from testing.
+1 - sum(diag(test.misclass.most)) / sum(test.misclass.most)
+```
 
 (iv)
+First, the analysis is repeated with $\gamma = 10^{-2}$. 
+```{r}
+svcfit.radial.1 <- svm(Category~., data = d.leukemia.train, kernel = "radial", cost = 1, gamma = 1e-3, scale = T)
+
+# Confusion table from training. 
+train.yhat.radial.1 <- predict(svcfit.radial.1, newdata = d.leukemia.train)
+train.misclass.radial.1 <- table(predict = train.yhat.radial.1, truth = d.leukemia.train$Category)
+train.misclass.radial.1
+# Misclassification error rate from training. 
+1 - sum(diag(train.misclass.radial.1)) / sum(train.misclass.radial.1)
+
+# Confusion table from testing. 
+test.yhat.radial.1 <- predict(svcfit.radial.1, newdata = d.leukemia.test) 
+test.misclass.radial.1 <- table(predict = test.yhat.radial.1, truth = d.leukemia.test$Category)
+test.misclass.radial.1
+# Misclassification error rate from testing.
+1 - sum(diag(test.misclass.radial.1)) / sum(test.misclass.radial.1)
+```
+
+The training error rate is still 0 in this case. \textcolor{red}{Interpretation sammenlignet med tidligere; hvorfor? Hvordan påvirker gamma dette? Dette må sjekkes ut.}. The test misclassification error rate is no better than always predicting the most frequently occurring class in the training data. Hence, this classifier is not successful. 
+
+Next, the analysis is repeated with $\gamma = 10^{-5}$. 
+
+```{r}
+svcfit.radial.2 <- svm(Category~., data = d.leukemia.train, kernel = "radial", cost = 1, gamma = 1e-6, scale = T)
+
+# Confusion table from training. 
+train.yhat.radial.2 <- predict(svcfit.radial.2, newdata = d.leukemia.train)
+train.misclass.radial.2 <- table(predict = train.yhat.radial.2, truth = d.leukemia.train$Category)
+train.misclass.radial.2
+# Misclassification error rate from training. 
+1 - sum(diag(train.misclass.radial.2)) / sum(train.misclass.radial.2)
+
+# Confusion table from testing. 
+test.yhat.radial.2 <- predict(svcfit.radial.2, newdata = d.leukemia.test) 
+test.misclass.radial.2 <- table(predict = test.yhat.radial.2, truth = d.leukemia.test$Category)
+test.misclass.radial.2
+# Misclassification error rate from testing.
+1 - sum(diag(test.misclass.radial.2)) / sum(test.misclass.radial.2)
+```
+The training error rate is not 0 in this case. It is apparent that no individuals are correctly predicted to relapse. \textcolor{red}{Interpretation sammenlignet med tidligere; hvorfor?}. The test misclassification error rate is no better than always predicting the most frequently occurring class in the training data. Hence, this classifier is not successful. 
 
 ## c)
 $$
@@ -380,33 +455,34 @@ where
 $$
 h(\boldsymbol{x}_i) = (x_{i1}^2, x_{i2}^2,\sqrt{2}x_{i1}x_{i2}, \sqrt{2}x_{i1}, \sqrt{2}x_{i2}, 1)^T.
 $$
+
 # Problem 5
 
 ## a)
 
-TRUE, FALSE, FALSE\textcolor{red}{hva menes med robust da?} \textcolor{green}{Alex: Her tenker jeg at de lurer på om resultatet K-means clustering avhenger sterkt av den initielle randomiseringen av punktene i ulike clusters. Jeg tenker at dette er FALSE, nettopp fordi algoritmen kjøres for mange ulike randomiseringer, før den beste velges. Dette viser jo at den avhenger av det tilfeldige valget i starten, og er dermed ikke robust mot dette valget. Vi kan også spørre om dette er rett tolkning eventuelt ;)}, FALSE
+TRUE, FALSE, FALSE\textcolor{red}{hva menes med robust da?} \textcolor{green}{Alex: Her tenker jeg at de lurer på om resultatet av K-means clustering avhenger sterkt av den initielle randomiseringen av punktene i ulike clusters. Jeg tenker at dette er FALSE, nettopp fordi algoritmen kjøres for mange ulike randomiseringer, før den beste velges. Dette viser jo at den avhenger av det tilfeldige valget i starten, og er dermed ikke robust mot dette valget. Vi kan også spørre om dette er rett tolkning eventuelt ;)}, FALSE
 
 ## b)
 
 (i)
-```{r}
+```{r, fig.height=3}
 set.seed(1)
 x1 <- c(1, 2, 0, 4, 5, 6)
 x2 <- c(5, 4, 3, 1, 1, 2)
 
-K = 2
+K <- 2
 cluster <-  sample(1:K, length(x1), replace = T)
-df = as.data.frame(cbind(x1, x2, cluster))
-df$cluster = as.factor(df$cluster)
+df <- as.data.frame(cbind(x1, x2, cluster))
+df$cluster <-  as.factor(df$cluster)
 
-plt <- ggplot(data = df, aes(x1, x2, color = cluster) ) +
-        geom_point() +
-        theme_bw()
+plt <- ggplot() +
+        geom_point(data = df, aes(x1, x2, color = cluster)) +
+        theme_bw() + scale_color_identity(guide = "legend", labels = c(1, 2))
 plt
 ```
 
-(ii) \textcolor{red}{mulig at dette kan gjøres på en bedre måte, for nå endrer fargene seg og det er ikke tydelig hvilken cluster sentroidene tilhører i plottet.}
-```{r}
+(ii) 
+```{r, fig.height=3}
 calc_centr <- function(k, df) {
   feats <- df[df$cluster == k, 1:2]
   mean.1 <- mean(feats[, 1])
@@ -416,15 +492,22 @@ calc_centr <- function(k, df) {
 
 c1 <- calc_centr(1, df)
 c2 <- calc_centr(2, df)
-centroids <- as.data.frame(rbind(c1,c2))
-
-plt + geom_point(data = centroids, aes(V1,V2, color = "centroid")) 
+centroids <- as.data.frame(cbind(rbind(c1,c2), c(1,2), c("black","red")))
+colnames(centroids) <-c("x", "y", "cluster", "color_code")
+rownames(centroids) <- c(1,2)
+centroids <- as.data.frame(rbind(c1,c2)) # denne er her som safeguard foreløpig! Må bestemme om vi bør beholde det jeg har gjort eller ikke!
+#centroid er det samme som centroids vha de tre linjene ovenfor. 
+#centroid <- data.frame("x" = c(c1[1], c2[1]), "y" = c(c1[2], c2[2]), "cluster" = c(1,2), "color_code" = c("black","red"))
+# Tried to get same colors across both plots, this is the closest I have come. 
+plt + geom_point(data = centroid, aes(x, y, color = color_code), shape = 4) + 
+    scale_color_identity(guide = "legend", labels = c(1, 2), breaks = centroid$cluster)
+# Usikker på hvorfor shape endres til firkant i legend her, men jeg skjønner ikke ggplot helt så hva vet vel jeg. 
 ```
 
 (iii)
-```{r}
+```{r, fig.height=3}
 eucl.dist <- function(x, y) {
-  d <- length(x) # dimension
+  d <- length(x) # Dimension.
   sum = 0
   x
   y
@@ -448,10 +531,10 @@ reassign <- function(df, centroids){
   return(df)
 }
 
-df <- reassign(df, centroids)
-ggplot(data = df, aes(x1, x2, color = cluster) ) + 
+df2 <- reassign(df, centroids) # denne må fikses dersom det skal fungere med den nye centroid-df!
+ggplot(data = df2, aes(x1, x2, color = cluster) ) + 
   geom_point() +
-  theme_bw()
+  theme_bw() + scale_color_identity(guide = "legend", labels = c(1, 2))
 ```
 
 ## c)
