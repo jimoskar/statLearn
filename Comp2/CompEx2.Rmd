@@ -497,7 +497,7 @@ colnames(centroids) <-c("x", "y", "cluster", "color_code")
 rownames(centroids) <- c(1,2)
 centroids <- as.data.frame(rbind(c1,c2)) # denne er her som safeguard foreløpig! Må bestemme om vi bør beholde det jeg har gjort eller ikke!
 #centroid er det samme som centroids vha de tre linjene ovenfor. 
-#centroid <- data.frame("x" = c(c1[1], c2[1]), "y" = c(c1[2], c2[2]), "cluster" = c(1,2), "color_code" = c("black","red"))
+centroid <- data.frame("x" = c(c1[1], c2[1]), "y" = c(c1[2], c2[2]), "cluster" = c(1,2), "color_code" = c("black","red"))
 # Tried to get same colors across both plots, this is the closest I have come. 
 plt + geom_point(data = centroid, aes(x, y, color = color_code), shape = 4) + 
     scale_color_identity(guide = "legend", labels = c(1, 2), breaks = centroid$cluster)
@@ -539,36 +539,34 @@ ggplot(data = df2, aes(x1, x2, color = cluster) ) +
 
 ## c)
 
-```{r}
-id <- "1VfVCQvWt121UN39NXZ4aR9Dmsbj-p9OU"  # google file ID
+```{r, out.width="60%"}
+id <- "1VfVCQvWt121UN39NXZ4aR9Dmsbj-p9OU"  # Google file ID
 GeneData <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", 
                              id), header = F)
-colnames(GeneData)[1:20] = paste(rep("H", 20), c(1:20), sep = "")
-colnames(GeneData)[21:40] = paste(rep("D", 20), c(1:20), sep = "")
-row.names(GeneData) = paste(rep("G", 1000), c(1:1000), sep = "")
-GeneData = t(GeneData)
+colnames(GeneData)[1:20] <- paste(rep("H", 20), c(1:20), sep = "")
+colnames(GeneData)[21:40] <- paste(rep("D", 20), c(1:20), sep = "")
+row.names(GeneData) <-paste(rep("G", 1000), c(1:1000), sep = "")
+GeneData <- t(GeneData)
 GeneData <- scale(GeneData)
-n = ncol(GeneData)
-GeneData[,n]
 
 hc.euc.complete <- hclust(dist(GeneData), method = "complete")
 hc.euc.single <- hclust(dist(GeneData), method = "single")
 hc.euc.average <- hclust(dist(GeneData), method = "average")
-par(mfrow = c(1, 3))
+par(mfrow = c(2, 3))
 plot(hc.euc.complete, main = "Complete Linkage", xlab = " ", sub = " ", cex = 0.5)
 plot(hc.euc.single, main = "Single Linkage", xlab = " ", sub = " ", cex = 0.5)
 plot(hc.euc.average, main = "Average Linkage", xlab = " ", sub = " ", cex = 0.5)
 
-# Skjønner ikke helt hvorfor Gendata skal transponeres..
+# Skjønner ikke helt hvorfor Gendata skal transponeres. Den blir transponert en gang tidligere også, lenger oppe. 
 dd <- as.dist(1 - cor(t(GeneData)))
 hc.cor.complete <- hclust(dd, method = "complete")
 hc.cor.single <- hclust(dd, method = "single")
 hc.cor.average <- hclust(dd, method = "average")
-par(mfrow = c(1, 3))
+#par(mfrow = c(1, 3))
 plot(hc.cor.complete, cex.main = 0.7, main = "CL with Correlation-based Distance", xlab = " ", sub = " ", cex = 0.5)
 plot(hc.cor.single, cex.main = 0.7, main = "SL with Correlation-based Distance", xlab = " ", sub = " ", cex = 0.5)
 plot(hc.cor.average, cex.main = 0.7, main = "AL with Correlation-based Distance", xlab = " ", sub = " ", cex = 0.5)
-
+# Need to find a nice way to visualize all of these dendograms without using too much room. 
 ```
 
 ## d)
@@ -581,24 +579,36 @@ cutree(hc.euc.average, 2)
 cutree(hc.cor.complete, 2)
 cutree(hc.cor.single, 2)
 cutree(hc.cor.average, 2)
+
+# Bare for å teste: Det samme gjør kmeans. Kanskje det er meningen ellerno?
+# Må noen kolonner tas bort ellerno?
+km.out <- kmeans(GeneData, 2, nstart = 20)
+km.out$cluster
 ```
- \textcolor{red}{Every method classifies everything correctly!!?}
+ \textcolor{red}{Every method classifies everything correctly!!?} \textcolor{green}{Ser sånn ut ja! Jeg aner ikke hvorfor dette skulle skje!?}
 
 ## e)
 
-(i) \textcolor{red}{JEg tror ikke vi skal bruke biplot slik som jeg har gjort her, det blit jo bare ei suppe}
+(i) 
 ```{r}
 pr.out <- prcomp(GeneData, scale = T)
-biplot(pr.out, scale = 0, cex = 0.4)
+biplot(pr.out, scale = 0, cex = 0.2)
+# Rotations er loadings (som er koeffisientene til PCene).
+plot(pr.out$rotation[, "PC1"], pr.out$rotation[, "PC2"]) # Usikker på om det er dette de ønsker!
+
+# x er scores (som er verdiene til PCene). Tror det er dette de mener!
+plot(pr.out$x[, "PC1"], pr.out$x[, "PC2"])
+text(pr.out$x[,"PC1"],pr.out$x[, "PC2"],rownames(GeneData),cex=0.6) # Eller dette de mener? Vil vel farge alle til venstre noe, og alle til høyre noe annet? 
 ```
 
 (ii)
 ```{r}
 pr.var <-  pr.out$sdev^2
 prop <- sum(pr.var[1:5]) / sum(pr.var)
+prop
 ```
 The proportion of variance explained by the first 5 PCs is `r round(100 * prop, 2)`%.`
 
 ## f)
 
-
+\textcolor{red}{Skjønner ikke dette :(}
