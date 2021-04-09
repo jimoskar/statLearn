@@ -147,7 +147,7 @@ mse.lasso <- mean((lasso.pred - y.test)^2)
 mse.lasso
 ```
 
-As seen in the output above, the test MSE is `r mse.lasso`. Moreover, all coefficients, except `sex`, `age`, `fellow.cats` and `daily.catnip` are non-zero. The best lambda according to the cross-validation is relatively close to 0, which suggests that the Lasso regression model is likely similar to the linear least squares model. This is confirmed by the fact that four coefficients are zero, while the rest are non-zero, which means that some variable selection has been made.  
+As seen in the output above, the test MSE is `r mse.lasso`. Moreover, all coefficients, except `sex`, `age`, `fellow.cats` and `daily.catnip` are non-zero. The best lambda according to the cross-validation is relatively close to 0, \textcolor{red}{skjønner ikke helt det som følger her. Knaksje vi ikke trenger å ha det med?} which suggests that the Lasso regression model is likely similar to the linear least squares model. This is confirmed by the fact that four coefficients are zero, while the rest are non-zero, which means that some variable selection has been made.  
 
 ## d)
 When $\lambda \longrightarrow \infty$, the Lasso regression gives the null model, i.e. the model where all the coefficients are zero. When $\lambda = 0$, the Lasso regression simply gives the least squares fit. 
@@ -180,7 +180,7 @@ colnames(msrate) <- c("Test MSE")
 msrate
 ```
 
-We observe that the intercept-only model is clearly the worst, which is as expected, since it always predicts the mean of the `birds`-values. Moreover, best subset selection yields the best results by a small margin, while lasso and least squares are almost equal in MSE, where lasso is slightly better. The regularization methods give better results compared to standard least squares. The results are as expected. First of all, best subset selection is an exhaustive search on all possible models with the covariates, which means that it should find the best possible linear model. This could lead to overfitting, because of the large search space, but has yielded good results in this case. Secondly, shrinkage methods, like Lasso regression, are used to reduce overfitting to the training data. Then, the test MSE might be reduced, since the variance might have been reduced more than the bias has increased (bias-variance trade-off) after regularization. In this case, this has given good results, compared to the least squares regression. Finally, given the assumption that the covariates have a somewhat linear relationship to the response, it is expected that the linear regression has smaller test MSE compared to the intercept-only model. 
+The results are as expected. First of all, best subset selection is an exhaustive search on all possible models with the covariates, which means that it should find the best possible linear model (according to some measure). This could lead to overfitting, because of the large search space, but has given the best result in this case. Secondly, shrinkage methods, like Lasso regression, are used to reduce overfitting to the training data. Then, the test MSE might be reduced, since the variance might have been reduced more than the bias has increased (bias-variance trade-off) after regularization. In this case, this gives a modest decrease in test MSE compared to the least squares regression. Finally, it is clearly expected that the linear regression has a smaller test MSE compared to the intercept-only model, since predicting every value as the mean of the`birds`-values does not capture any trends in the data.
 
 # Problem 2
 
@@ -189,7 +189,7 @@ We observe that the intercept-only model is clearly the worst, which is as expec
 TRUE, TRUE, FALSE, FALSE. 
 
 \textcolor{red}{Usikker på om (ii) er et lurespm eller ikke. Tenker at vi burde spørre om dette! Den penalizer to integralet til den dobbeltderiverte kvadrert. }
-
+\textcolor{green}{grunnen til at dn er kvadrert er vel for at størrelsen ikke skal bli negativ? Men sikkert greit å spørre!}
 ## b) 
 
 The basis functions for a cubic spline with knots at the quartiles $q_1$ and $q_2$ of variable $X$ are 
@@ -243,7 +243,7 @@ TRUE, TRUE, FALSE, FALSE
 
 ## b)
 
-Based solely on the tree above, a tree pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. A figure is shown below, where the terminal nodes are denoted with each of their respective probabilities. The terminal nodes denoted by the names above are shown from left to right. This is the best way to prune the tree down to three leaves because this leads to the most coarse stratification of the covariate space. `age` and `country`, in that order, can be interpreted as the most important covariates when determining the probability of dying. \textcolor{red}{Men hvorfor skal den andre splitten til høyre beholdes og ikke den til venstre? Har vi en grunn til hvorfor dette?}
+Based solely on the tree above, a tree pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. A figure is shown below, where the terminal nodes are denoted with each of their respective probabilities. The terminal nodes denoted by the names above are shown from left to right. This is the best way to prune the tree down to three leaves because this leads to the most coarse stratification of the covariate space. `age` and `country`, in that order, can be interpreted as the most important covariates when determining the probability of dying. \textcolor{red}{Men hvorfor skal den andre splitten til høyre beholdes og ikke den til venstre? Har vi en grunn til hvorfor dette?} \textcolor{blue}{Her henger jeg ikke helt med, skal vi ikke ha 3 løvnoder (leaves)? Jeg er også usikker på hvordan man skal argumentere her.}
 
 
 ```{r, echo = F, fig.height=3}
@@ -345,7 +345,7 @@ Based on both metrics in the plots above, it is apparent that `glu` and `bmi` ar
 
 ## a)
 
-TRUE, TRUE \textcolor{red}{Jeg tenker TRUE her, siden variansen senkes med soft-margin, slik at overfitting kan bli mindre.} \textcolor{green}{Ja, det skal vel være lett å finne en separating hyperplane siden p >> n, så kanksje FALSE er riktig?}, FALSE (usikker, \textcolor{green}{logreg bryter jo sammen når p >n, men det finnes vel ridge-metoder for logreg som gjør at det funker?} \textcolor{red}{Siden logreg bryter sammen så regner jeg med at svaret er FALSE. Tror ikke de regner med andre metoder for optimering, da vi egt ikke har gjennomgått dette.}), TRUE
+TRUE, TRUE, FALSE (usikker, \textcolor{green}{logreg bryter jo sammen når p >n, men det finnes vel ridge-metoder for logreg som gjør at det funker?} \textcolor{red}{Siden logreg bryter sammen så regner jeg med at svaret er FALSE. Tror ikke de regner med andre metoder for optimering, da vi egt ikke har gjennomgått dette.}), TRUE
 
 ## b)
 
@@ -359,7 +359,7 @@ d.leukemia.test <- d.leukemia[t.samples, ]
 d.leukemia.train <- d.leukemia[-t.samples, ]
 ```
 
-(i) A support vector machine (SVM) is more suitable than a logistic regression here, because $p > n$. This means that the parameters in the logistic regression model cannot be estimated. Linear or quadratic discriminant analysis could also be used in this case, in addition to regularized logistic regression variants, i.e. with added penalty term when optimizing (similar to e.g. ridge regression). \textcolor{green}{Kan bagging/randomForests/boosting bruker her også?}
+(i) A support vector machine (SVM) is more suitable than a logistic regression here, because $p > n$. This means that the parameters in the logistic regression model cannot be estimated. Linear or quadratic discriminant analysis could also be used in this case, in addition to regularized logistic regression variants, i.e. with added penalty term when optimizing (similar to e.g. ridge regression). Classification trees and tree-based methods such as bagging, boosting and random forests can also be used.
 
 (ii) The paper intends to demonstrate a new method for identifying the subset of genes (predictors) which capture the necessary information in order to classify patients into different groups (response). They introduce the Ensemble SVM-Recursive Feature Elimination (ESVM-RFE), which combines the ensemble and bagging methods used in random forests with SVMs and a backward elimination strategy.
 
@@ -476,7 +476,7 @@ df <- as.data.frame(cbind(x1, x2, cluster))
 df$cluster <-  as.factor(df$cluster)
 
 plt <- ggplot() +
-        geom_point(data = df, aes(x1, x2, color = cluster)) +
+        geom_point(data = df, aes(x1, x2, color = cluster), size = 2.2) +
         theme_bw() + scale_color_identity(guide = "legend", labels = c(1, 2))
 plt
 ```
@@ -501,7 +501,7 @@ centroid <- data.frame("x" = c(c1[1], c2[1]), "y" = c(c1[2], c2[2]), "cluster" =
 # Tried to get same colors across both plots, this is the closest I have come. 
 plt + geom_point(data = centroid, aes(x, y, color = color_code), shape = 4) + 
     scale_color_identity(guide = "legend", labels = c(1, 2), breaks = centroid$cluster)
-# Usikker på hvorfor shape endres til firkant i legend her, men jeg skjønner ikke ggplot helt så hva vet vel jeg. 
+# Usikker på hvorfor shape endres til firkant i legend her, men jeg skjønner ikke ggplot helt så hva vet vel jeg. # Jim: Gjorde sirklene litt større så ordna det seg ;)
 ```
 
 (iii)
@@ -532,8 +532,8 @@ reassign <- function(df, centroids){
 }
 
 df2 <- reassign(df, centroids) # denne må fikses dersom det skal fungere med den nye centroid-df!
-ggplot(data = df2, aes(x1, x2, color = cluster) ) + 
-  geom_point() +
+ggplot(data = df2, aes(x1, x2, color = cluster)) + 
+  geom_point(size = 2.2) +
   theme_bw() + scale_color_identity(guide = "legend", labels = c(1, 2))
 ```
 
