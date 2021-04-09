@@ -243,7 +243,7 @@ TRUE, TRUE, FALSE, FALSE
 
 ## b)
 
-Based solely on the tree above, a tree pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. A figure is shown below, where the terminal nodes are denoted with each of their respective probabilities. The terminal nodes denoted by the names above are shown from left to right. This is the best way to prune the tree down to three leaves because this leads to the most coarse stratification of the covariate space. `age` and `country`, in that order, can be interpreted as the most important covariates when determining the probability of dying. \textcolor{red}{Men hvorfor skal den andre splitten til høyre beholdes og ikke den til venstre? Har vi en grunn til hvorfor dette?} \textcolor{blue}{Her henger jeg ikke helt med, skal vi ikke ha 3 løvnoder (leaves)? Jeg er også usikker på hvordan man skal argumentere her.}
+Based solely on the tree above, a tree pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. A figure is shown below, where the terminal nodes are denoted with each of their respective probabilities. The terminal nodes denoted by the names above are shown from left to right. This is the best way to prune the tree down to three leaves because this leads to the most coarse stratification of the covariate space. `age` and `country`, in that order, can be interpreted as the most important covariates when determining the probability of dying. \textcolor{red}{Men hvorfor skal den andre splitten til høyre beholdes og ikke den til venstre? Har vi en grunn til hvorfor dette?} \textcolor{blue}{Her henger jeg ikke helt med, skal vi ikke ha 3 løvnoder (leaves)? Jeg er også usikker på hvordan man skal argumentere her.} \textcolor{red}{Det er jo tre løvnoder her? Hva legger du i det da?}
 
 
 ```{r, echo = F, fig.height=3}
@@ -539,7 +539,7 @@ ggplot(data = df2, aes(x1, x2, color = cluster)) +
 
 ## c)
 
-```{r, out.width="60%"}
+```{r, out.width="80%"}
 id <- "1VfVCQvWt121UN39NXZ4aR9Dmsbj-p9OU"  # Google file ID
 GeneData <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", 
                              id), header = F)
@@ -552,10 +552,11 @@ GeneData <- scale(GeneData)
 hc.euc.complete <- hclust(dist(GeneData), method = "complete")
 hc.euc.single <- hclust(dist(GeneData), method = "single")
 hc.euc.average <- hclust(dist(GeneData), method = "average")
+
 par(mfrow = c(2, 3))
-plot(hc.euc.complete, main = "Complete Linkage", xlab = " ", sub = " ", cex = 0.5)
-plot(hc.euc.single, main = "Single Linkage", xlab = " ", sub = " ", cex = 0.5)
-plot(hc.euc.average, main = "Average Linkage", xlab = " ", sub = " ", cex = 0.5)
+plot(hc.euc.complete, main = "Complete Linkage", xlab = " ", sub = " ", cex = 0.9)
+plot(hc.euc.single, main = "Single Linkage", xlab = " ", sub = " ", cex = 0.9)
+plot(hc.euc.average, main = "Average Linkage", xlab = " ", sub = " ", cex = 0.9)
 
 # Skjønner ikke helt hvorfor Gendata skal transponeres. Den blir transponert en gang tidligere også, lenger oppe. 
 dd <- as.dist(1 - cor(t(GeneData)))
@@ -587,23 +588,23 @@ km.out$cluster
 ```
  \textcolor{red}{Every method classifies everything correctly!!?} \textcolor{green}{Ser sånn ut ja! Jeg aner ikke hvorfor dette skulle skje!?}
 
+Since we know that the first 20 tissues come from healthy patients and the remaining 20 come from diseased patients, we can see that all the linkage and distance measures lead to perfect classification results on this data. 
+
 ## e)
 
 (i) 
 ```{r}
 pr.out <- prcomp(GeneData, scale = T)
-biplot(pr.out, scale = 0, cex = 0.2)
-# Rotations er loadings (som er koeffisientene til PCene).
-plot(pr.out$rotation[, "PC1"], pr.out$rotation[, "PC2"]) # Usikker på om det er dette de ønsker!
 
-# x er scores (som er verdiene til PCene). Tror det er dette de mener!
-plot(pr.out$x[, "PC1"], pr.out$x[, "PC2"])
-text(pr.out$x[,"PC1"],pr.out$x[, "PC2"],rownames(GeneData),cex=0.6) # Eller dette de mener? Vil vel farge alle til venstre noe, og alle til høyre noe annet? 
+plot(pr.out$x[, 1:2], col = c(rep("blue", 20), rep("red", 20)), 
+     pch = 20, main = "Samples in two dimensions using PCA")
+text(pr.out$x[,"PC1"],pr.out$x[, "PC2"],rownames(GeneData),cex=0.6) 
+legend("top", legend=c("Healthy", "Diseased"), col = c("blue", "red"), pch = 20)
 ```
 
 (ii)
 ```{r}
-pr.var <-  pr.out$sdev^2
+pr.var <- pr.out$sdev^2
 prop <- sum(pr.var[1:5]) / sum(pr.var)
 prop
 ```
@@ -611,4 +612,10 @@ The proportion of variance explained by the first 5 PCs is `r round(100 * prop, 
 
 ## f)
 
-\textcolor{red}{Skjønner ikke dette :(}
+Since the first principal component has the highest variability in the data, it can be used to find which genes that vary the most across the two groups. The genes with the highest loadings (rotations) are the ones that contribute the most to the variability. Hence, using only the first principal component, yields
+
+```{r}
+sort(abs(pr.out$rotation[, "PC1"]), decreasing = T)[1:10]
+```
+\textcolor{red}{Som et annet forslag: Burde kanskje i stedet bruke alle PC-ene til å finne de som varierer mest? Dvs. på akkurat samme måte som her, bare at man kumulativt over alle PC-ene finner hvilke loadings som er størst?! Tror det vil gi mer nøyaktige svar. I det minste interessant å sammenligne resultatene fra det, men det som er ovenfor!}
+
