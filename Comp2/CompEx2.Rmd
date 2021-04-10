@@ -388,7 +388,7 @@ The misclassification error rates are `r 1 - sum(diag(train.misclass)) / sum(tra
 
 The training error rate is not surprising, as finding a separating hyperplane when $p >> n$ is easy \textcolor{red}{SPM: Men lav cost betyr høy margin. Er C = 1 en lav eller høy cost her?}. The support vector classifier has 1 false positive and 4 false negatives on the test set. This means that a false negative is the most common type of error that is seen in the test set. 
 
-Despite this, the classification method is successful, since it performs slightly better than always predicting the most frequently occurring class, which is `Non-Relapse`. The output below substantiates this argument. 
+The low training error and relatively high test error could indicate overfitting. Despite this, the classification method is successful, since it performs slightly better than always predicting the most frequently occurring class, which is `Non-Relapse`. The output below substantiates this argument. 
 
 ```{r}
 # Most occurring class is "Non-Relapse".
@@ -403,7 +403,7 @@ test.misclass.most
 (iv)
 First, the analysis is repeated with $\gamma = 10^{-2}$. 
 ```{r}
-svcfit.radial.1 <- svm(Category~., data = d.leukemia.train, kernel = "radial", cost = 1, gamma = 1e-3, scale = T)
+svcfit.radial.1 <- svm(Category~., data = d.leukemia.train, kernel = "radial", cost = 1, gamma = 1e-2, scale = T)
 
 # Confusion table from training. 
 train.yhat.radial.1 <- predict(svcfit.radial.1, newdata = d.leukemia.train)
@@ -425,7 +425,7 @@ The training error rate is still 0 in this case. \textcolor{red}{Interpretation 
 Next, the analysis is repeated with $\gamma = 10^{-5}$. 
 
 ```{r}
-svcfit.radial.2 <- svm(Category~., data = d.leukemia.train, kernel = "radial", cost = 1, gamma = 1e-6, scale = T)
+svcfit.radial.2 <- svm(Category~., data = d.leukemia.train, kernel = "radial", cost = 1, gamma = 1e-5, scale = T)
 
 # Confusion table from training. 
 train.yhat.radial.2 <- predict(svcfit.radial.2, newdata = d.leukemia.train)
@@ -442,6 +442,8 @@ test.misclass.radial.2
 1 - sum(diag(test.misclass.radial.2)) / sum(test.misclass.radial.2)
 ```
 The training error rate is not 0 in this case. It is apparent that no individuals are correctly predicted to relapse. \textcolor{red}{Interpretation sammenlignet med tidligere; hvorfor?}. The test misclassification error rate is no better than always predicting the most frequently occurring class in the training data. Hence, this classifier is not successful. 
+
+\textcolor{red}{Tror ikke det er meningen å få samme svar for begge gamma :( må spørre om det!)}
 
 ## c)
 $$
