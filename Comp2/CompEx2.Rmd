@@ -614,8 +614,12 @@ The proportion of variance explained by the first 5 PCs is `r round(100 * prop, 
 
 Since the first principal component has the highest variability in the data, it can be used to find which genes that vary the most across the two groups. The genes with the highest loadings (rotations) are the ones that contribute the most to the variability. Hence, using only the first principal component, yields
 
+\textcolor{green}{formulerte det litt annerledes: }
+From the biplot in e), we can see that the two groups are separated along the axis of the first principal component (PC1) Hence, to determine which genes vary the most across the two groups, we examine the loadings of the first principle component:
+
 ```{r}
 sort(abs(pr.out$rotation[, "PC1"]), decreasing = T)[1:10]
 ```
-\textcolor{red}{Som et annet forslag: Burde kanskje i stedet bruke alle PC-ene til å finne de som varierer mest? Dvs. på akkurat samme måte som her, bare at man kumulativt over alle PC-ene finner hvilke loadings som er størst?! Tror det vil gi mer nøyaktige svar. I det minste interessant å sammenligne resultatene fra det, men det som er ovenfor!}
+\textcolor{red}{Som et annet forslag: Burde kanskje i stedet bruke alle PC-ene til å finne de som varierer mest? Dvs. på akkurat samme måte som her, bare at man kumulativt over alle PC-ene finner hvilke loadings som er størst?! Tror det vil gi mer nøyaktige svar. I det minste interessant å sammenligne resultatene fra det, men det som er ovenfor!} \textcolor{green}{jeg tror det er riktig det du har gjort :) Tror ikke det er noe vits i se på andre PC enn PC1, da denne separerer gruppene helt. La inn et alternativt forlsag til tekst over, hva tenker du?}
+
 
