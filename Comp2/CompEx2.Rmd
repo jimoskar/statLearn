@@ -137,7 +137,7 @@ set.seed(4268)
 cv.out <- cv.glmnet(x.train, y.train, alpha = 1)
 plot(cv.out)
 bestlam <- cv.out$lambda.min
-bestlam # Lambda is small, so the fit is relatively similar to least squares. 
+bestlam # Lambda is "small", so the fit is relatively similar to least squares. 
 
 lasso.coeff <- coef(cv.out, s = "lambda.min")
 lasso.coeff
@@ -147,7 +147,7 @@ mse.lasso <- mean((lasso.pred - y.test)^2)
 mse.lasso
 ```
 
-As seen in the output above, the test MSE is `r mse.lasso`. Moreover, all coefficients, except `sex`, `age`, `fellow.cats` and `daily.catnip` are non-zero. The best lambda according to the cross-validation is relatively close to 0, \textcolor{red}{skjønner ikke helt det som følger her. Knaksje vi ikke trenger å ha det med?} which suggests that the Lasso regression model is likely similar to the linear least squares model. This is confirmed by the fact that four coefficients are zero, while the rest are non-zero, which means that some variable selection has been made.  
+As seen in the output above, the test MSE is `r mse.lasso`. Moreover, all coefficients, except `sex`, `age`, `fellow.cats` and `daily.catnip` are non-zero. The best lambda according to the cross-validation is relatively close to 0, as seen in the output above. 
 
 ## d)
 When $\lambda \longrightarrow \infty$, the Lasso regression gives the null model, i.e. the model where all the coefficients are zero. When $\lambda = 0$, the Lasso regression simply gives the least squares fit. 
@@ -189,7 +189,8 @@ The results are as expected. First of all, best subset selection is an exhaustiv
 TRUE, TRUE, FALSE, FALSE. 
 
 \textcolor{red}{Usikker på om (ii) er et lurespm eller ikke. Tenker at vi burde spørre om dette! Den penalizer to integralet til den dobbeltderiverte kvadrert. }
-\textcolor{green}{grunnen til at dn er kvadrert er vel for at størrelsen ikke skal bli negativ? Men sikkert greit å spørre!}
+\textcolor{green}{grunnen til at dn er kvadrert er vel for at størrelsen ikke skal bli negativ? Men sikkert greit å spørre!} \textcolor{red}{Ja, enig i det, men jeg tenkte ikke spesifikt på om den er kvadrert eller ikke. Det jeg lurer på er typ: Er den FALSE fordi den penalizer integralet til den dobbeltderiverte, og ikke dobbeltintegralet i seg selv. Man kan jo kanskje argumentere for at den netto penalizer kun den enkelderiverte, pga integralet? Vanskelig å si synes jeg :)}
+
 ## b) 
 
 The basis functions for a cubic spline with knots at the quartiles $q_1$ and $q_2$ of variable $X$ are 
@@ -480,7 +481,7 @@ df$cluster <-  as.factor(df$cluster)
 plt <- ggplot() +
         geom_point(data = df, aes(x1, x2, color = cluster), size = 2.2) +
         theme_bw() + scale_color_identity(guide = "legend", labels = c(1, 2))
-plt
+#plt
 ```
 
 (ii) 
@@ -503,7 +504,7 @@ centroid <- data.frame("x" = c(c1[1], c2[1]), "y" = c(c1[2], c2[2]), "cluster" =
 # Tried to get same colors across both plots, this is the closest I have come. 
 plt + geom_point(data = centroid, aes(x, y, color = color_code), shape = 4) + 
     scale_color_identity(guide = "legend", labels = c(1, 2), breaks = centroid$cluster)
-# Usikker på hvorfor shape endres til firkant i legend her, men jeg skjønner ikke ggplot helt så hva vet vel jeg. # Jim: Gjorde sirklene litt større så ordna det seg ;)
+
 ```
 
 (iii)
@@ -542,7 +543,7 @@ ggplot(data = df2, aes(x1, x2, color = cluster)) +
 ## c)
 
 ```{r, out.width="80%"}
-id <- "1VfVCQvWt121UN39NXZ4aR9Dmsbj-p9OU"  # Google file ID
+id <- "1VfVCQvWt121UN39NXZ4aR9Dmsbj-p9OU"  # Google file ID.
 GeneData <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", 
                              id), header = F)
 colnames(GeneData)[1:20] <- paste(rep("H", 20), c(1:20), sep = "")
@@ -610,18 +611,16 @@ pr.var <- pr.out$sdev^2
 prop <- sum(pr.var[1:5]) / sum(pr.var)
 prop
 ```
-The proportion of variance explained by the first 5 PCs is `r round(100 * prop, 2)`%.`
+The proportion of variance explained by the first 5 PCs is `r round(100 * prop, 2)`%.
 
 ## f)
 
 Since the first principal component has the highest variability in the data, it can be used to find which genes that vary the most across the two groups. The genes with the highest loadings (rotations) are the ones that contribute the most to the variability. Hence, using only the first principal component, yields
 
 \textcolor{green}{formulerte det litt annerledes: }
-From the biplot in e), we can see that the two groups are separated along the axis of the first principal component (PC1) Hence, to determine which genes vary the most across the two groups, we examine the loadings of the first principle component:
+From the biplot \textcolor{red}{usikker på om det er et biplot? (tenker på selve terminologien)} in e), we can see that the two groups are separated along the axis of the first principal component (PC1) Hence, to determine which genes vary the most across the two groups, we examine the loadings of the first principle component \textcolor{red}{Enig i det du skriver, men dette kan man også påstå uten plottet tenker jeg, siden PC1 per def har mest variabilitet i dataen. }
 
 ```{r}
 sort(abs(pr.out$rotation[, "PC1"]), decreasing = T)[1:10]
 ```
-\textcolor{red}{Som et annet forslag: Burde kanskje i stedet bruke alle PC-ene til å finne de som varierer mest? Dvs. på akkurat samme måte som her, bare at man kumulativt over alle PC-ene finner hvilke loadings som er størst?! Tror det vil gi mer nøyaktige svar. I det minste interessant å sammenligne resultatene fra det, men det som er ovenfor!} \textcolor{green}{jeg tror det er riktig det du har gjort :) Tror ikke det er noe vits i se på andre PC enn PC1, da denne separerer gruppene helt. La inn et alternativt forlsag til tekst over, hva tenker du?}
-
-
+\textcolor{red}{Som et annet forslag: Burde kanskje i stedet bruke alle PC-ene til å finne de som varierer mest? Dvs. på akkurat samme måte som her, bare at man kumulativt over alle PC-ene finner hvilke loadings som er størst?! Tror det vil gi mer nøyaktige svar. I det minste interessant å sammenligne resultatene fra det, men det som er ovenfor!} \textcolor{green}{jeg tror det er riktig det du har gjort :) Tror ikke det er noe vits i se på andre PC enn PC1, da denne separerer gruppene helt. La inn et alternativt forlsag til tekst over, hva tenker du?} \textcolor{red}{Tenker det samme som deg, men hadde vært interessant å se om det hadde endret på noe.}
