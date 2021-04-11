@@ -448,14 +448,14 @@ The training error rate is not 0 in this case. It is apparent that no individual
 ## c)
 $$
 \begin{split}
-K(\boldsymbol{x}_i, \boldsymbol{x}_i') &= (1 + \sum_{j=1}^2x_{ij}x_{ij}')^2 \\ &= (x_{i1}x_{i1}' + x_{i2}x_{i2}' + 1)^2 \\
-&= (x_{i1}x_{i1}')^2 + (x_{i2}x_{i2}')^2 + 2x_{i1}x_{i2}\cdot x_{i1}'x_{i2}' + 2x_{i1}x_{i1}' + 2x_{i2}x_{i2}' + 1 \\
-&= \langle h(\boldsymbol{x}_i), h(\boldsymbol{x}_i')\rangle,
+K(X, X') &= (1 + \sum_{j=1}^2X_{j}X_{j}')^2 \\ &= (X_{1}X_{1}' + X_{2}X_{2}' + 1)^2 \\
+&= (X_{1}X_{1}')^2 + (X_{2}X_{2}')^2 + 2X_{1}X_{2}\cdot X_{1}'X_{2}' + 2X_{1}X_{1}' + 2X_{2}X_{2}' + 1 \\
+&= \langle h(X), h(X')\rangle,
 \end{split}
 $$
 where
 $$
-h(\boldsymbol{x}_i) = (x_{i1}^2, x_{i2}^2,\sqrt{2}x_{i1}x_{i2}, \sqrt{2}x_{i1}, \sqrt{2}x_{i2}, 1)^T.
+h(X) = (X_{1}^2, X_{2}^2,\sqrt{2}X_{1}X_{2}, \sqrt{2}X_{1}, \sqrt{2}X_{2}, 1)^T.
 $$
 
 # Problem 5
