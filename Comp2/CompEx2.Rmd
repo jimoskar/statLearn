@@ -597,7 +597,7 @@ Since we know that the first 20 tissues come from healthy patients and the remai
 
 (i) 
 ```{r}
-pr.out <- prcomp(GeneData, scale = T)
+pr.out <- prcomp(GeneData)
 
 plot(pr.out$x[, 1:2], col = c(rep("blue", 20), rep("red", 20)), 
      pch = 20, main = "Samples in two dimensions using PCA")
@@ -618,7 +618,7 @@ The proportion of variance explained by the first 5 PCs is `r round(100 * prop, 
 Since the first principal component has the highest variability in the data, it can be used to find which genes that vary the most across the two groups. The genes with the highest loadings (rotations) are the ones that contribute the most to the variability. Hence, using only the first principal component, yields
 
 \textcolor{green}{formulerte det litt annerledes: }
-From the biplot \textcolor{red}{usikker på om det er et biplot? (tenker på selve terminologien)} in e), we can see that the two groups are separated along the axis of the first principal component (PC1) Hence, to determine which genes vary the most across the two groups, we examine the loadings of the first principle component \textcolor{red}{Enig i det du skriver, men dette kan man også påstå uten plottet tenker jeg, siden PC1 per def har mest variabilitet i dataen. }
+From the biplot \textcolor{red}{usikker på om det er et biplot? (tenker på selve terminologien)} in e), we can see that the two groups are separated along the axis of the first principal component (PC1) Hence, to determine which genes vary the most across the two groups, we examine the loadings of the first principle component \textcolor{red}{Enig i det du skriver, men dette kan man også påstå uten plottet tenker jeg, siden PC1 per def har mest variabilitet i dataen. } \textcolor{green}{Tror vi trenger plottet for å påstå det faktisk. Vi kan jo tenke oss en situasjon der vi ser at PC2 separerer gruppene?}
 
 ```{r}
 sort(abs(pr.out$rotation[, "PC1"]), decreasing = T)[1:10]
