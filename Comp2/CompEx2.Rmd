@@ -244,7 +244,7 @@ TRUE, TRUE, FALSE, FALSE
 
 ## b)
 
-Based solely on the tree above, a tree pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. A figure is shown below, where the terminal nodes are denoted with each of their respective probabilities. The terminal nodes denoted by the names above are shown from left to right. This is the best way to prune the tree down to three leaves because this leads to the most coarse stratification of the covariate space. `age` and `country`, in that order, can be interpreted as the most important covariates when determining the probability of dying. \textcolor{red}{Men hvorfor skal den andre splitten til høyre beholdes og ikke den til venstre? Har vi en grunn til hvorfor dette?} \textcolor{blue}{Her henger jeg ikke helt med, skal vi ikke ha 3 løvnoder (leaves)? Jeg er også usikker på hvordan man skal argumentere her.} \textcolor{red}{Det er jo tre løvnoder her? Hva legger du i det da?}
+Based solely on the tree above, a tree pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. A figure is shown below, where the terminal nodes are denoted with each of their respective probabilities. The terminal nodes denoted by the names above are shown from left to right. This is the best way to prune the tree down to three leaves because this leads to the most coarse stratification of the covariate space. `age` and `country`, in that order, can be interpreted as the most important covariates when determining the probability of dying. \textcolor{red}{Men hvorfor skal den andre splitten til høyre beholdes og ikke den til venstre? Har vi en grunn til hvorfor dette?} \textcolor{blue}{Her henger jeg ikke helt med, skal vi ikke ha 3 løvnoder (leaves)? Jeg er også usikker på hvordan man skal argumentere her.} \textcolor{red}{Det er jo tre løvnoder her? Hva legger du i det da?} \textcolor{blue}{Løvnoder er antall noder i nederste nivå. I figuren er det 2 løvnoder. Det jeg lurer på er hvordan vet vi hvile noder som skal prunes?} \textcolor{purple}{lengden på grenene sier noe om hvor mye deviance som reduseres, så det mp tas med i betraktningen!}
 
 
 ```{r, echo = F, fig.height=3}
@@ -288,7 +288,7 @@ class.rate.simple <-  1 -
 class.rate.simple
 
 # Apply cost complexity pruning. 
-cv.diabetes <- cv.tree(simple.tree, FUN = prune.misclass) # 10-fold cv is default. 
+cv.diabetes <- cv.tree(simple.tree, FUN = prune.misclass) # 10-fold CV is default. 
 # Classification error rate is used to guide the pruning process, 
 # since prediction accuracy of the final pruned tree is the goal. 
 best <- which.min(cv.diabetes$dev) # Finds best model.
@@ -315,12 +315,12 @@ class.rate.pruned
 
 
 Despite the fact that the largest tree is the best, according to the cross-validation error, we choose to prune the tree to 6 leaves, since it is much more interpretable than the larger model with 17 leaves. 
-\textcolor{red}{Synes det er litt rart at den mest komplekse modellen gir best CV-error. Men poenget med oppgaven er kanskje at vi skal prioritere tolkning og enkelhet? SPM HER!} \textcolor{green}{Tror kanskje at det er overfitting her? Siden test-error-raten er lavere for pruned tree, til tross for at cv error sier at den burde vært større. }
+\textcolor{red}{Synes det er litt rart at den mest komplekse modellen gir best CV-error. Men poenget med oppgaven er kanskje at vi skal prioritere tolkning og enkelhet? SPM HER!} \textcolor{green}{Tror kanskje at det er overfitting her? Siden test-error-raten er lavere for pruned tree, til tross for at cv error sier at den burde vært større. } \textcolor{blue}{Tror vi skal endre på FUN, slik at vi bruker standard.}
 
 The misclassification error for the pruned tree is reported above. Despite the fact that the CV-error is best for the largest model, it is apparent that the misclassification error on the test set is slightly lower for the pruned tree with 6 terminal nodes, compared to the unpruned tree. Despite this, the errors are very similar, which suggests that a more advanced method should be tested. 
 
-(ii) \textcolor{red}{SPM: Hvorfor bruke random forest her, og ikke bagging eller boosting?}
-For the more advanced method, a random forest approach is considered. The number of trees is chosen to be $B = 1000$, since this amount seems to be sufficient for the test error to settle. Furthermore, since $p = 7$, we choose $m = 3 \approx \sqrt{p}$, because this is recommended in ISLR. \textcolor{red}{SPM: spør om hvor mye rettferdiggjørelse som kreves her!}
+(ii) \textcolor{red}{SPM: Hvorfor bruke random forest her, og ikke bagging eller boosting?} \textcolor{blue}{Hun sa at RF var mest relevant da vi kun diskuterte dette i forbindelse med klassifisering.}
+For the more advanced method, a random forest approach is considered. The number of trees is chosen to be $B = 1000$, since this amount seems to be sufficient for the test error to settle. Furthermore, since $p = 7$, we choose the tuning parameter $m = 3 \approx \sqrt{p}$, because this is recommended in ISLR. 
 
 ```{r}
 set.seed(1)
@@ -346,7 +346,7 @@ Based on both metrics in the plots above, it is apparent that `glu` and `bmi` ar
 
 ## a)
 
-TRUE, TRUE, FALSE (usikker, \textcolor{green}{logreg bryter jo sammen når p >n, men det finnes vel ridge-metoder for logreg som gjør at det funker?} \textcolor{red}{Siden logreg bryter sammen så regner jeg med at svaret er FALSE. Tror ikke de regner med andre metoder for optimering, da vi egt ikke har gjennomgått dette.}), TRUE
+TRUE, TRUE, FALSE, TRUE
 
 ## b)
 
@@ -463,7 +463,7 @@ $$
 
 ## a)
 
-TRUE, FALSE, FALSE\textcolor{red}{hva menes med robust da?} \textcolor{green}{Alex: Her tenker jeg at de lurer på om resultatet av K-means clustering avhenger sterkt av den initielle randomiseringen av punktene i ulike clusters. Jeg tenker at dette er FALSE, nettopp fordi algoritmen kjøres for mange ulike randomiseringer, før den beste velges. Dette viser jo at den avhenger av det tilfeldige valget i starten, og er dermed ikke robust mot dette valget. Vi kan også spørre om dette er rett tolkning eventuelt ;)}, FALSE
+TRUE, FALSE, FALSE, FALSE
 
 ## b)
 
