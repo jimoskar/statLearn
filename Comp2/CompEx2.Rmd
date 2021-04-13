@@ -265,7 +265,7 @@ class.rate.simple <-  1 -
 class.rate.simple
 
 # Apply cost complexity pruning. 
-cv.diabetes <- cv.tree(simple.tree, FUN = prune.misclass) # 10-fold CV is default. Deviance as guide in the pruning process is default. 
+cv.diabetes <- cv.tree(simple.tree) # 10-fold CV is default. Deviance as guide in the pruning process is default. 
 # Classification error rate is used to guide the pruning process, 
 # since prediction accuracy of the final pruned tree is the goal. 
 #### Tok bort classification error rate (FUN = prune.misclass), og vi ser at det gir helt andre resultater!
@@ -277,7 +277,7 @@ best <- which.min(cv.diabetes$dev) # Finds best model.
 plot(cv.diabetes$size, cv.diabetes$dev, type = "b", xlab = "Terminal Nodes", ylab = "Misclassifications")
 points(cv.diabetes$size[best], cv.diabetes$dev[best], col = "red", pch = 20)
 
-best.tree <- prune.misclass(simple.tree, best = 6) 
+best.tree <- prune.misclass(simple.tree, best = cv.diabetes$size[best]) 
 plot(best.tree)
 text(best.tree, cex = 0.7, pretty = 0)
 ```
@@ -294,7 +294,7 @@ class.rate.pruned
 
 
 Despite the fact that the largest tree is the best, according to the cross-validation error, we choose to prune the tree to 6 leaves, since it is much more interpretable than the larger model with 17 leaves. 
-\textcolor{green}{Det er overfitting her? Siden test-error-raten er lavere for pruned tree, til tross for at cv error sier at den burde vært større. } \textcolor{blue}{Tror vi skal endre på FUN, slik at vi bruker standard.} \textcolor{red}{Har prøvd dette, og kommer fram til at det ikke gir mening å la være å bruke misclassification rate. Den vil alltid være bedre for en større modell, noe som er naturlig. Se også eksempel fra forelesning, der misclassifications er lavest også for størst modell.}
+\textcolor{green}{Det er overfitting her? Siden test-error-raten er lavere for pruned tree, til tross for at cv error sier at den burde vært større. } \textcolor{blue}{Tror vi skal endre på FUN, slik at vi bruker standard.} \textcolor{red}{Har prøvd dette, og kommer fram til at det ikke gir mening å la være å bruke misclassification rate. Den vil alltid være bedre for en større modell, noe som er naturlig. Se også eksempel fra forelesning, der misclassifications er lavest også for størst modell.} \textcolor{purple}{Nå har jeg tatt bort FUN = prune.misclass. Fikk inntrykk av at det var det de vill ha fra veilednignen. Resultatene ser også fornuftige ut}
 
 The misclassification error for the pruned tree is reported above. Despite the fact that the CV-error is best for the largest model, it is apparent that the misclassification error on the test set is slightly lower for the pruned tree with 6 terminal nodes, compared to the unpruned tree. Despite this, the errors are very similar, which suggests that a more advanced method should be tested. 
 
