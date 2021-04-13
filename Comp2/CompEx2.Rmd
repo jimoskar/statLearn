@@ -222,7 +222,9 @@ TRUE, TRUE, FALSE, FALSE
 
 ## b)
 
-Based solely on the tree from a), a tree pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. In essence, the entire left subtree is exchanged with one leaf node, while the right subtree is kept. This is the best way to prune the tree down to three leaves because this leads to the most coarse stratification of the covariate space. Moreover, since the branches splitting on the factor `country` are longer than the branches splitting on `age < 46.5`, the former split is kept instead of the latter. This principle is analogous to classification trees, where `tree.plot` with argument `type = "proportional"` means that the length of the branches are proportional to the decrease in impurity. \textcolor{red}{Akkurat dette i regression tree tilfellet finner jeg ikke noe sted! Men er kanskje proportional to decrease i deviance, skulle jeg tro. Kan ikke finne det svart på hvitt noe sted derimot.} `age` and `country`, in that order, can be interpreted as the most important covariates when determining the probability of dying. 
+If we assume that the length of the branches is proportional to the decrease in node impurity, the tree from a) pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. In essence, the entire left subtree is pruned, while the right subtree is kept as is.
+
+\textcolor{red}{trenger kanskje ikke det som kommer etter her? usikker på hva coarse stratification betyr...}This is the best way to prune the tree down to three leaves because this leads to the most coarse stratification of the covariate space. Moreover, since the branches splitting on the factor `country` are longer than the branches splitting on `age < 46.5`, the former split is kept instead of the latter. This principle is analogous to classification trees, where `tree.plot` with argument `type = "proportional"` means that the length of the branches are proportional to the decrease in impurity. \textcolor{red}{Akkurat dette i regression tree tilfellet finner jeg ikke noe sted! Men er kanskje proportional to decrease i deviance, skulle jeg tro. Kan ikke finne det svart på hvitt noe sted derimot.} `age` and `country`, in that order, can be interpreted as the most important covariates when determining the probability of dying. 
 
 <!-- Commented out, in case that the figure is not compiled correctly, as was experienced on mac. -->
 <!-- ```{r, echo = F, fig.height=3} -->
@@ -351,15 +353,11 @@ svcfit <- svm(Category~., data = d.leukemia.train, kernel = "linear", cost = 1, 
 train.yhat <- predict(svcfit, newdata = d.leukemia.train)
 train.misclass <- table(predict = train.yhat, truth = d.leukemia.train$Category)
 train.misclass
-# Misclassification error rate from training. 
-1 - sum(diag(train.misclass)) / sum(train.misclass)
 
 # Confusion table from testing. 
 test.yhat <- predict(svcfit, newdata = d.leukemia.test) 
 test.misclass <- table(predict = test.yhat, truth = d.leukemia.test$Category)
 test.misclass
-# Misclassification error rate from testing.
-# 1 - sum(diag(test.misclass)) / sum(test.misclass)
 ```
 
 
@@ -388,16 +386,11 @@ svcfit.radial.1 <- svm(Category~., data = d.leukemia.train, kernel = "radial", c
 train.yhat.radial.1 <- predict(svcfit.radial.1, newdata = d.leukemia.train)
 train.misclass.radial.1 <- table(predict = train.yhat.radial.1, truth = d.leukemia.train$Category)
 train.misclass.radial.1
-# Maybe just remove these?
-# Misclassification error rate from training. 
-# 1 - sum(diag(train.misclass.radial.1)) / sum(train.misclass.radial.1)
 
 # Confusion table from testing. 
 test.yhat.radial.1 <- predict(svcfit.radial.1, newdata = d.leukemia.test) 
 test.misclass.radial.1 <- table(predict = test.yhat.radial.1, truth = d.leukemia.test$Category)
 test.misclass.radial.1
-# Misclassification error rate from testing.
-# 1 - sum(diag(test.misclass.radial.1)) / sum(test.misclass.radial.1)
 ```
 
 The training error rate is `r 1 - sum(diag(train.misclass.radial.1)) / sum(train.misclass.radial.1)` in this case. The test misclassification rate is `r 1 - sum(diag(test.misclass.radial.1)) / sum(test.misclass.radial.1)`, i.e. no better than always predicting the most frequently occurring class (which we can see the does for the test set). The low training error and the poor performance on the test set indicate that the model is overfitted to the training data.
@@ -411,19 +404,16 @@ svcfit.radial.2 <- svm(Category~., data = d.leukemia.train, kernel = "radial", c
 train.yhat.radial.2 <- predict(svcfit.radial.2, newdata = d.leukemia.train)
 train.misclass.radial.2 <- table(predict = train.yhat.radial.2, truth = d.leukemia.train$Category)
 train.misclass.radial.2
-# Misclassification error rate from training. 
-# 1 - sum(diag(train.misclass.radial.2)) / sum(train.misclass.radial.2)
 
 # Confusion table from testing. 
 test.yhat.radial.2 <- predict(svcfit.radial.2, newdata = d.leukemia.test) 
 test.misclass.radial.2 <- table(predict = test.yhat.radial.2, truth = d.leukemia.test$Category)
 test.misclass.radial.2
-# Misclassification error rate from testing.
-# 1 - sum(diag(test.misclass.radial.2)) / sum(test.misclass.radial.2)
 ```
-The training error rate is now `r round(1 - sum(diag(train.misclass.radial.2)) / sum(train.misclass.radial.2), 3)`, while the test misclassification rate is `r 1 - sum(diag(test.misclass.radial.2)) / sum(test.misclass.radial.2)`, i.e. no better than always predicting the most frequently occurring class. The increase in training error can be explained by the change in $\gamma$, as a smaller value of this tuning parameter makes the decision boundary smoother. \textcolor{red}{her mangler jeg forståelse, men vet ikke hvor mye som forventes av oss.}
+The training error rate is now `r round(1 - sum(diag(train.misclass.radial.2)) / sum(train.misclass.radial.2), 3)`, while the test misclassification rate is `r 1 - sum(diag(test.misclass.radial.2)) / sum(test.misclass.radial.2)`, i.e. no better than always predicting the most frequently occurring class. The increase in training error can be explained by the change in $\gamma$, as a smaller value of this tuning parameter makes the decision boundary smoother, i.e. less variable. In other words, the model becomes more biased, which explains the increase in training error.
 
-To compare, we see that the support vector classifier from iii) outperforms the more flexible support vector machines from iv) on the test set and also on the training set for $$\gamma = 10^{-5}$$. This indicates that a linear decision boundary is more appropriate in this situation than a highly flexible one.
+To compare, we see that the support vector classifier from iii) outperforms the more flexible support vector machines from iv) on the test set and also on the training set for $
+$\gamma = 10^{-5}$. This indicates that a linear decision boundary is more appropriate in this situation than a highly flexible one.
 
 ## c)
 $$
