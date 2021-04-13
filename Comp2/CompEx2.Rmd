@@ -359,15 +359,15 @@ test.yhat <- predict(svcfit, newdata = d.leukemia.test)
 test.misclass <- table(predict = test.yhat, truth = d.leukemia.test$Category)
 test.misclass
 # Misclassification error rate from testing.
-1 - sum(diag(test.misclass)) / sum(test.misclass)
+# 1 - sum(diag(test.misclass)) / sum(test.misclass)
 ```
 
 
-The misclassification error rates are `r 1 - sum(diag(train.misclass)) / sum(train.misclass)` for the training data and `r 1 - sum(diag(test.misclass)) / sum(test.misclass)` for the test data.
+The misclassification error rates are `r round(1 - sum(diag(train.misclass)) / sum(train.misclass), 3)` for the training data and `r round(1 - sum(diag(test.misclass)) / sum(test.misclass), 3)` for the test data.
 
-The training error rate is not surprising, as finding a separating hyperplane when $p >> n$ is easy \textcolor{red}{SPM: Men lav cost betyr høy margin. Er C = 1 en lav eller høy cost her?}. The support vector classifier has 1 false positive and 4 false negatives on the test set. This means that a false negative is the most common type of error that is seen in the test set. 
+The training error rate is not surprising, as finding a separating hyperplane when $p >> n$ is easy, and the cost of 1 does not allow much missclassification \textcolor{blue}{spuerte om cost på piazza}. The support vector classifier has 1 false positive and 4 false negatives on the test set. This means that a false negative is the most common type of error that is seen in the test set. 
 
-The low training error and relatively high test error could indicate overfitting. Despite this, the classification method is successful, since it performs slightly better than always predicting the most frequently occurring class, which is `Non-Relapse`. The output below substantiates this argument. 
+The low training error and relatively high test error could indicate overfitting. Despite this, the classification method is successful in the sense that it performs slightly better than always predicting the most frequently occurring class in the training data, which is `Non-Relapse`. The output below substantiates this argument. 
 
 ```{r}
 # Most occurring class is "Non-Relapse".
@@ -388,18 +388,19 @@ svcfit.radial.1 <- svm(Category~., data = d.leukemia.train, kernel = "radial", c
 train.yhat.radial.1 <- predict(svcfit.radial.1, newdata = d.leukemia.train)
 train.misclass.radial.1 <- table(predict = train.yhat.radial.1, truth = d.leukemia.train$Category)
 train.misclass.radial.1
+# Maybe just remove these?
 # Misclassification error rate from training. 
-1 - sum(diag(train.misclass.radial.1)) / sum(train.misclass.radial.1)
+# 1 - sum(diag(train.misclass.radial.1)) / sum(train.misclass.radial.1)
 
 # Confusion table from testing. 
 test.yhat.radial.1 <- predict(svcfit.radial.1, newdata = d.leukemia.test) 
 test.misclass.radial.1 <- table(predict = test.yhat.radial.1, truth = d.leukemia.test$Category)
 test.misclass.radial.1
 # Misclassification error rate from testing.
-1 - sum(diag(test.misclass.radial.1)) / sum(test.misclass.radial.1)
+# 1 - sum(diag(test.misclass.radial.1)) / sum(test.misclass.radial.1)
 ```
 
-The training error rate is still 0 in this case. \textcolor{red}{Interpretation sammenlignet med tidligere; hvorfor? Hvordan påvirker gamma dette? Dette må sjekkes ut.}. The test misclassification error rate is no better than always predicting the most frequently occurring class in the training data. Hence, this classifier is not successful. 
+The training error rate is `r 1 - sum(diag(train.misclass.radial.1)) / sum(train.misclass.radial.1)` in this case. The test misclassification rate is `r 1 - sum(diag(test.misclass.radial.1)) / sum(test.misclass.radial.1)`, i.e. no better than always predicting the most frequently occurring class (which we can see the does for the test set). The low training error and the poor performance on the test set indicate that the model is overfitted to the training data.
 
 Next, the analysis is repeated with $\gamma = 10^{-5}$. 
 
@@ -411,18 +412,18 @@ train.yhat.radial.2 <- predict(svcfit.radial.2, newdata = d.leukemia.train)
 train.misclass.radial.2 <- table(predict = train.yhat.radial.2, truth = d.leukemia.train$Category)
 train.misclass.radial.2
 # Misclassification error rate from training. 
-1 - sum(diag(train.misclass.radial.2)) / sum(train.misclass.radial.2)
+# 1 - sum(diag(train.misclass.radial.2)) / sum(train.misclass.radial.2)
 
 # Confusion table from testing. 
 test.yhat.radial.2 <- predict(svcfit.radial.2, newdata = d.leukemia.test) 
 test.misclass.radial.2 <- table(predict = test.yhat.radial.2, truth = d.leukemia.test$Category)
 test.misclass.radial.2
 # Misclassification error rate from testing.
-1 - sum(diag(test.misclass.radial.2)) / sum(test.misclass.radial.2)
+# 1 - sum(diag(test.misclass.radial.2)) / sum(test.misclass.radial.2)
 ```
-The training error rate is not 0 in this case. It is apparent that no individuals are correctly predicted to relapse. \textcolor{red}{Interpretation sammenlignet med tidligere; hvorfor?}. The test misclassification error rate is no better than always predicting the most frequently occurring class in the training data. Hence, this classifier is not successful. 
+The training error rate is now `r round(1 - sum(diag(train.misclass.radial.2)) / sum(train.misclass.radial.2), 3)`, while the test misclassification rate is `r 1 - sum(diag(test.misclass.radial.2)) / sum(test.misclass.radial.2)`, i.e. no better than always predicting the most frequently occurring class. The increase in training error can be explained by the change in $\gamma$, as a smaller value of this tuning parameter makes the decision boundary smoother. \textcolor{red}{her mangler jeg forståelse, men vet ikke hvor mye som forventes av oss.}
 
-\textcolor{red}{Training rate for ulike gamma er ulike, mens testing rate er lik.}
+To compare, we see that the support vector classifier from iii) outperforms the more flexible support vector machines from iv) on the test set and also on the training set for $$\gamma = 10^{-5}$$. This indicates that a linear decision boundary is more appropriate in this situation than a highly flexible one.
 
 ## c)
 $$
