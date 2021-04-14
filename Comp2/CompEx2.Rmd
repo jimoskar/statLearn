@@ -154,7 +154,7 @@ colnames(msrate) <- c("Test MSE")
 msrate
 ```
 
-The results are as expected. First of all, best subset selection is an exhaustive search in the space of all possible models, which means that it should find the best possible linear model (according to some measure). This could lead to overfitting however, because of the large search space, but has given the best result in this case. Secondly, shrinkage methods, like Lasso regression, are used to reduce overfitting to the training data. Then, the test MSE might be reduced, since the variance might have been reduced more than the bias has increased (bias-variance trade-off) after regularization. In this case, this gives a modest decrease in test MSE compared to the least squares regression. Finally, it is expected that the linear regression has a smaller test MSE compared to the intercept-only model, since predicting every value as the mean of the`birds`-values does not capture any trends in the data. 
+The results are as expected. First of all, best subset selection is an exhaustive search in the space of all possible models, which means that it should find the best possible linear model (according to some measure). This could lead to overfitting however, because of the large search space, but has given the best result in this case. Secondly, shrinkage methods, like Lasso regression, are used to reduce overfitting to the training data. Then, the test MSE might be reduced, since the variance might have been reduced more than the bias has increased (bias-variance trade-off) after regularization. In this case, this gives a modest decrease in test MSE compared to the least squares regression. Finally, it is expected that the linear regression has a smaller test MSE compared to the intercept-only model, since predicting every value as the mean of the `birds`-values does not capture any trends in the data. 
 
 # Problem 2
 
@@ -182,7 +182,7 @@ $$
 ## c)
 
 (i)
-```{r, fig.height=4}
+```{r, fig.height=3}
 # Fit polynomial regression with training data.
 outdoor.data <- catdat.train[c("daily.outdoortime", "birds")] # Pick out necessary training data. 
 par(mar=c(4, 3, 3, 4.5), xpd=TRUE) # Change margins of plots. 
@@ -204,7 +204,6 @@ which.min(mse.train)
 
 (ii) It is seen that the training MSE decreases steadily as the degree of the polynomial regression increases. This is because we increase the flexibility of the model when we increment the polynomial degree. This increases the likelihood of overfitting, i.e. reduces the training MSE. 
 
-
 # Problem 3
 
 ## a)
@@ -213,9 +212,7 @@ TRUE, TRUE, FALSE, FALSE
 
 ## b)
 
-If we assume that the length of the branches is proportional to the decrease in node impurity, the tree from a) pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. In essence, the entire left subtree is pruned, while the right subtree is kept as is. \textcolor{red}{Med kun dette mangler man en WHY, som gir 1 poeng. Stratification betyr "inndeling".}
-
-\textcolor{red}{trenger kanskje ikke det som kommer etter her? usikker på hva coarse stratification betyr...}This is the best way to prune the tree down to three leaves because this leads to the most coarse stratification of the covariate space. Moreover, since the branches splitting on the factor `country` are longer than the branches splitting on `age < 46.5`, the former split is kept instead of the latter. This principle is analogous to classification trees, where `tree.plot` with argument `type = "proportional"` means that the length of the branches are proportional to the decrease in impurity. \textcolor{red}{Akkurat dette i regression tree tilfellet finner jeg ikke noe sted! Men er kanskje proportional to decrease i deviance, skulle jeg tro. Kan ikke finne det svart på hvitt noe sted derimot.} `age` and `country`, in that order, can be interpreted as the most important covariates when determining the probability of dying. 
+If we assume that the length of the branches is proportional to the decrease in node impurity, the tree from a) pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. In essence, the entire left subtree is pruned, while the right subtree is kept as is. This is the best way to prune the tree down to three leaves because this leads to the most coarse stratification of the covariate space. Moreover, since the branches splitting on the factor `country` are longer than the branches splitting on `age < 46.5`, the former split is kept instead of the latter. 
 
 <!-- Commented out, in case that the figure is not compiled correctly, as was experienced on mac. -->
 <!-- ```{r, echo = F, fig.height=3} -->
@@ -245,7 +242,7 @@ d.test$diabetes <- as.factor(d.test$diabetes) # Added this to make classificatio
 # Simple classification tree.
 set.seed(1)
 simple.tree <- tree(diabetes~., data = d.train, split = "deviance")
-plot(simple.tree, type = "proportional")
+plot(simple.tree, type = "proportional", cex = 0.5)
 text(simple.tree, cex = 0.5, pretty = 0)
 
 # Calculate classification error for the unpruned tree.
@@ -257,20 +254,17 @@ class.rate.simple <-  1 -
 class.rate.simple
 
 # Apply cost complexity pruning. 
-cv.diabetes <- cv.tree(simple.tree)#, FUN = prune.misclass) # 10-fold CV is default. Deviance as guide in the pruning process is default. 
-# Classification error rate is used to guide the pruning process, 
-# since prediction accuracy of the final pruned tree is the goal. 
-#### Tok bort classification error rate (FUN = prune.misclass), og vi ser at det gir helt andre resultater!
-#### Tror vi må bruke class. rate for det gir ikke mening ellers!
+cv.diabetes <- cv.tree(simple.tree) # 10-fold CV is default. 
+# Deviance as guide in the pruning process is default. 
 best <- which.min(cv.diabetes$dev) # Finds best model.
 ```
 
-```{r}
-plot(cv.diabetes$size, cv.diabetes$dev, type = "b", xlab = "Terminal Nodes", ylab = "Misclassifications")
+```{r, fig.height=2.5}
+plot(cv.diabetes$size, 
+  cv.diabetes$dev, type = "b", xlab = "Terminal Nodes", ylab = "Misclassifications")
 points(cv.diabetes$size[best], cv.diabetes$dev[best], col = "red", pch = 20)
 
-best.tree <- prune.misclass(simple.tree, best = cv.diabetes$size[best]) # Du ser at til tross for at best = 3, så får man treet med 6 uansett.
-# Det tror jeg er fordi vi bruker prune.misclass her uansett, selv om FUN = prune.misclass ikke brukes ovenfor!
+best.tree <- prune.tree(simple.tree, best = cv.diabetes$size[best])
 plot(best.tree)
 text(best.tree, cex = 0.7, pretty = 0)
 ```
@@ -284,10 +278,7 @@ class.rate.pruned <-  1-sum(diag(conf.table.pruned))/(sum(conf.table.pruned))
 class.rate.pruned
 ```
 
-Despite the fact that the largest tree is the best, according to the cross-validation error, we choose to prune the tree to 6 leaves, since it is much more interpretable than the larger model with 17 leaves. 
-\textcolor{green}{Det er overfitting her? Siden test-error-raten er lavere for pruned tree, til tross for at cv error sier at den burde vært større. } \textcolor{blue}{Tror vi skal endre på FUN, slik at vi bruker standard.} \textcolor{red}{Har prøvd dette, og kommer fram til at det ikke gir mening å la være å bruke misclassification rate. Den vil alltid være bedre for en større modell, noe som er naturlig. Se også eksempel fra forelesning, der misclassifications er lavest også for størst modell.} \textcolor{purple}{Nå har jeg tatt bort FUN = prune.misclass. Fikk inntrykk av at det var det de vill ha fra veilednignen. Resultatene ser også fornuftige ut} \textcolor{blue}{Vet ikke om jeg er helt enig med deg her, tror jeg trenger litt mer overbevisning ;) Resultatene er uansett helt like i begge tilfellene, siden prune.misclass brukes når treet faktisk prunes etter at "sjekken" er gjennomført.} 
-
-The misclassification error for the pruned tree is reported above. Despite the fact that the CV-error is best for the largest model, it is apparent that the misclassification error on the test set is slightly lower for the pruned tree with 6 terminal nodes, compared to the unpruned tree. Despite this, the errors are very similar, which suggests that a more advanced method should be tested. 
+The misclassification error for the pruned tree is reported above. It is apparent that the misclassification error on the test set is slightly lower for the pruned tree with 3 terminal nodes (the predicions are split only in half, since the left subtree predicts 0 in both cases), compared to the unpruned tree. Despite this, the errors are very similar, which suggests that a more advanced method should be tested. 
 
 (ii) For the more advanced method, a random forest approach is considered. The number of trees is chosen to be $B = 1000$, since this amount seems to be sufficient for the test error to settle. Furthermore, since $p = 7$, we choose the tuning parameter $m = 3 \approx \sqrt{p}$, because this is recommended in ISLR. 
 ```{r}
@@ -306,8 +297,8 @@ rf.misclass
 
 The resulting test misclassification rate is `r rf.misclass`. This is slightly lower than for the simple tree. Next, we find the most influential variables in this classification problem.
 
-```{r}
-varImpPlot(rf.d, main = "")
+```{r, fig.height=2}
+varImpPlot(rf.d, main = "", cex = 0.5)
 ```
 Based on both metrics in the plots above, it is apparent that `glu` and `bmi` are the most influential, as expected based on the simple trees from earlier. 
 
@@ -352,7 +343,7 @@ test.misclass
 
 The misclassification error rates are `r round(1 - sum(diag(train.misclass)) / sum(train.misclass), 3)` for the training data and `r round(1 - sum(diag(test.misclass)) / sum(test.misclass), 3)` for the test data.
 
-The training error rate is not surprising, as finding a separating hyperplane when $p >> n$ is easy, and the cost of 1 does not allow much missclassification \textcolor{blue}{spuerte om cost på piazza}. Given that `Relapse = 1` and `Non-Relapse = 0`, the support vector classifier has 1 false positive and 4 false negatives on the test set. This means that a false negative is the most common type of error that is seen in the test set. 
+The training error rate is not surprising, as finding a separating hyperplane when $p >> n$ is easy. Given that `Relapse = 1` and `Non-Relapse = 0`, the support vector classifier has 1 false positive and 4 false negatives on the test set. This means that a false negative is the most common type of error that is seen in the test set. 
 
 The low training error and relatively high test error could indicate overfitting. Despite this, the classification method is successful in the sense that it performs slightly better than the null rate, which is attained when always predicting the most frequently occurring class in the training data, which is `Non-Relapse`. The output below substantiates this argument. 
 
@@ -438,11 +429,10 @@ df$cluster <-  as.factor(df$cluster)
 plt <- ggplot() +
         geom_point(data = df, aes(x1, x2, color = cluster), size = 2.2) +
         theme_bw() + scale_color_identity(guide = "legend", labels = c(1, 2))
-#plt
 ```
 
 (ii) 
-```{r}
+```{r, fig.height=2}
 calc_centr <- function(k, df) {
   feats <- df[df$cluster == k, 1:2]
   mean.1 <- mean(feats[, 1])
@@ -460,12 +450,12 @@ centroids <- as.data.frame(rbind(c1,c2)) # denne er her som safeguard foreløpig
 centroid <- data.frame("x" = c(c1[1], c2[1]), "y" = c(c1[2], c2[2]), "cluster" = c(1,2), "color_code" = c("black","red"))
 # Tried to get same colors across both plots, this is the closest I have come. 
 plt + geom_point(data = centroid, aes(x, y, color = color_code), shape = 4) + 
-    scale_color_identity(guide = "legend", labels = c(1, 2), breaks = centroid$cluster)
+scale_color_identity(guide = "legend", labels = c(1, 2), breaks = centroid$cluster)
 
 ```
 
 (iii)
-```{r}
+```{r, fig.height=2}
 eucl.dist <- function(x, y) {
   d <- length(x) # Dimension.
   sum = 0
@@ -499,7 +489,7 @@ ggplot(data = df2, aes(x1, x2, color = cluster)) +
 
 ## c)
 
-```{r}
+```{r, fig.height=5}
 id <- "1VfVCQvWt121UN39NXZ4aR9Dmsbj-p9OU"  # Google file ID.
 GeneData <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", 
                              id), header = F)
@@ -514,9 +504,9 @@ hc.euc.single <- hclust(dist(GeneData), method = "single")
 hc.euc.average <- hclust(dist(GeneData), method = "average")
 
 par(mfrow = c(2, 3))
-plot(hc.euc.complete, main = "Complete Linkage", xlab = " ", sub = " ", cex = 0.9)
-plot(hc.euc.single, main = "Single Linkage", xlab = " ", sub = " ", cex = 0.9)
-plot(hc.euc.average, main = "Average Linkage", xlab = " ", sub = " ", cex = 0.9)
+plot(hc.euc.complete, main = "Complete Linkage", xlab = " ", sub = " ", cex = 0.5)
+plot(hc.euc.single, main = "Single Linkage", xlab = " ", sub = " ", cex = 0.5)
+plot(hc.euc.average, main = "Average Linkage", xlab = " ", sub = " ", cex = 0.5)
 
 dd <- as.dist(1 - cor(t(GeneData)))
 hc.cor.complete <- hclust(dd, method = "complete")
@@ -526,7 +516,6 @@ hc.cor.average <- hclust(dd, method = "average")
 plot(hc.cor.complete, cex.main = 0.7, main = "CL with Correlation-based Distance", xlab = " ", sub = " ", cex = 0.5)
 plot(hc.cor.single, cex.main = 0.7, main = "SL with Correlation-based Distance", xlab = " ", sub = " ", cex = 0.5)
 plot(hc.cor.average, cex.main = 0.7, main = "AL with Correlation-based Distance", xlab = " ", sub = " ", cex = 0.5)
-# Need to find a nice way to visualize all of these dendograms without using too much room. 
 ```
 
 ## d)
