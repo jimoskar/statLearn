@@ -41,13 +41,13 @@ catdat <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", i
                    header = T)
 
 set.seed(4268)
-train.ind = sample(1:nrow(catdat), 0.5 * nrow(catdat))
-catdat.train = catdat[train.ind, ]
-catdat.test = catdat[-train.ind, ]
+train.ind <- sample(1:nrow(catdat), 0.5 * nrow(catdat))
+catdat.train <- catdat[train.ind, ]
+catdat.test <-catdat[-train.ind, ]
 
 # Perform best subset selection using all the predictors and the training data.
 n <- ncol(catdat.train) - 1 # Number of predictors.
-bss.obj <- regsubsets(birds~., catdat.train, nvmax = n) # Best subset selection. \
+bss.obj <- regsubsets(birds~., data = catdat.train, nvmax = n) # Best subset selection. 
 sum <-  summary(bss.obj) # Save summary obj.
 
 # Cross-validated prediction error. 
@@ -86,14 +86,9 @@ points(bss.cv, mean.cv.errors[bss.cv], col="red", cex=2, pch=20)
 The optimal number of predictors (in addition to the intercept) according to the cross validated prediction error it is `r bss.cv`. We would argue that cross-validation is a more reliable way of selecting among the models, since it is a resampling method, compared to only running one best subset selection on the training data and choosing based on other model selection criteria. To further strengthen this argument, we calculated the test MSE based on the best model found when using the model criteria $R_\mathrm{adj}^2$, $BIC$ and $C_p$. All these cases led to higher values for test MSE compared to the test MSE attained when applying the model selected with cross-validation. Hence, the selected variables are as shown below.
 
 ```{r}
-bss.obj2 <- regsubsets(birds~., data = catdat.train, nvmax = n)
-
 # Best model, based on amount of variables chosen by CV. 
-coef(bss.obj2, bss.cv) # Selected variables.
+coef(bss.obj, bss.cv) # Selected variables.
 fit <- lm(birds~weight+wetfood+daily.playtime+children.13+urban+bell+daily.outdoortime, data = catdat.train)
-# Kan man få ut den beste modellen fra reg.best i stedet for å fit på nytt?
-# Se øving 6 for hvordan dette kan gjøres! Kan også bare la det stå sånn tenker jeg. 
-
 pred.regbest <- predict(fit, newdata = catdat.test)
 mse.regbest <- mean((pred.regbest - catdat.test$birds)^2) # Test Mean Square Error.
 mse.regbest
@@ -116,7 +111,6 @@ lasso.mod <- glmnet(x.train, y.train, alpha = 1)
 # Perform cross validation. 
 set.seed(4268)
 cv.out <- cv.glmnet(x.train, y.train, alpha = 1)
-#plot(cv.out)
 bestlam <- cv.out$lambda.min
 bestlam # Lambda is "small", so the fit is relatively similar to least squares. 
 
@@ -128,13 +122,13 @@ mse.lasso <- mean((lasso.pred - y.test)^2)
 mse.lasso
 ```
 
-As seen in the output above, the test MSE is `r mse.lasso`. Moreover, all coefficients, except `sex`, `age`, `fellow.cats` and `daily.catnip` are non-zero. The best lambda according to the cross-validation is relatively close to 0, as seen in the output above. 
+As seen in the output above, the test MSE is `r mse.lasso`. Moreover, all coefficients, except `sex`, `age`, `fellow.cats` and `daily.catnip` are non-zero. 
 
 ## d)
-When $\lambda \longrightarrow \infty$, the Lasso regression gives the null model, i.e. the model where all the coefficients are zero. When $\lambda = 0$, the Lasso regression simply gives the least squares fit. 
+When $\lambda \rightarrow \infty$, the Lasso regression gives the null model, i.e. the model where all the coefficients are zero. When $\lambda = 0$, the Lasso regression gives the least squares fit. 
 
 ## e)
- i) A model with only intercept always predicts the mean of the response in the training data. Hence, the test MSE for this model is calculated as below. 
+ i) A model with only intercept always predicts the mean of the response in the training data. The test MSE for this model is given below.  
 ```{r}
 mse.intercept <- mean((mean(catdat.train$birds)-catdat.test$birds)^2) 
 mse.intercept
@@ -147,21 +141,20 @@ yhat.least.sq <- predict(least.sq, newdata = catdat.test)
 mse.least.sq <- mean((yhat.least.sq - catdat.test$birds)^2) 
 mse.least.sq
 ```
-We see that using only an intercept yields a test MSE of `r mse.intercept`, while a standard linear regression yields a test MSE of `r mse.least.sq`. On the other hand, best subset selection resulted in a test MSE of `r mse.regbest` and lasso regression resulted in a test MSE of `r mse.lasso`. We see that both models from a) and b) are superior to the ones introduced here, in terms the test MSE.
+We see that using only an intercept yields a test MSE of `r mse.intercept`, while a standard linear regression yields a test MSE of `r mse.least.sq`. On the other hand, best subset selection resulted in a test MSE of `r mse.regbest` and lasso regression resulted in a test MSE of `r mse.lasso`. Thus, both models from a) and b) are superior to the ones introduced here, in terms of test MSE.
 
 ## f)
 
 A table with the test MSE values from best subset selection, lasso regression, intercept-only and ordinary linear regression is shown below. 
 
 ```{r}
-# Code from exercise9 for making the table (after we are done with all the models above.)
 msrate <- rbind(c(mse.regbest), c(mse.lasso), c(mse.intercept), c(mse.least.sq))
 rownames(msrate) <- c("Best Subset", "Lasso", "Intercept-only", "Least Squares")
 colnames(msrate) <- c("Test MSE")
 msrate
 ```
 
-The results are as expected. First of all, best subset selection is an exhaustive search on all possible models with the covariates, which means that it should find the best possible linear model (according to some measure). This could lead to overfitting, because of the large search space, but has given the best result in this case. Secondly, shrinkage methods, like Lasso regression, are used to reduce overfitting to the training data. Then, the test MSE might be reduced, since the variance might have been reduced more than the bias has increased (bias-variance trade-off) after regularization. In this case, this gives a modest decrease in test MSE compared to the least squares regression. Finally, it is clearly expected that the linear regression has a smaller test MSE compared to the intercept-only model, since predicting every value as the mean of the`birds`-values does not capture any trends in the data.
+The results are as expected. First of all, best subset selection is an exhaustive search in the space of all possible models, which means that it should find the best possible linear model (according to some measure). This could lead to overfitting however, because of the large search space, but has given the best result in this case. Secondly, shrinkage methods, like Lasso regression, are used to reduce overfitting to the training data. Then, the test MSE might be reduced, since the variance might have been reduced more than the bias has increased (bias-variance trade-off) after regularization. In this case, this gives a modest decrease in test MSE compared to the least squares regression. Finally, it is expected that the linear regression has a smaller test MSE compared to the intercept-only model, since predicting every value as the mean of the`birds`-values does not capture any trends in the data. 
 
 # Problem 2
 
@@ -181,7 +174,7 @@ where
 
 $$
   (X-q_j)^d_+ = \begin{cases}
-    (x-q_j)^d &, x > q_j\\
+    (X-q_j)^d &, X > q_j\\
     0&,\text{otherwise.} 
   \end{cases}
 $$
@@ -199,19 +192,17 @@ deg <- 1:10
 col <- rainbow(n = length(deg))
 mse.train <- seq(from = 1, to = length(deg))
 
-for (d in 1:length(deg)){ # Kan også bruke en sapply her (se øving 7).
+for (d in 1:length(deg)){ 
   fit <- lm(birds~poly(daily.outdoortime, d), data = outdoor.data)
   lines(sort(outdoor.data[, 1]), fit$fit[order(outdoor.data[, 1])], col = col[d])
   mse.train[d] = mean((predict(fit, outdoor.data) - outdoor.data[, 2])^2)
 }
-
 legend("topright", inset = c(-0.25, 0), legend=paste("d = ", deg), col = col, pch = 20)
-
 mse.train # MSE from training data.
 which.min(mse.train)
 ```
 
-(ii) We see that the training MSE decreases steadily as the degree of the polynomial regression increases. This is because we increase the flexibility of the model when we increment the polynomial degree. This increases the likelihood of overfitting, i.e. reduces the training MSE. 
+(ii) It is seen that the training MSE decreases steadily as the degree of the polynomial regression increases. This is because we increase the flexibility of the model when we increment the polynomial degree. This increases the likelihood of overfitting, i.e. reduces the training MSE. 
 
 
 # Problem 3
@@ -222,7 +213,7 @@ TRUE, TRUE, FALSE, FALSE
 
 ## b)
 
-If we assume that the length of the branches is proportional to the decrease in node impurity, the tree from a) pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. In essence, the entire left subtree is pruned, while the right subtree is kept as is.
+If we assume that the length of the branches is proportional to the decrease in node impurity, the tree from a) pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. In essence, the entire left subtree is pruned, while the right subtree is kept as is. \textcolor{red}{Med kun dette mangler man en WHY, som gir 1 poeng. Stratification betyr "inndeling".}
 
 \textcolor{red}{trenger kanskje ikke det som kommer etter her? usikker på hva coarse stratification betyr...}This is the best way to prune the tree down to three leaves because this leads to the most coarse stratification of the covariate space. Moreover, since the branches splitting on the factor `country` are longer than the branches splitting on `age < 46.5`, the former split is kept instead of the latter. This principle is analogous to classification trees, where `tree.plot` with argument `type = "proportional"` means that the length of the branches are proportional to the decrease in impurity. \textcolor{red}{Akkurat dette i regression tree tilfellet finner jeg ikke noe sted! Men er kanskje proportional to decrease i deviance, skulle jeg tro. Kan ikke finne det svart på hvitt noe sted derimot.} `age` and `country`, in that order, can be interpreted as the most important covariates when determining the probability of dying. 
 
@@ -235,7 +226,6 @@ If we assume that the length of the branches is proportional to the decrease in 
 <!-- plot(t.corona) -->
 <!-- text(t.corona, pretty = 0) -->
 <!-- ``` -->
-
 
 ## c)
 
@@ -267,7 +257,7 @@ class.rate.simple <-  1 -
 class.rate.simple
 
 # Apply cost complexity pruning. 
-cv.diabetes <- cv.tree(simple.tree) # 10-fold CV is default. Deviance as guide in the pruning process is default. 
+cv.diabetes <- cv.tree(simple.tree)#, FUN = prune.misclass) # 10-fold CV is default. Deviance as guide in the pruning process is default. 
 # Classification error rate is used to guide the pruning process, 
 # since prediction accuracy of the final pruned tree is the goal. 
 #### Tok bort classification error rate (FUN = prune.misclass), og vi ser at det gir helt andre resultater!
@@ -279,7 +269,8 @@ best <- which.min(cv.diabetes$dev) # Finds best model.
 plot(cv.diabetes$size, cv.diabetes$dev, type = "b", xlab = "Terminal Nodes", ylab = "Misclassifications")
 points(cv.diabetes$size[best], cv.diabetes$dev[best], col = "red", pch = 20)
 
-best.tree <- prune.misclass(simple.tree, best = cv.diabetes$size[best]) 
+best.tree <- prune.misclass(simple.tree, best = cv.diabetes$size[best]) # Du ser at til tross for at best = 3, så får man treet med 6 uansett.
+# Det tror jeg er fordi vi bruker prune.misclass her uansett, selv om FUN = prune.misclass ikke brukes ovenfor!
 plot(best.tree)
 text(best.tree, cex = 0.7, pretty = 0)
 ```
@@ -293,15 +284,12 @@ class.rate.pruned <-  1-sum(diag(conf.table.pruned))/(sum(conf.table.pruned))
 class.rate.pruned
 ```
 
-
-
 Despite the fact that the largest tree is the best, according to the cross-validation error, we choose to prune the tree to 6 leaves, since it is much more interpretable than the larger model with 17 leaves. 
-\textcolor{green}{Det er overfitting her? Siden test-error-raten er lavere for pruned tree, til tross for at cv error sier at den burde vært større. } \textcolor{blue}{Tror vi skal endre på FUN, slik at vi bruker standard.} \textcolor{red}{Har prøvd dette, og kommer fram til at det ikke gir mening å la være å bruke misclassification rate. Den vil alltid være bedre for en større modell, noe som er naturlig. Se også eksempel fra forelesning, der misclassifications er lavest også for størst modell.} \textcolor{purple}{Nå har jeg tatt bort FUN = prune.misclass. Fikk inntrykk av at det var det de vill ha fra veilednignen. Resultatene ser også fornuftige ut}
+\textcolor{green}{Det er overfitting her? Siden test-error-raten er lavere for pruned tree, til tross for at cv error sier at den burde vært større. } \textcolor{blue}{Tror vi skal endre på FUN, slik at vi bruker standard.} \textcolor{red}{Har prøvd dette, og kommer fram til at det ikke gir mening å la være å bruke misclassification rate. Den vil alltid være bedre for en større modell, noe som er naturlig. Se også eksempel fra forelesning, der misclassifications er lavest også for størst modell.} \textcolor{purple}{Nå har jeg tatt bort FUN = prune.misclass. Fikk inntrykk av at det var det de vill ha fra veilednignen. Resultatene ser også fornuftige ut} \textcolor{blue}{Vet ikke om jeg er helt enig med deg her, tror jeg trenger litt mer overbevisning ;) Resultatene er uansett helt like i begge tilfellene, siden prune.misclass brukes når treet faktisk prunes etter at "sjekken" er gjennomført.} 
 
 The misclassification error for the pruned tree is reported above. Despite the fact that the CV-error is best for the largest model, it is apparent that the misclassification error on the test set is slightly lower for the pruned tree with 6 terminal nodes, compared to the unpruned tree. Despite this, the errors are very similar, which suggests that a more advanced method should be tested. 
 
 (ii) For the more advanced method, a random forest approach is considered. The number of trees is chosen to be $B = 1000$, since this amount seems to be sufficient for the test error to settle. Furthermore, since $p = 7$, we choose the tuning parameter $m = 3 \approx \sqrt{p}$, because this is recommended in ISLR. 
-
 ```{r}
 set.seed(1)
 B <- 1000
@@ -315,9 +303,10 @@ d.misclass
 rf.misclass <- 1 - sum(diag(d.misclass))/sum(d.misclass)
 rf.misclass
 ```
+
 The resulting test misclassification rate is `r rf.misclass`. This is slightly lower than for the simple tree. Next, we find the most influential variables in this classification problem.
+
 ```{r}
-# Find the most important variables.
 varImpPlot(rf.d, main = "")
 ```
 Based on both metrics in the plots above, it is apparent that `glu` and `bmi` are the most influential, as expected based on the simple trees from earlier. 
@@ -363,9 +352,9 @@ test.misclass
 
 The misclassification error rates are `r round(1 - sum(diag(train.misclass)) / sum(train.misclass), 3)` for the training data and `r round(1 - sum(diag(test.misclass)) / sum(test.misclass), 3)` for the test data.
 
-The training error rate is not surprising, as finding a separating hyperplane when $p >> n$ is easy, and the cost of 1 does not allow much missclassification \textcolor{blue}{spuerte om cost på piazza}. The support vector classifier has 1 false positive and 4 false negatives on the test set. This means that a false negative is the most common type of error that is seen in the test set. 
+The training error rate is not surprising, as finding a separating hyperplane when $p >> n$ is easy, and the cost of 1 does not allow much missclassification \textcolor{blue}{spuerte om cost på piazza}. Given that `Relapse = 1` and `Non-Relapse = 0`, the support vector classifier has 1 false positive and 4 false negatives on the test set. This means that a false negative is the most common type of error that is seen in the test set. 
 
-The low training error and relatively high test error could indicate overfitting. Despite this, the classification method is successful in the sense that it performs slightly better than always predicting the most frequently occurring class in the training data, which is `Non-Relapse`. The output below substantiates this argument. 
+The low training error and relatively high test error could indicate overfitting. Despite this, the classification method is successful in the sense that it performs slightly better than the null rate, which is attained when always predicting the most frequently occurring class in the training data, which is `Non-Relapse`. The output below substantiates this argument. 
 
 ```{r}
 # Most occurring class is "Non-Relapse".
@@ -393,7 +382,7 @@ test.misclass.radial.1 <- table(predict = test.yhat.radial.1, truth = d.leukemia
 test.misclass.radial.1
 ```
 
-The training error rate is `r 1 - sum(diag(train.misclass.radial.1)) / sum(train.misclass.radial.1)` in this case. The test misclassification rate is `r 1 - sum(diag(test.misclass.radial.1)) / sum(test.misclass.radial.1)`, i.e. no better than always predicting the most frequently occurring class (which we can see the does for the test set). The low training error and the poor performance on the test set indicate that the model is overfitted to the training data.
+The training error rate is `r 1 - sum(diag(train.misclass.radial.1)) / sum(train.misclass.radial.1)` in this case. The test misclassification rate is `r 1 - sum(diag(test.misclass.radial.1)) / sum(test.misclass.radial.1)`, i.e. no better than always predicting the most frequently occurring class (which is what the method does for the test set). The low training error and the poor performance on the test set indicate that the model is overfitted to the training data.
 
 Next, the analysis is repeated with $\gamma = 10^{-5}$. 
 
@@ -410,10 +399,9 @@ test.yhat.radial.2 <- predict(svcfit.radial.2, newdata = d.leukemia.test)
 test.misclass.radial.2 <- table(predict = test.yhat.radial.2, truth = d.leukemia.test$Category)
 test.misclass.radial.2
 ```
-The training error rate is now `r round(1 - sum(diag(train.misclass.radial.2)) / sum(train.misclass.radial.2), 3)`, while the test misclassification rate is `r 1 - sum(diag(test.misclass.radial.2)) / sum(test.misclass.radial.2)`, i.e. no better than always predicting the most frequently occurring class. The increase in training error can be explained by the change in $\gamma$, as a smaller value of this tuning parameter makes the decision boundary smoother, i.e. less variable. In other words, the model becomes more biased, which explains the increase in training error.
+The training error rate is now `r round(1 - sum(diag(train.misclass.radial.2)) / sum(train.misclass.radial.2), 3)`, while the test misclassification rate is `r 1 - sum(diag(test.misclass.radial.2)) / sum(test.misclass.radial.2)`, i.e. no better than always predicting the most frequently occurring class (which is what the method does for the test set). The increase in training error can be explained by the change in $\gamma$, as a smaller value of this tuning parameter makes the decision boundary smoother, i.e. less variable. In other words, the model becomes more biased.
 
-To compare, we see that the support vector classifier from iii) outperforms the more flexible support vector machines from iv) on the test set and also on the training set for $
-$\gamma = 10^{-5}$. This indicates that a linear decision boundary is more appropriate in this situation than a highly flexible one.
+To compare, we see that the support vector classifier from (iii) outperforms the more flexible support vector machines from (iv) on the test set and also on the training set for $\gamma = 10^{-5}$. This indicates that a linear decision boundary is more appropriate in this situation, than the more flexible radial kernel.
 
 ## c)
 $$
@@ -530,7 +518,6 @@ plot(hc.euc.complete, main = "Complete Linkage", xlab = " ", sub = " ", cex = 0.
 plot(hc.euc.single, main = "Single Linkage", xlab = " ", sub = " ", cex = 0.9)
 plot(hc.euc.average, main = "Average Linkage", xlab = " ", sub = " ", cex = 0.9)
 
-# Skjønner ikke helt hvorfor Gendata skal transponeres. Den blir transponert en gang tidligere også, lenger oppe. 
 dd <- as.dist(1 - cor(t(GeneData)))
 hc.cor.complete <- hclust(dd, method = "complete")
 hc.cor.single <- hclust(dd, method = "single")
