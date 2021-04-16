@@ -415,7 +415,7 @@ TRUE, FALSE, FALSE, FALSE
 ## b)
 
 (i)
-```{r}
+```{r, fig.height=2}
 set.seed(1)
 x1 <- c(1, 2, 0, 4, 5, 6)
 x2 <- c(5, 4, 3, 1, 1, 2)
@@ -425,9 +425,7 @@ cluster <-  sample(1:K, length(x1), replace = T)
 df <- as.data.frame(cbind(x1, x2, cluster))
 df$cluster <-  as.factor(df$cluster)
 
-plt <- ggplot() +
-        geom_point(data = df, aes(x1, x2, color = cluster), size = 2.2) +
-        theme_bw() + scale_color_identity(guide = "legend", labels = c(1, 2))
+plot(df$x1, df$x2, col = df$cluster, pch = 19)
 ```
 
 (ii) 
@@ -441,15 +439,20 @@ calc_centr <- function(k, df) {
 
 c1 <- calc_centr(1, df)
 c2 <- calc_centr(2, df)
-centroids <- as.data.frame(cbind(rbind(c1,c2), c(1,2), c("black","red")))
-colnames(centroids) <-c("x", "y", "cluster", "color_code")
-rownames(centroids) <- c(1,2)
-centroids <- as.data.frame(rbind(c1,c2)) # denne er her som safeguard foreløpig! Må bestemme om vi bør beholde det jeg har gjort eller ikke!
-#centroid er det samme som centroids vha de tre linjene ovenfor. 
-centroid <- data.frame("x" = c(c1[1], c2[1]), "y" = c(c1[2], c2[2]), "cluster" = c(1,2), "color_code" = c("black","red"))
-# Tried to get same colors across both plots, this is the closest I have come. 
-plt + geom_point(data = centroid, aes(x, y, color = color_code), shape = 4) + 
-scale_color_identity(guide = "legend", labels = c(1, 2), breaks = centroid$cluster)
+
+plot(df$x1, df$x2, col = df$cluster, pch = 19)
+points(c1[1], c1[2], col = 1, pch = 4)
+points(c2[1], c2[2], col = 2, pch = 4)
+
+# centroids <- as.data.frame(cbind(rbind(c1,c2), c(1,2), c("black","red")))
+# colnames(centroids) <-c("x", "y", "cluster", "color_code")
+# rownames(centroids) <- c(1,2)
+# centroids <- as.data.frame(rbind(c1,c2)) # denne er her som safeguard foreløpig! Må bestemme om vi bør beholde det jeg har gjort eller ikke!
+# #centroid er det samme som centroids vha de tre linjene ovenfor. 
+# centroid <- data.frame("x" = c(c1[1], c2[1]), "y" = c(c1[2], c2[2]), "cluster" = c(1,2), "color_code" = c("black","red"))
+# # Tried to get same colors across both plots, this is the closest I have come. 
+# plt + geom_point(data = centroid, aes(x, y, color = color_code), shape = 4) + 
+# scale_color_identity(guide = "legend", labels = c(1, 2), breaks = centroid$cluster)
 
 ```
 
@@ -480,10 +483,12 @@ reassign <- function(df, centroids){
   return(df)
 }
 
-df2 <- reassign(df, centroids) # denne må fikses dersom det skal fungere med den nye centroid-df!
-ggplot(data = df2, aes(x1, x2, color = cluster)) + 
-  geom_point(size = 2.2) +
-  theme_bw() + scale_color_identity(guide = "legend", labels = c(1, 2))
+df2 <- reassign(df, matrix(c(c1,c2), nrow = 2, byrow = T))
+plot(df2$x1, df2$x2, col = df2$cluster, pch = 19)
+# denne må fikses dersom det skal fungere med den nye centroid-df!
+# ggplot(data = df2, aes(x1, x2, color = cluster)) + 
+#   geom_point(size = 2.2) +
+#   theme_bw() + scale_color_identity(guide = "legend", labels = c(1, 2))
 ```
 
 ## c)
