@@ -30,7 +30,7 @@ knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.wh
 
 # Problem 1
 ## a)
-FALSE, TRUE, TRUE, FALSE
+FALSE \textcolor{red}{Side 204 eks, tenker TRUE}, TRUE, TRUE, FALSE
 
 ## b)
 Best subset selection is used to identify a satisfactory model that uses a subset of the variables. A plot showing the cross-validated prediction error is displayed. The red dot shows the best number of variables used in the subset. 
@@ -105,8 +105,7 @@ y.train <- catdat.train$birds
 x.test <- model.matrix(birds~., data = catdat.test)[, -1]
 y.test <- catdat.test$birds
 
-lasso.mod <- glmnet(x.train, y.train, alpha = 1) 
-# alpha = 1 specifies Lasso regression. 
+lasso.mod <- glmnet(x.train, y.train, alpha = 1) # alpha = 1 specifies Lasso regression. 
 
 # Perform cross validation. 
 set.seed(4268)
@@ -148,9 +147,9 @@ We see that using only an intercept yields a test MSE of `r mse.intercept`, whil
 A table with the test MSE values from best subset selection, lasso regression, intercept-only and ordinary linear regression is shown below. 
 
 ```{r}
-msrate <- rbind(c(mse.regbest), c(mse.lasso), c(mse.intercept), c(mse.least.sq))
-rownames(msrate) <- c("Best Subset", "Lasso", "Intercept-only", "Least Squares")
-colnames(msrate) <- c("Test MSE")
+msrate <- cbind(mse.regbest, mse.lasso, mse.intercept, mse.least.sq)
+colnames(msrate) <- c("Best Subset", "Lasso", "Intercept-only", "Least Squares")
+rownames(msrate) <- c("Test MSE")
 msrate
 ```
 
@@ -182,16 +181,15 @@ $$
 ## c)
 
 (i)
-```{r, fig.height=3}
+```{r, fig.height=2.8}
 # Fit polynomial regression with training data.
 outdoor.data <- catdat.train[c("daily.outdoortime", "birds")] # Pick out necessary training data. 
 par(mar=c(4, 3, 3, 4.5), xpd=TRUE) # Change margins of plots. 
 plot(outdoor.data, 
-     main = "Polynomial Regression", xlab = "Outdoor Time", ylab="Birds")
+     main = "", xlab = "Outdoor Time", ylab="Birds")
 deg <- 1:10
 col <- rainbow(n = length(deg))
 mse.train <- seq(from = 1, to = length(deg))
-
 for (d in 1:length(deg)){ 
   fit <- lm(birds~poly(daily.outdoortime, d), data = outdoor.data)
   lines(sort(outdoor.data[, 1]), fit$fit[order(outdoor.data[, 1])], col = col[d])
@@ -231,9 +229,8 @@ id <- "1Fv6xwKLSZHldRAC1MrcK2mzdOYnbgv0E" # Google file ID.
 d.diabetes <- dget(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
 d.train <-d.diabetes$ctrain
 d.test <- d.diabetes$ctest
-
-d.train$diabetes <- as.factor(d.train$diabetes) # Added this to make classification tree. 
-d.test$diabetes <- as.factor(d.test$diabetes) # Added this to make classification tree. 
+d.train$diabetes <- as.factor(d.train$diabetes) # Added to make classification tree. 
+d.test$diabetes <- as.factor(d.test$diabetes) # Added to make classification tree. 
 ```
 
 (i)
@@ -349,7 +346,7 @@ The low training error and relatively high test error could indicate overfitting
 ```{r}
 # Most occurring class is "Non-Relapse".
 summary(d.leukemia.train$Category)
-# Confusion table from predicting most occuring class. 
+# Confusion table from predicting most occurring class. 
 test.misclass.most <- table(predict = rep("Non-Relapse", length(d.leukemia.test$Category)), truth = d.leukemia.test$Category)
 test.misclass.most
 # Misclassification error rate from testing.
@@ -419,17 +416,14 @@ TRUE, FALSE, FALSE, FALSE
 set.seed(1)
 x1 <- c(1, 2, 0, 4, 5, 6)
 x2 <- c(5, 4, 3, 1, 1, 2)
-
 K <- 2
 cluster <-  sample(1:K, length(x1), replace = T)
 df <- as.data.frame(cbind(x1, x2, cluster))
 df$cluster <-  as.factor(df$cluster)
-
-plot(df$x1, df$x2, col = df$cluster, pch = 19)
 ```
 
 (ii) 
-```{r, fig.height=2}
+```{r}
 calc_centr <- function(k, df) {
   feats <- df[df$cluster == k, 1:2]
   mean.1 <- mean(feats[, 1])
@@ -439,25 +433,13 @@ calc_centr <- function(k, df) {
 
 c1 <- calc_centr(1, df)
 c2 <- calc_centr(2, df)
-
-plot(df$x1, df$x2, col = df$cluster, pch = 19)
+plot(df$x1, df$x2, col = df$cluster, pch = 19, xlab = "x1", ylab = "y1")
 points(c1[1], c1[2], col = 1, pch = 4)
 points(c2[1], c2[2], col = 2, pch = 4)
-
-# centroids <- as.data.frame(cbind(rbind(c1,c2), c(1,2), c("black","red")))
-# colnames(centroids) <-c("x", "y", "cluster", "color_code")
-# rownames(centroids) <- c(1,2)
-# centroids <- as.data.frame(rbind(c1,c2)) # denne er her som safeguard foreløpig! Må bestemme om vi bør beholde det jeg har gjort eller ikke!
-# #centroid er det samme som centroids vha de tre linjene ovenfor. 
-# centroid <- data.frame("x" = c(c1[1], c2[1]), "y" = c(c1[2], c2[2]), "cluster" = c(1,2), "color_code" = c("black","red"))
-# # Tried to get same colors across both plots, this is the closest I have come. 
-# plt + geom_point(data = centroid, aes(x, y, color = color_code), shape = 4) + 
-# scale_color_identity(guide = "legend", labels = c(1, 2), breaks = centroid$cluster)
-
 ```
 
 (iii)
-```{r, fig.height=2}
+```{r}
 eucl.dist <- function(x, y) {
   d <- length(x) # Dimension.
   sum = 0
@@ -484,11 +466,7 @@ reassign <- function(df, centroids){
 }
 
 df2 <- reassign(df, matrix(c(c1,c2), nrow = 2, byrow = T))
-plot(df2$x1, df2$x2, col = df2$cluster, pch = 19)
-# denne må fikses dersom det skal fungere med den nye centroid-df!
-# ggplot(data = df2, aes(x1, x2, color = cluster)) + 
-#   geom_point(size = 2.2) +
-#   theme_bw() + scale_color_identity(guide = "legend", labels = c(1, 2))
+plot(df2$x1, df2$x2, col = df2$cluster, pch = 19, xlab = "x1", ylab = "y1")
 ```
 
 ## c)
@@ -526,12 +504,7 @@ plot(hc.cor.average, cex.main = 0.7, main = "AL with Correlation-based Distance"
 
 ```{r}
 cutree(hc.euc.complete, 2)
-cutree(hc.euc.single, 2)
-cutree(hc.euc.average, 2)
-
-cutree(hc.cor.complete, 2)
-cutree(hc.cor.single, 2)
-cutree(hc.cor.average, 2)
+all.equal(cutree(hc.euc.single, 2), cutree(hc.euc.average, 2), cutree(hc.cor.complete, 2), cutree(hc.cor.single, 2), cutree(hc.cor.average, 2))
 ```
 
 Since we know that the first 20 tissues come from healthy patients and the remaining 20 come from diseased patients, we can see that all the linkage and distance measures lead to perfect classification results on this data. 
@@ -541,7 +514,6 @@ Since we know that the first 20 tissues come from healthy patients and the remai
 (i) 
 ```{r}
 pr.out <- prcomp(GeneData)
-
 plot(pr.out$x[, 1:2], col = c(rep("blue", 20), rep("red", 20)), 
   pch = 20, main = "Samples in two dimensions using PCA")
 text(pr.out$x[,"PC1"],pr.out$x[, "PC2"],rownames(GeneData),cex=0.6) 
