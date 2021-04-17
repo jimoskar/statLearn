@@ -30,10 +30,10 @@ knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.wh
 
 # Problem 1
 ## a)
-FALSE \textcolor{red}{Side 204 eks, tenker TRUE}, TRUE, TRUE, FALSE
+FALSE \textcolor{red}{Side 204 eks, tenker TRUE} \textcolor{green}{Jeg tolker denne påstanden som at regularisering alltid reduserer test-error, og det er ikke sant, ellers hadde vi alltid brukt det.}, TRUE, TRUE, FALSE
 
 ## b)
-Best subset selection is used to identify a satisfactory model that uses a subset of the variables. A plot showing the cross-validated prediction error is displayed. The red dot shows the best number of variables used in the subset. 
+We have chosen the cross-validated prediction error as the measure to use in our model selection. A plot showing the cross-validated prediction error is displayed below. The red dot shows the optimal number of variables based on this measure. 
 
 ```{r}
 id <- "1iI6YaqgG0QJW5onZ_GTBsCvpKPExF30G"  # Google file ID.
@@ -83,7 +83,7 @@ plot(mean.cv.errors, xlab = "Number of Variables", ylab = "CV", type='l')
 points(bss.cv, mean.cv.errors[bss.cv], col="red", cex=2, pch=20)
 ```
 
-The optimal number of predictors (in addition to the intercept) according to the cross validated prediction error it is `r bss.cv`. We would argue that cross-validation is a more reliable way of selecting among the models, since it is a resampling method, compared to only running one best subset selection on the training data and choosing based on other model selection criteria. To further strengthen this argument, we calculated the test MSE based on the best model found when using the model criteria $R_\mathrm{adj}^2$, $BIC$ and $C_p$. All these cases led to higher values for test MSE compared to the test MSE attained when applying the model selected with cross-validation. Hence, the selected variables are as shown below.
+The optimal number of predictors (in addition to the intercept) according to the cross validated prediction error is `r bss.cv`. We would argue that cross-validation is a more reliable way of selecting among the models, since it is a resampling method, compared to only running one best subset selection on the training data and choosing based on other model selection criteria. To further strengthen this argument, \textcolor{red}{burde vi vise det? trenger vi å ha med denne argumentasjonen?}we calculated the test MSE based on the best model found when using the model criteria $R_\mathrm{adj}^2$, $BIC$ and $C_p$. All these cases led to higher values for test MSE compared to the test MSE attained when applying the model selected with cross-validation. Hence, the selected variables are as shown below.
 
 ```{r}
 # Best model, based on amount of variables chosen by CV. 
@@ -206,11 +206,13 @@ which.min(mse.train)
 
 ## a)
 
-TRUE, TRUE, FALSE, FALSE 
+TRUE, TRUE, FALSE \textcolor{red}{litt usikker her, spurte på piazza.}, FALSE 
 
 ## b)
 
-If we assume that the length of the branches is proportional to the decrease in node impurity, the tree from a) pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. In essence, the entire left subtree is pruned, while the right subtree is kept as is. This is the best way to prune the tree down to three leaves because this leads to the most coarse stratification of the covariate space. Moreover, since the branches splitting on the factor `country` are longer than the branches splitting on `age < 46.5`, the former split is kept instead of the latter. 
+(\textbf{Which leaves?}) The tree from a) pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. In essence, the entire left subtree is pruned, while the right subtree is kept as is. 
+
+(\textbf{Why?}) This is the best way to prune the tree down to three leaves because we assume that the length of the branches is proportional to the decrease in node impurity. \textcolor{red}{Jeg tok bort det med stratidication, tror ikke jeg skjønte det...noe mer som bør nevnes her?}
 
 <!-- Commented out, in case that the figure is not compiled correctly, as was experienced on mac. -->
 <!-- ```{r, echo = F, fig.height=3} -->
@@ -246,8 +248,7 @@ text(simple.tree, cex = 0.5, pretty = 0)
 yhat.simple <- predict(simple.tree, newdata = d.test, type = "class")
 conf.table.simple <- table(yhat.simple, d.test$diabetes)
 conf.table.simple
-class.rate.simple <-  1 - 
-  sum(diag(conf.table.simple))/(sum(conf.table.simple))
+class.rate.simple <-  1 - sum(diag(conf.table.simple))/(sum(conf.table.simple))
 class.rate.simple
 
 # Apply cost complexity pruning. 
@@ -274,7 +275,7 @@ conf.table.pruned
 class.rate.pruned <-  1-sum(diag(conf.table.pruned))/(sum(conf.table.pruned))
 ```
 
-The misclassification error for the pruned tree is `r class.rate.pruned ` It is apparent that the misclassification rate on the test set is slightly lower for the pruned tree with 3 terminal nodes compared to the unpruned tree. We notice that the left branch only predicts 0, which means that the tree is equivalent to a tree with two only terminal nodes where the left one predicts zero and the right one predicts 1.
+The misclassification rate for the pruned tree is `r class.rate.pruned ` It is apparent that the misclassification rate on the test set is slightly lower for the pruned tree with 3 terminal nodes compared to the unpruned tree. We notice that the left branch only predicts 0, which means that the tree is equivalent to a tree with two only terminal nodes where the left one predicts zero and the right one predicts 1.
 
 (ii) For the more advanced method, a random forest approach is considered. The number of trees is chosen to be $B = 1000$, since this amount seems to be sufficient for the test error to settle. Furthermore, since $p = 7$, we choose the tuning parameter $m = 3 \approx \sqrt{p}$, because this is recommended in ISLR. 
 ```{r}
@@ -337,9 +338,9 @@ test.misclass
 ```
 
 
-The misclassification error rates are `r round(1 - sum(diag(train.misclass)) / sum(train.misclass), 3)` for the training data and `r round(1 - sum(diag(test.misclass)) / sum(test.misclass), 3)` for the test data.
+The misclassification rates are `r round(1 - sum(diag(train.misclass)) / sum(train.misclass), 3)` for the training data and `r round(1 - sum(diag(test.misclass)) / sum(test.misclass), 3)` for the test data.
 
-The training error rate is not surprising, as finding a separating hyperplane when $p >> n$ is easy. Given that `Relapse = 1` and `Non-Relapse = 0`, the support vector classifier has 1 false positive and 4 false negatives on the test set. This means that a false negative is the most common type of error that is seen in the test set. 
+The training error rate is not surprising, as finding a separating hyperplane when $p >> n$ is easy. Given that `Relapse = 1` and `Non-Relapse = 0`, the support vector classifier has 1 false positive and 4 false negatives on the test set. This means that a false negative is the most common type of error that is seen in the test set. In a clinical setting, false negatives are usually more severe than false positives; i.e. the classifier is very unsuccessful from that perspective.
 
 The low training error and relatively high test error could indicate overfitting. Despite this, the classification method is successful in the sense that it performs slightly better than the null rate, which is attained when always predicting the most frequently occurring class in the training data, which is `Non-Relapse`. The output below substantiates this argument. 
 
