@@ -30,7 +30,7 @@ knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.wh
 
 # Problem 1
 ## a)
-FALSE \textcolor{red}{Side 204 eks, tenker TRUE} \textcolor{green}{Jeg tolker denne påstanden som at regularisering alltid reduserer test-error, og det er ikke sant, ellers hadde vi alltid brukt det.}, TRUE, TRUE, FALSE
+FALSE, TRUE, TRUE, FALSE
 
 ## b)
 We have chosen the cross-validated prediction error as the measure to use in our model selection. A plot showing the cross-validated prediction error is displayed below. The red dot shows the optimal number of variables based on this measure. 
@@ -140,7 +140,7 @@ yhat.least.sq <- predict(least.sq, newdata = catdat.test)
 mse.least.sq <- mean((yhat.least.sq - catdat.test$birds)^2) 
 mse.least.sq
 ```
-We see that using only an intercept yields a test MSE of `r mse.intercept`, while a standard linear regression yields a test MSE of `r mse.least.sq`. On the other hand, best subset selection resulted in a test MSE of `r mse.regbest` and lasso regression resulted in a test MSE of `r mse.lasso`. Thus, both models from a) and b) are superior to the ones introduced here, in terms of test MSE.
+We see that using only an intercept yields a test MSE of `r mse.intercept`, while a standard linear regression yields a test MSE of `r mse.least.sq`. On the other hand, best subset selection resulted in a test MSE of `r mse.regbest` and lasso regression resulted in a test MSE of `r mse.lasso`. Thus, both models from b) and c) are superior to the ones introduced here, in terms of test MSE.
 
 ## f)
 
@@ -200,19 +200,19 @@ mse.train # MSE from training data.
 which.min(mse.train)
 ```
 
-(ii) It is seen that the training MSE decreases steadily as the degree of the polynomial regression increases. This is because we increase the flexibility of the model when we increment the polynomial degree. This increases the likelihood of overfitting, i.e. reduces the training MSE. 
+(ii) It is seen that the training MSE decreases steadily as the degree of the polynomial regression increases. This is because we increase the flexibility of the model when we increment the polynomial degree. \textcolor{red}{Er denne setningen nødvendig? Kan heller bare beholde "i.e. reduces ..."?}This increases the likelihood of overfitting, i.e. reduces the training MSE. 
 
 # Problem 3
 
 ## a)
 
-TRUE, TRUE, FALSE \textcolor{red}{litt usikker her, spurte på piazza.}, FALSE 
+TRUE, TRUE, FALSE \textcolor{red}{litt usikker her, spurte på piazza.}\textcolor{blue}{Det står jo K = 5 i koden i oppgaven, noe som betyr at det er brukt 5-fold CV}, FALSE 
 
 ## b)
 
 (\textbf{Which leaves?}) The tree from a) pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. In essence, the entire left subtree is pruned, while the right subtree is kept as is. 
 
-(\textbf{Why?}) This is the best way to prune the tree down to three leaves because we assume that the length of the branches is proportional to the decrease in node impurity. \textcolor{red}{Jeg tok bort det med stratidication, tror ikke jeg skjønte det...noe mer som bør nevnes her?}
+(\textbf{Why?}) This is the best way to prune the tree down to three leaves because we assume that the length of the branches is proportional to the decrease in node impurity. \textcolor{red}{Jeg tok bort det med stratidication, tror ikke jeg skjønte det...noe mer som bør nevnes her?}\textcolor{blue}{Okey, du kan godt endre til et annet ord (hvis det ordet er vanskelig ;)), men jeg mener det er svært vesentlig at det skrives en kort setning om hvordan disse tre faktorene er de som deler inn rommet grovest, for det betyr at flest mulig av observasjonene vil klassifiseres rett ift de viktigste prediktorene.}
 
 <!-- Commented out, in case that the figure is not compiled correctly, as was experienced on mac. -->
 <!-- ```{r, echo = F, fig.height=3} -->
@@ -275,7 +275,7 @@ conf.table.pruned
 class.rate.pruned <-  1-sum(diag(conf.table.pruned))/(sum(conf.table.pruned))
 ```
 
-The misclassification rate for the pruned tree is `r class.rate.pruned ` It is apparent that the misclassification rate on the test set is slightly lower for the pruned tree with 3 terminal nodes compared to the unpruned tree. We notice that the left branch only predicts 0, which means that the tree is equivalent to a tree with two only terminal nodes where the left one predicts zero and the right one predicts 1.
+The misclassification rate for the pruned tree is `r class.rate.pruned`. It is apparent that the misclassification rate on the test set is slightly lower for the pruned tree with 3 terminal nodes compared to the unpruned tree. We notice that the left branch only predicts 0, which means that the tree is equivalent to a tree with only two terminal nodes where the left one predicts 0 and the right one predicts 1.
 
 (ii) For the more advanced method, a random forest approach is considered. The number of trees is chosen to be $B = 1000$, since this amount seems to be sufficient for the test error to settle. Furthermore, since $p = 7$, we choose the tuning parameter $m = 3 \approx \sqrt{p}$, because this is recommended in ISLR. 
 ```{r}
@@ -292,7 +292,7 @@ rf.misclass <- 1 - sum(diag(d.misclass))/sum(d.misclass)
 rf.misclass
 ```
 
-The resulting test misclassification rate is `r rf.misclass`. This is slightly lower than for the simple tree. Next, we find the most influential variables in this classification problem.
+The resulting test misclassification rate is `r rf.misclass`. This is slightly lower than for the simple trees. Next, we find the most influential variables in this classification problem.
 
 ```{r, fig.height=2}
 varImpPlot(rf.d, main = "", cex = 0.5)
@@ -317,7 +317,7 @@ d.leukemia.test <- d.leukemia[t.samples, ]
 d.leukemia.train <- d.leukemia[-t.samples, ]
 ```
 
-(i) A support vector machine (SVM) is more suitable than a logistic regression here, because $p > n$. This means that the parameters in the logistic regression model cannot be estimated. Linear or quadratic discriminant analysis could also be used in this case, in addition to regularized logistic regression variants, i.e. with added penalty term when optimizing (similar to e.g. ridge regression). Classification trees and tree-based methods such as bagging, boosting and random forests can also be used.
+(i) A support vector machine (SVM) is more suitable than a logistic regression here, because $p > n$. This means that the parameters in the logistic regression model cannot be estimated. Linear or quadratic discriminant analysis could also be used in this case, in addition to regularized logistic regression variants, i.e. with added penalty term when optimizing (similar to e.g. ridge regression). Classification trees and tree-based methods such as bagging, boosting and random forests can also be used. \textcolor{red}{Hva med K-means?}
 
 (ii) The paper intends to demonstrate a new method for identifying the subset of genes (predictors) which capture the necessary information in order to classify patients into different groups (response). They introduce the Ensemble SVM-Recursive Feature Elimination (ESVM-RFE), which combines the ensemble and bagging methods used in random forests with SVMs and a backward elimination strategy.
 
@@ -342,7 +342,7 @@ The misclassification rates are `r round(1 - sum(diag(train.misclass)) / sum(tra
 
 The training error rate is not surprising, as finding a separating hyperplane when $p >> n$ is easy. Given that `Relapse = 1` and `Non-Relapse = 0`, the support vector classifier has 1 false positive and 4 false negatives on the test set. This means that a false negative is the most common type of error that is seen in the test set. In a clinical setting, false negatives are usually more severe than false positives; i.e. the classifier is very unsuccessful from that perspective.
 
-The low training error and relatively high test error could indicate overfitting. Despite this, the classification method is successful in the sense that it performs slightly better than the null rate, which is attained when always predicting the most frequently occurring class in the training data, which is `Non-Relapse`. The output below substantiates this argument. 
+The low training error and relatively large test error could indicate overfitting. Despite this, the classification method is successful in the sense that it performs slightly better than the null rate, which is attained when always predicting the most frequently occurring class in the training data, which is `Non-Relapse`. The output below substantiates this argument. 
 
 ```{r}
 # Most occurring class is "Non-Relapse".
@@ -389,7 +389,7 @@ test.misclass.radial.2
 ```
 The training error rate is now `r round(1 - sum(diag(train.misclass.radial.2)) / sum(train.misclass.radial.2), 3)`, while the test misclassification rate is `r 1 - sum(diag(test.misclass.radial.2)) / sum(test.misclass.radial.2)`, i.e. no better than always predicting the most frequently occurring class (which is what the method does for the test set). The increase in training error can be explained by the change in $\gamma$, as a smaller value of this tuning parameter makes the decision boundary smoother, i.e. less variable. In other words, the model becomes more biased.
 
-To compare, we see that the support vector classifier from (iii) outperforms the more flexible support vector machines from (iv) on the test set and also on the training set for $\gamma = 10^{-5}$. This indicates that a linear decision boundary is more appropriate in this situation, than the more flexible radial kernel.
+To compare, we see that the support vector classifier from (iii) outperforms the more flexible support vector machines from (iv) on the test set and also on the training set for $\gamma = 10^{-5}$. This indicates that a linear decision boundary is more appropriate in this situation, compared to the more flexible radial kernel.
 
 ## c)
 $$
@@ -493,7 +493,7 @@ dd <- as.dist(1 - cor(t(GeneData)))
 hc.cor.complete <- hclust(dd, method = "complete")
 hc.cor.single <- hclust(dd, method = "single")
 hc.cor.average <- hclust(dd, method = "average")
-#par(mfrow = c(1, 3))
+
 plot(hc.cor.complete, cex.main = 0.7, main = "CL with Correlation-based Distance", xlab = " ", sub = " ", cex = 0.5)
 plot(hc.cor.single, cex.main = 0.7, main = "SL with Correlation-based Distance", xlab = " ", sub = " ", cex = 0.5)
 plot(hc.cor.average, cex.main = 0.7, main = "AL with Correlation-based Distance", xlab = " ", sub = " ", cex = 0.5)
