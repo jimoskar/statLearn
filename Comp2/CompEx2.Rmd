@@ -434,7 +434,7 @@ calc_centr <- function(k, df) {
 
 c1 <- calc_centr(1, df)
 c2 <- calc_centr(2, df)
-plot(df$x1, df$x2, col = df$cluster, pch = 19, xlab = "x1", ylab = "y1")
+plot(df$x1, df$x2, col = df$cluster, pch = 19, xlab = "x1", ylab = "x2")
 points(c1[1], c1[2], col = 1, pch = 4)
 points(c2[1], c2[2], col = 2, pch = 4)
 ```
@@ -467,7 +467,7 @@ reassign <- function(df, centroids){
 }
 
 df2 <- reassign(df, matrix(c(c1,c2), nrow = 2, byrow = T))
-plot(df2$x1, df2$x2, col = df2$cluster, pch = 19, xlab = "x1", ylab = "y1")
+plot(df2$x1, df2$x2, col = df2$cluster, pch = 19, xlab = "x1", ylab = "x2")
 ```
 
 ## c)
@@ -524,14 +524,14 @@ legend("top", legend=c("Healthy", "Diseased"), col = c("blue", "red"), pch = 20)
 (ii)
 ```{r}
 pr.var <- pr.out$sdev^2
-prop <- sum(pr.var[1:5]) / sum(pr.var)
-prop
+pve <- sum(pr.var[1:5]) / sum(pr.var)
+pve
 ```
-The proportion of variance explained by the first 5 PCs is `r round(100 * prop, 2)`%.
+The proportion of variance explained by the first 5 PCs is `r round(100 * pve, 2)`%.
 
 ## f)
 
-The plot in e) shows that the two groups are perfectly separated along the axis of the first principal component (PC1), which contains the highest variability in the data among all the principal components. Hence, to determine which genes vary the most across the two groups, the loadings of the first principle component are examined. The genes with the highest loadings (rotations) are the ones that contribute the most to the variability. Hence, using only the first principal component, yields
+The plot in e) shows that the two groups are perfectly separated along the axis of the first principal component (PC1), which contains the highest variability in the data among all the principal components. Hence, to determine which genes vary the most across the two groups, the loadings of the first principle component are examined. The genes with the highest loadings (rotations)  contribute the most to the variability. Hence, we infer that the genes displayed in the output below vary the most across the two groups
 
 ```{r}
 sort(abs(pr.out$rotation[, "PC1"]), decreasing = T)[1:10]
