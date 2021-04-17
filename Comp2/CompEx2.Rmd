@@ -444,8 +444,6 @@ points(c2[1], c2[2], col = 2, pch = 4)
 eucl.dist <- function(x, y) {
   d <- length(x) # Dimension.
   sum = 0
-  x
-  y
   for(i in 1:d) {
     sum = sum + (x[i] - y[i])^2
   }
