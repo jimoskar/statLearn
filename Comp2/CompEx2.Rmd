@@ -83,7 +83,7 @@ plot(mean.cv.errors, xlab = "Number of Variables", ylab = "CV", type='l')
 points(bss.cv, mean.cv.errors[bss.cv], col="red", cex=2, pch=20)
 ```
 
-The optimal number of predictors (in addition to the intercept) according to the cross validated prediction error is `r bss.cv`. We would argue that cross-validation is a more reliable way of selecting among the models, since it is a resampling method, compared to only running one best subset selection on the training data and choosing based on other model selection criteria. To further strengthen this argument, \textcolor{red}{burde vi vise det? trenger vi å ha med denne argumentasjonen?}we calculated the test MSE based on the best model found when using the model criteria $R_\mathrm{adj}^2$, $BIC$ and $C_p$. All these cases led to higher values for test MSE compared to the test MSE attained when applying the model selected with cross-validation. Hence, the selected variables are as shown below.
+The optimal number of predictors (in addition to the intercept) according to the cross validated prediction error is `r bss.cv`. We would argue that cross-validation is a more reliable way of selecting among the models, since it is a resampling method, compared to only running one best subset selection on the training data and choosing based on other model selection criteria. To further strengthen this argument, we calculated the test MSE based on the best model found when using the model criteria $R_\mathrm{adj}^2$, $BIC$ and $C_p$. All these cases led to higher values for test MSE compared to the test MSE attained when applying the model selected with cross-validation. Hence, the selected variables are as shown below.
 
 ```{r}
 # Best model, based on amount of variables chosen by CV. 
@@ -200,29 +200,19 @@ mse.train # MSE from training data.
 which.min(mse.train)
 ```
 
-(ii) It is seen that the training MSE decreases steadily as the degree of the polynomial regression increases. This is because we increase the flexibility of the model when we increment the polynomial degree. \textcolor{red}{Er denne setningen nødvendig? Kan heller bare beholde "i.e. reduces ..."?}This increases the likelihood of overfitting, i.e. reduces the training MSE. 
+(ii) It is seen that the training MSE decreases steadily as the degree of the polynomial regression increases. This is because we increase the flexibility of the model when we increment the polynomial degree, which reduces the training MSE. 
 
 # Problem 3
 
 ## a)
 
-TRUE, TRUE, FALSE \textcolor{red}{litt usikker her, spurte på piazza.}\textcolor{blue}{Det står jo K = 5 i koden i oppgaven, noe som betyr at det er brukt 5-fold CV}, FALSE 
+TRUE, TRUE, FALSE, FALSE 
 
 ## b)
 
 (\textbf{Which leaves?}) The tree from a) pruned down to three leaves should consist of `age < 81.5`, `country: indonesia, japan, Korea` and `country: France`. In essence, the entire left subtree is pruned, while the right subtree is kept as is. 
 
-(\textbf{Why?}) This is the best way to prune the tree down to three leaves because we assume that the length of the branches is proportional to the decrease in node impurity. \textcolor{red}{Jeg tok bort det med stratidication, tror ikke jeg skjønte det...noe mer som bør nevnes her?}\textcolor{blue}{Okey, du kan godt endre til et annet ord (hvis det ordet er vanskelig ;)), men jeg mener det er svært vesentlig at det skrives en kort setning om hvordan disse tre faktorene er de som deler inn rommet grovest, for det betyr at flest mulig av observasjonene vil klassifiseres rett ift de viktigste prediktorene.}
-
-<!-- Commented out, in case that the figure is not compiled correctly, as was experienced on mac. -->
-<!-- ```{r, echo = F, fig.height=3} -->
-<!-- set.seed(1) -->
-<!-- id <- "1yYlEl5gYY3BEtJ4d7KWaFGIOEweJIn__" # Google file ID. -->
-<!-- d.corona <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id),header=T) -->
-<!-- t.corona <- tree(deceased~., data = d.corona) -->
-<!-- plot(t.corona) -->
-<!-- text(t.corona, pretty = 0) -->
-<!-- ``` -->
+(\textbf{Why?}) This is the best way to prune the tree down to three leaves because we assume that the length of the branches is proportional to the decrease in node impurity. Hence, we choose the leaves with the longest branches, i.e. the right subtree. 
 
 ## c)
 
@@ -317,7 +307,7 @@ d.leukemia.test <- d.leukemia[t.samples, ]
 d.leukemia.train <- d.leukemia[-t.samples, ]
 ```
 
-(i) A support vector machine (SVM) is more suitable than a logistic regression here, because $p > n$. This means that the parameters in the logistic regression model cannot be estimated. Linear or quadratic discriminant analysis could also be used in this case, in addition to regularized logistic regression variants, i.e. with added penalty term when optimizing (similar to e.g. ridge regression). Classification trees and tree-based methods such as bagging, boosting and random forests can also be used. \textcolor{red}{Hva med K-means?}
+(i) A support vector machine (SVM) is more suitable than a logistic regression here, because $p > n$. This means that the parameters in the logistic regression model cannot be estimated. Linear or quadratic discriminant analysis could also be used in this case, in addition to regularized logistic regression variants, i.e. with added penalty term when optimizing (similar to e.g. ridge regression). Classification trees and tree-based methods such as bagging, boosting and random forests can also be used. K-nearest neighbors could also be used, but the curse of dimensionality might deteriorate its performance. 
 
 (ii) The paper intends to demonstrate a new method for identifying the subset of genes (predictors) which capture the necessary information in order to classify patients into different groups (response). They introduce the Ensemble SVM-Recursive Feature Elimination (ESVM-RFE), which combines the ensemble and bagging methods used in random forests with SVMs and a backward elimination strategy.
 
@@ -529,7 +519,7 @@ The proportion of variance explained by the first 5 PCs is `r round(100 * pve, 2
 
 ## f)
 
-The plot in e) shows that the two groups are perfectly separated along the axis of the first principal component (PC1), which contains the highest variability in the data among all the principal components. Hence, to determine which genes vary the most across the two groups, the loadings of the first principle component are examined. The genes with the highest loadings (rotations)  contribute the most to the variability. Hence, we infer that the genes displayed in the output below vary the most across the two groups
+The plot in e) shows that the two groups are perfectly separated along the axis of the first principal component (PC1), which contains the highest variability in the data among all the principal components. Hence, to determine which genes vary the most across the two groups, the loadings of the first principle component are examined. The genes with the highest loadings (rotations)  contribute the most to the variability. Hence, we infer that the genes displayed in the output below vary the most across the two groups.
 
 ```{r}
 sort(abs(pr.out$rotation[, "PC1"]), decreasing = T)[1:10]
