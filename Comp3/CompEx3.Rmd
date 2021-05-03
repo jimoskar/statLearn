@@ -1,0 +1,66 @@
+---
+title: "TMA4286: Compulsory Exercise 3"
+author: "Jim Totland"
+date: "5/3/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
+                      cache=TRUE, size="scriptsize", comment = "#>", fig.align = "center")
+```
+## Disclaimer
+This exercise replaced the written exam in this course in 2020 and merely serves as an exam prepeartion for this semester, 2021.
+
+## Problem 1
+# a)
+```{r}
+library(ISLR)
+library(keras)
+set.seed(1)
+College$Private = as.numeric(College$Private)
+train.ind = sample(1:nrow(College), 0.5 * nrow(College)) 
+college.train = College[train.ind, ]
+college.test = College[-train.ind, ]
+str(College)
+
+x.train <- subset(college.train, select = -c(Outstate))
+y.train  <- college.train$Outstate
+x.test <- subset(college.test, select = -c(Outstate))
+y.test  <- college.test$Outstate
+
+# Scaling:
+mean <- apply(x.train, 2, mean)
+std <- apply(x.train, 2, sd)
+x.train <- scale(x.train, center = mean, scale = std )
+x.test <- scale(x.test, center = mean, scale = std)
+```
+
+# b)
+
+$$
+\hat{y}_1(x) = \alpha_{01} + \sum_{i = 1}^{64} \alpha_{i1} \max(0, \beta_{0i} + \sum_{j = 1}^{64}\beta_{ji}\max(0, \gamma_{0j} +  \sum_{k = 1}^{17} \gamma_{kj}x_k))
+$$
+# c) 
+
+```{r}
+set.seed(123)
+model <- keras_model_sequential() %>% layer_dense(units = 64, activation = 'relu', input_shape = ncol(x.train)) %>% 
+  layer_dense(units = 64, activation = 'relu') %>%
+  layer_dense(units = 1)
+
+model %>% compile(
+  optimizer = "rmsprop",
+  loss = "mse", metrics = c("mae")
+)
+
+history <- model %>% fit(x.train, y.train,
+                        epochs = 300,
+                        batch_size = 8,
+                        validation_split = 0.2)
+str(history)
+plot(history)
+model %>% evaluate(x.test,y.test)
+```
+
+
