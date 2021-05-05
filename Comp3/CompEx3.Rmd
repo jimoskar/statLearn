@@ -63,4 +63,232 @@ plot(history)
 model %>% evaluate(x.test,y.test)
 ```
 
+# d)
+Dropout has been used as a regualarization technique in the following. The regularized model doe not perform better in this case.
+.
+```{r}
+model.reg <- keras_model_sequential() %>% layer_dense(units = 64, activation = 'relu', input_shape = ncol(x.train)) %>% 
+  layer_dropout(0.6) %>% 
+  layer_dense(units = 64, activation = 'relu') %>%
+  layer_dropout(0.6) %>% 
+  layer_dense(units = 1)
+
+model.reg %>% compile(
+  optimizer = "rmsprop",
+  loss = "mse", metrics = c("mae")
+)
+
+history.reg <- model.reg %>% fit(x.train, y.train,
+                                  epochs = 300,
+                                  verbose = 0,
+                                  batch_size = 8,
+                                  validation_split = 0.2)
+str(history.reg)
+plot(history.reg)
+model.reg %>% evaluate(x.test,y.test)
+```
+
+## Problem 2
+
+# a)
+
+```{r}
+id <- "1CA1RPRYqU9oTIaHfSroitnWrI6WpUeBw" # google file ID
+d.corona <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",
+                             id), header = T)
+d.corona$country = as.factor(d.corona$country)
+d.corona$sex = as.factor(d.corona$sex)
+d.corona$deceased= as.factor(d.corona$deceased)
+table(d.corona$deceased, d.corona$country)
+table(d.corona$deceased, d.corona$sex)
+
+france <-  d.corona[which(d.corona$country == "France"), ]
+japan <- d.corona[which(d.corona$country == "japan"), ] 
+indonesia <- d.corona[which(d.corona$country == "indonesia"), ]
+korea <- d.corona[which(d.corona$country == "Korea"), ]
+
+table(france$deceased, france$sex)
+table(japan$deceased, japan$sex)
+table(indonesia$deceased, indonesia$sex)
+table(korea$deceased, korea$sex)
+```
+
+# b)
+
+(i)
+
+```{r}
+d.corona$country = as.factor(d.corona$country)
+d.corona$sex = as.factor(d.corona$sex)
+d.corona$deceased= as.factor(d.corona$deceased)
+
+log.fit <- glm(deceased~., family = "binomial", data = d.corona)
+summary(log.fit)
+
+d.corona$country = as.factor(d.corona$country)
+d.corona$sex = as.factor(d.corona$sex)
+d.corona$deceased= as.factor(d.corona$deceased)
+
+log.fit <- glm(deceased~., family = "binomial", data = d.corona)
+sum <- summary(log.fit)
+sum
+anova(log.fit, test = "Chisq")
+```
+From the ANOVA, we can see that there is evidence that `country` is a relevant variable, i.e. False.
+
+(ii) False
+
+(iii) Given an observation, $\boldsymbol{x}$, the predicted odds of decease is given as
+
+$$ 
+e^{\boldsymbol{x}^\top \hat{\boldsymbol{\beta}}}
+$$
+Thus, increasing age by 10 and holding all other covariates constant results in an increase of $e^{10\hat{\beta}_{age}}$ = `r exp(10 * sum$coefficients[3])`. False, it is not the odds ratio.
+
+(iv) $e^{10\hat{\beta}_{sex}}$ = `r exp(sum$coefficients[2])`. False.
+
+# c)
+The probability of decease is plotted for french males: 
+
+```{r}
+newdata = expand.grid(sex="male",age= seq(20,100,1) ,country="France")
+response = predict(log.fit, newdata = newdata, type = "response")
+plot(newdata[,"age"], response, type = "l", ylab = "P(Decease)", xlab = "Age")
+```
+
+# d)
+(i) We can see from the summary of the multiple linear regression that $\hat{beta}_{sex}$ has a low p-value, and can infer that the risk of decease is higher for men. 
+(ii) To assess this question, we fit a model with an interaction term `age:sex`:
+```{r}
+log.fit2 <- glm(deceased~. + age:sex, family = "binomial", data = d.corona)
+summary(log.fit2)
+```
+The p-value for the interaction effect is large, so we can not establish that age is a greater risk factor for men.
+
+(iii) Similarly as above, we add `age:country`:
+```{r}
+log.fit3 <- glm(deceased~. + age:country, family = "binomial", data = d.corona)
+summary(log.fit3)
+```
+
+We cannot infer that age is a greater risk factor in France than in Korea, because the p-value of the interaction term is relatively large.
+
+# f)
+
+(i) True
+(ii) True
+(iii) True
+
+## Problem 3
+```{r}
+id <- "1heRtzi8vBoBGMaM2-ivBQI5Ki3HgJTmO" # google file ID
+d.support <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",
+                              id), header = T)
+# We only look at complete cases
+d.support <- d.support[complete.cases(d.support), ] 
+d.support <- d.support[d.support$totcst > 0, ]
+```
+
+# a)
+
+```{r}
+par(mfrow = c(3,3))
+hist(d.support$totcst)
+hist(d.support$age)
+hist(d.support$hrt)
+hist(d.support$edu)
+hist(d.support$meanbp)
+hist(d.support$scoma)
+hist(d.support$num.co)
+hist(d.support$temp)
+hist(d.support$resp)
+hist(d.support$pafi)
+```
+
+We use a log-transform because the data is very right skewed.
+
+# b)
+(i) 
+```{r}
+fit.log <- lm(log(totcst)~ age + temp + edu + resp + num.co + dzgroup, data = d.support)
+sum.log <- summary(fit.log)
+sum.log
+```
+The total cost decreases by a factor of `r round(exp(sum.log$coefficients[2]*10), 3)`.
+(ii)
+```{r}
+library(ggfortify)
+autoplot(fit.log, c(1,2))
+```
+No visible violations.
+(iii)
+```{r}
+fit.log2 <- lm(log(totcst)~ age + temp + edu + resp + num.co + dzgroup + age:dzgroup, data = d.support)
+summary(fit.log2)
+anova <- anova(fit.log2)
+anova
+p <- anova$`Pr(>F)`[7]
+```
+From the ANOVA table, the low $p$-value (`r p`) constitutes evidence that the effect of age depends on the disease group.
+
+# c)
+
+```{r}
+set.seed(12345)
+train.ind = sample(1:nrow(d.support), 0.8* nrow(d.support)) 
+d.support.train = d.support[train.ind, ]
+d.support.test = d.support[-train.ind, ]
+
+library(glmnet)
+x.train <- model.matrix(totcst~., d.support.train)[, -1]
+x.test <- model.matrix(totcst~., d.support.test)[, -1]
+
+fit.ridge <- glmnet(x.train, log(d.support.train$totcst), alpha = 0)
+cv.ridge <- cv.glmnet(x.train, log(d.support.train$totcst), alpha = 0)
+plot(cv.ridge)
+
+best.lam <- cv.ridge$lambda.1se
+preds <- predict(fit.ridge, s = best.lam, newx = x.test)
+mse <- mean((preds - log(d.support.test$totcst))^2)
+mse
+```
+
+# d)
+
+```{r}
+set.seed(123)
+library(pls)
+fit.pls<- plsr(log(totcst)~., data = d.support.train, scale=TRUE, validation="CV")
+validationplot(fit.pls, val.type="MSEP")
+
+preds.pls = predict(fit.pls, d.support.test, ncomp=6)
+mse.pls <- mean((preds.pls - log(d.support.test$totcst))^2)
+mse.pls
+```
+Using PLS yields a slightly lower test MSE than ridge regression.
+
+# e)
+A general additive model and a random forest approach is used.
+```{r}
+# GAM:
+set.seed(123)
+library(gam)
+str(d.support.train)
+fit.gam <- gam(log(totcst) ~ poly(age, degree = 2) + dzgroup + num.co + 
+                  s(edu, df = 3) + income + poly(scoma, degree = 2) + race +
+                  ns(meanbp, df = 4) + ns(hrt, df = 4) + ns(resp, df = 4) +
+                  ns(temp, df = 4), data = d.support.train)
+preds.gam <- predict(fit.gam, newdata = d.support.test, type = "response")
+mse.gam <- mean((log(d.support.test$totcst)-preds.gam)^2)
+mse.gam
+
+# Tree:
+library(randomForest)
+m <- floor(sqrt(ncol(d.support.train)-1))
+fit.rf <- randomForest(log(totcst) ~ ., data = d.support.train, mtry = m, ntree = 1000, importance = TRUE)
+preds.rf <- predict(fit.rf, newdata = d.support.test)
+mse.rf <- mean((log(d.support.test$totcst)-preds.rf)^2)
+mse.rf
+```
+
 
