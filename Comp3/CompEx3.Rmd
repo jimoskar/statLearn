@@ -291,4 +291,56 @@ mse.rf <- mean((log(d.support.test$totcst)-preds.rf)^2)
 mse.rf
 ```
 
+## Problem 4
+# c)
+(i) F
+(ii) T
+(iii) T
+(iv) F
 
+## Problem 5
+# a) 
+(i) T
+(ii) T
+(iii) F
+(iv) T
+
+# b)
+(i) F
+(ii) T
+(iii) F
+(iv) T
+
+# c)
+(i) F
+(ii) F
+(iii) F
+(iv) T
+(v) F
+
+# d) 
+(i) F
+(ii) T
+(iii) F
+(iv) F
+(v) F
+
+# e)
+```{r}
+0.2^10
+```
+Thus, (i).
+
+# f)
+
+(i) T
+(ii) T
+(iii) F
+(iv) T
+
+# g)
+
+(i) F
+(ii) T
+(iii) F
+(iv) T
