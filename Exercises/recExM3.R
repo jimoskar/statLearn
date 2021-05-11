@@ -18,25 +18,26 @@ ggpairs(Auto, lower = list(continuous = wrap("points", size = 0.1))) + # change 
   theme(text = element_text(size = 7)) # change text size
 
 
-# b) Compute the covariance matrix:
-reducedAuto = subset(Auto, select = -origin)
-cor(reducedAuto)
+# b) Compute the correlation matrix:
+reduced.auto = subset(Auto, select = -origin)
+cor(reduced.auto)
 
 # c
 fit <- lm(data = Auto, mpg ~ .)
 summary(fit)
 
-## i) Yes, we can see that there are multiple relationships present.
+## i) Yes, we can see that there are multiple relationships present, and the low p-value for the F-
+##    statistic indicate that the model has significant explanatory power.
 ## ii) From the coefficients, a 1000 kg increase in weight would result in a decrease of 6.71
 ##     in mpg. The low p-value speaks for the fact that this relationship is valid/exists.
 ## iii) year suggests that every 10th year, mpg increases with 7.770
 
 # d)
-# We have to do conduxt the test origin2 = origin3 = 0. This requires an F.test, which
+# We have to do conduct the test origin2 = origin3 = 0. This requires an F.test, which
 # is readily available with
 
 anova(fit)
-# The small p-value is trong evidence that origin has an influence on the response mpg.
+# The small p-value is strong evidence that origin has an influence on the response mpg.
 
 # e)
 library(ggfortify)
@@ -60,15 +61,15 @@ fit2 <- lm(mpg ~ displacement + weight + year + origin + year:origin, Auto)
 summary(fit2)
 anova(fit2)
 # The p-value of the F-test provides evidence that the interaction effect is relevant for the response.
-# The interpretation is that the slope of year is somewhat larger for the categories origin2/3.
+# The interpretation is that the slope of year is somewhat larger for the categories origin 2/3.
 
 # h)
 
-fit3 <- lm(mpg ~ log(displacement), Auto)
+fit3 <- lm(log(mpg) ~ ., Auto)
 summary(fit3)
-
-#DO THE LAB OF CHAPTER 3!!
-
+autoplot(fit3)
+fit4 <- lm(sqrt(mpg) ~., Auto)
+autoplot(fit4)
 
 #===========#
 # Problem 2 #
