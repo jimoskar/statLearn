@@ -1,7 +1,7 @@
 ### Module 4: Recommended Exercises
 
 #===========#
-# Problem 1 #
+# Problem 2 #
 #===========#
 
 ## c)
@@ -13,14 +13,14 @@ covG = matrix(c(0.1502, 0.0055, 0.0055, 0.1998), ncol = 2, byrow = T)
 covF = matrix(c(0.1240, 0.0116, 0.0116, 0.3112), ncol = 2, byrow = T)
 
 pool = ( (nG - 1) * covG + (nF - 1) * covF ) / (nG + nF - 2)
-pool
+
 
 discriminant <- function(x, sigma, mu, pi) {
   inv = solve(sigma)
   return(t(x) %*% inv %*% mu - 0.5 * t(mu) %*% inv %*% mu + log(pi))
 }
 
-x = c(214.0, 140.4)
+x <-  c(214.0, 140.4)
 
 dG <- discriminant(x, pool, muG, 0.5)
 dG
@@ -39,6 +39,21 @@ dG
 dF <- dQ(x, covF, muF, 0.5)
 dF
 # Since dF > dG, we again classify the bank note as a fake.
+
+#===========#
+# Problem 3 #
+#===========#
+
+## a)
+odds <- 0.37 # = p/(1 - p)
+p <-  0.37/(1+0.37)
+p
+
+## b)
+p <- 0.16
+odds <- p/(1 - p)
+odds
+
 
 #===========#
 # Problem 6 #
@@ -98,6 +113,7 @@ summary(lda.Weekly)
 lda.Weekly_pred <- predict(lda.Weekly, newdata = Weekly_test)$class
 lda.Weekly_prob <-  predict(lda.Weekly, newdata = Weekly_test)$posterior
 lda.conf <- table(lda.Weekly_pred, Weekly_test$Direction)
+lda.conf
 (lda.conf[1,1] + lda.conf[2,2]) / (sum(lda.conf[1,]) + sum(lda.conf[2,]))
 
 ## f)
@@ -114,8 +130,8 @@ library(class)
 knn.train = as.matrix(Weekly_train$Lag2)
 knn.test = as.matrix(Weekly_test$Lag2)
 
-set.seed(123)
-yourKNNmodel = knn(train = knn.train, test = knn.test, cl = Weekly_train$Direction,
+set.seed(1233)
+yourKNNmodel <-  knn(train = knn.train, test = knn.test, cl = Weekly_train$Direction,
                    k = 4, prob = T)
 knn.conf <- table(yourKNNmodel, Weekly_test$Direction)
 (knn.conf[1,1] + knn.conf[2,2]) / (sum(knn.conf[1,]) + sum(knn.conf[2,]))
@@ -131,6 +147,7 @@ for (k in 1:K) {
                  k = k)
   knn.error[k] = mean(knn.pred != Weekly_test$Direction)
 }
+which.min(knn.error)
 knn.error.df = data.frame(k = 1:K, error = knn.error)
 ggplot(knn.error.df, aes(x = k, y = error)) + geom_point(col = "blue") + geom_line(linetype = "dotted")
 # k = 12 yields the lowest error
