@@ -121,3 +121,7 @@ history.reg <- model.reg %>% fit(x_train, y_train,
 plot(history.reg)
 model.reg %>% evaluate(x_test,y_test)
 
+
+
+
+

@@ -1,4 +1,6 @@
-### Problem 3
+#===========#
+# Problem 3 #
+#===========#
 
 library(boot)
 # GENERATE DATA; use a seed for reproducibility
@@ -47,9 +49,11 @@ for (i in 1:kfold) {
 table(ys[reorder], validclass)
 1 - sum(diag(table(ys[reorder], validclass)))/n
 
+#===========#
+# Problem 4 #
+#===========#
 
-### Problem 4
-
+# Estimating probability of the j'th observation to be in a bootstrap sample.
 n = 100
 B = 10000
 j = 1
@@ -60,8 +64,9 @@ mean(res)
 curve(1 - (1 - 1/x)^x, 1, 100, ylim = c(0.6, 1), xlab = "n", ylab = "1-(1-1/n)^n")
 abline(h = 1 - 1/exp(1), lty = 2)
 
-### Problem 6
-
+#===========#
+# Problem 6 #
+#===========#
 library(car)
 library(boot)
 SLID = na.omit(SLID)

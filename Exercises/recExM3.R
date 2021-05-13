@@ -151,7 +151,7 @@ plot(lstat,medv)
 abline(lm.fit)
 
 # Diagnostic plots:
-par(mfrow = (c(2, 2))) # View all pltos at same time
+par(mfrow = (c(2, 2))) # View all plots at same time
 plot(lm.fit)
 
 # Leverage plot:
