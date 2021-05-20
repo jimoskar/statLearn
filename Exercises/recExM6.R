@@ -1,5 +1,6 @@
-## Problem 2
-
+#===========#
+# Problem 2 #
+#===========#
 library(ISLR)
 library(tidyverse)
 library(GGally)
@@ -18,7 +19,9 @@ library(GGally)
 ggpairs(data=pairwise_scatter_data)
 
 
-## Problem 3
+#===========#
+# Problem 3 #
+#===========#
 
 # Exclude 'ID' column
 credit_data <- subset(Credit, select=-c(ID))
@@ -116,7 +119,9 @@ squared_errors <- data.frame(bsm_squared_errors=bsm_squared_errors)
 mean(bsm_squared_errors)
 
 
-## Problem 5
+#===========#
+# Problem 5 #
+#===========#
 
 library(glmnet)
 # Package Lasso and Elastic-Net Regularized
@@ -142,7 +147,9 @@ ridge_predictions = predict(ridge_mod,s=best_lambda_ridge,newx=x_test)
 ridge_square_errors <- as.numeric((ridge_predictions-y_test)^2)
 squared_errors <- data.frame(ridge_square_errors = ridge_square_errors, squared_errors)
 
-## Problem 6
+#===========#
+# Problem 6 #
+#===========#
 
 lasso_mod <- glmnet(x_train,y_train,alpha=1)
 
@@ -157,14 +164,18 @@ lasso_predictions = predict(lasso_mod,s=best_lambda_lasso,newx=x_test)
 lasso_square_errors <- as.numeric((lasso_predictions-y_test)^2)
 squared_errors <- data.frame(lasso_square_errors = lasso_square_errors, squared_errors)
 
-## Problem 7
+#===========#
+# Problem 7 #
+#===========#
 x <- model.matrix(Balance~.,credit_data)[,-1]
 credit_pca <- prcomp(x, center = TRUE, scale. = TRUE)
 print(credit_pca)
 plot(credit_pca, type = "l")
 summary(credit_pca)
 
-## Problem 8
+#===========#
+# Problem 8 #
+#===========#
 
 library(pls)
 set.seed(1)
@@ -180,7 +191,9 @@ library(ggplot2)
 library(reshape2)
 ggplot(melt(squared_errors)) + geom_boxplot(aes(variable, value))
 
-## Problem 9
+#===========#
+# Problem 9 #
+#===========#
 
 set.seed(1)
 plsr_model <- plsr(Balance~., data=credit_data_training,scale=TRUE, validation="CV")
@@ -194,3 +207,95 @@ mean(plsr_square_errors)
 ggplot(melt(squared_errors)) + geom_boxplot(aes(variable, value))
 
 colMeans(squared_errors)
+
+#================#
+# Lab: Chapter 6 #
+#================#
+
+## Best Subset Selection
+library(ISLR)
+library(leaps)
+
+data <- na.omit(Hitters)
+regfit.full <- regsubsets(Salary~., data, nvmax = 19)
+reg.sum <- summary(regfit.full)
+reg.sum
+reg.sum$rsq
+
+par(mfrow = c(2,2))
+# RSS
+plot(reg.sum$rss, xlab="Number of Variables ",ylab="RSS",
+     type="l")
+
+# AdjRsq
+plot(reg.sum$adjr2 ,xlab="Number of Variables ",
+     ylab="Adjusted RSq",type="l")
+which.max(reg.sum$adjr2)
+points(which.max(reg.sum$adjr2),max(reg.sum$adjr2), col="red",cex=2,pch=20)
+
+# Cp
+plot(reg.sum$cp, xlab="Number of Variables ", ylab="Cp", type = 'l')
+points(which.min(reg.sum$cp), min(reg.sum$cp), col = "red", cex = 2, pch = 20)
+
+# BIC
+plot(reg.sum$bic, xlab="Number of Variables ", ylab="BIC", type = 'l')
+points(which.min(reg.sum$bic), min(reg.sum$bic), col = "red", cex = 2, pch = 20)
+
+# Built-in plot-func.
+plot(regfit.full,scale="adjr2")
+
+## Forward and Backward Stepwise Selection
+regfit.fwd <- regsubsets(Salary~., data, nvmax=19, method = "forward")
+summary(regfit.fwd)
+regfit.bwd <- regsubsets(Salary~., data,nvmax=19, method = "backward")
+summary(regfit.bwd)
+
+## Validation Set Approach and CV
+set.seed(100)
+train <- sample(c(T,F), nrow(data), rep = T)
+test <- (!train)
+regfit.best <- regsubsets(Salary~., data = data[train, ], nvmax = 19)
+
+test.mat <- model.matrix(Salary~., data[test, ])
+
+val.errors=rep(NA,19)
+for(i in 1:19) { 
+  coefi=coef(regfit.best,id=i)
+  pred <- test.mat[, names(coefi)] %*% coefi
+  val.errors[i] <- mean((data$Salary[test] - pred)^2)
+}
+val.errors
+which.min(val.errors)
+
+# Using CV: See book
+
+## Ridge Regression and Lasso
+library(glmnet)
+
+x <- model.matrix(Salary~.,data)[,-1]
+y <- data$Salary
+
+grid <- 10^seq(10, -2, length=100)
+ridge.mod <- glmnet(x, y, alpha=0, lambda = grid)
+
+set.seed(1)
+train <- sample(1:nrow(x), nrow(x)/2)
+test <- (-train)
+
+ridge.mod <- glmnet(x[train, ], y[train], alpha = 0, lambda = grid)
+pred <- predict(ridge.mod, s = 4, newx = x[test, ])
+mean((pred - y[test])^2)
+
+# CV:
+cv.out <- cv.glmnet(x[train,], y[train], alpha = 0)
+bestlam <- cv.out$lambda.min
+pred <- predict(ridge.mod, s = bestlam, newx = x[test, ])
+mean((pred - y[test])^2)
+
+lasso.mod <- glmnet(x[train, ], y[train], alpha = 1, lambda  = grid)
+cv.out <- cv.glmnet(x[train,], y[train], alpha = 1)
+pred <- predict(lasso.mod, s = cv.out$lambda.min, newx = x[test, ])
+mean((pred - y[test])^2)
+
+## PCR and PLS Regression
+
