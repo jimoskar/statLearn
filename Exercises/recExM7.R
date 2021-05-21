@@ -1,5 +1,6 @@
-
-## Problem 1
+#===========#
+# Problem 1 #
+#===========#
 
 library(ISLR)
 # extract only the two variables from Auto
@@ -68,7 +69,9 @@ MSEdata = data.frame(MSE = MSE, degree = 1:4)
 ggplot(data = MSEdata, aes(x = degree, y = MSE)) + geom_line() + geom_point() +
   labs(title = "Test error")
 
-## Problem 2
+#===========#
+# Problem 2 #
+#===========#
 
 attach(Auto)
 
@@ -82,14 +85,16 @@ pred = predict(fit, new, se = T)
 dat = data.frame(origin = new, mpg = pred$fit, lwr = pred$fit - 1.96 * pred$se.fit,
                  upr = pred$fit + 1.96 * pred$se.fit)
 # plot the fitted/predicted values and CI
-ggplot(dat, aes(x = origin, y = mpg)) + geom_point() + geom_segment(aes(x = origin,
-                                                                        y = lwr, xend = origin, yend = upr)) + scale_x_discrete(labels = c(`1` = "1.American",
-                                                                                                                                           `2` = "2.European", `3` = "3.Japanese"))
-## Problem 4
+ggplot(dat, aes(x = origin, y = mpg)) + geom_point() + 
+  geom_segment(aes(x = origin,y = lwr, xend = origin, yend = upr)) + 
+  scale_x_discrete(labels = c(`1` = "1.American",`2` = "2.European", `3` = "3.Japanese"))
+
+#===========#                 
+# Problem 4 #
+#===========#
 
 library(ISLR)
 attach(Wage)
-# install.packages('gam')
 library(gam)
 
 # Write a couple of functions first, which will be used to produce the
@@ -124,7 +129,10 @@ yhat = gam(wage ~ bs(age, knots = c(40, 60)) + ns(year, knots = 2006) + educatio
 # are they equal?
 all.equal(myhat, yhat)
 
-## Problem 5
+#===========#
+# Problem 5 #
+#===========#
+
 
 attach(Auto)
 origin = as.factor(origin)
@@ -135,3 +143,63 @@ par(mfrow = c(2, 3))
 plot(am, se = TRUE, col = "blue")
 # summary of fitted model
 summary(am)
+
+#================#
+# Lab: Chapter 7 #
+#================#
+library(ISLR)
+attach(Wage)
+
+# Polynomial Regression
+fit <- lm(wage~poly(age, 4), data = Wage)
+agelims <-  range(age)
+age.grid <- seq(from = agelims[1], to = agelims[2])
+preds <- predict(fit, newdata = list(age = age.grid), se = T)
+se.bands <- cbind(preds$fit + 2*preds$se.fit, preds$fit - 2*preds$se.fit)
+
+par(mfrow=c(1,2),mar=c(4.5,4.5,1,1) ,oma=c(0,0,4,0))
+plot(age,wage,xlim=agelims ,cex=.5,col="darkgrey")
+title("Degree-4 Polynomial ",outer=T)
+lines(age.grid,preds$fit,lwd=2,col="blue")
+matlines(age.grid,se.bands,lwd=1,col="blue",lty=3)
+
+# Step Function
+fit <- lm(wage~cut(age, 4), data = Wage)
+preds <- predict(fit, newdata = list(age = age.grid), se = T)
+se.bands <- cbind(preds$fit + 2*preds$se.fit, preds$fit - 2*preds$se.fit)
+plot(age,wage,xlim=agelims ,cex=.5,col="darkgrey")
+lines(age.grid,preds$fit,lwd=2,col="blue")
+matlines(age.grid,se.bands,lwd=1,col="blue",lty=3)
+
+# GAMS
+library(splines)
+library(gam)
+
+gam1 <- lm(wage ~ ns(year ,4) + ns(age ,5) + education , data = Wage)
+plot.Gam(gam1, se = T, col = "red")
+# To use smoothing splines, lm cannot be used since there is no basis
+
+gam.m3 <- gam(wage~ s(year, 4) + s(age, 5) + education, data = Wage)
+par(mfrow=c(1,3))
+plot(gam.m3, se=TRUE,col="blue")
+
+# Finding best gam:
+gam.m1=gam(wage~s(age ,5)+education ,data=Wage)
+gam.m2=gam(wage~year+s(age ,5)+education ,data=Wage)
+anova(gam.m1,gam.m2,gam.m3,test="F")
+
+# With local reg:
+gam.lo=gam(wage~s(year,df=4)+lo(age,span=0.7)+education, data=Wage)
+plot.Gam(gam.lo, se=TRUE, col="green")
+
+# Local regression with interaction:
+library(akima)
+gam.lo.i=gam(wage~lo(year,age,span=0.5)+education, data=Wage)
+plot(gam.lo.i)
+
+# Logistic reg. GAM:
+gam.lr.s <- gam(I(wage>250)~year+s(age,df=5)+education,family= binomial,data=Wage,
+                subset=(education!="1. < HS Grad"))
+
+plot(gam.lr.s,se=T,col="green")
+
