@@ -175,7 +175,66 @@ misclass = table(yhat, response.test)
 misclass
 1 - sum(diag(misclass))/sum(misclass)
 
+#================#
+# Lab: Chapter 8 #
+#================#
+library(tree)
+library(ISLR)
+df <- Carseats
 
+# Classification trees:
+High <- ifelse(df$Sales <=8,"No","Yes")
+df <- data.frame(df ,High)
 
+factor(Carseats$High)
+tree.carseats <- tree(High~., data = df[, !(names(df) %in% c("Sales"))]) #MYSTERIOUS ERROR?! :(
+summary(tree.carseats)
 
+# Regression trees
+library(MASS)
+set.seed(1)
+train <- sample(1:nrow(Boston), nrow(Boston)/2)
+tree.boston <- tree(medv~., Boston[train, ])
+summary(tree.boston)
+plot(tree.boston)
+text(tree.boston, pretty = 0, cex = 0.5)
 
+# CV:
+cv.boston=cv.tree(tree.boston)
+plot(cv.boston$size ,cv.boston$dev ,type='b')
+
+# Pruning:
+prune.boston <- prune.tree(tree.boston ,best=5)
+plot(prune.boston)
+text(prune.boston ,pretty=0, cex = 0.7)
+
+# Prediction:
+yhat <- predict(tree.boston, newdata = Boston[-train, ])
+y <- Boston[-train, "medv"]
+plot(yhat,y)
+abline (0 ,1)
+mse <- mean((y-yhat)^2)
+mse
+
+# Random forests ( and bagging)
+library(randomForest)
+set.seed(1)
+bag.boston=randomForest(medv~.,data=Boston,subset=train, mtry=13,importance =TRUE)
+bag.boston
+
+yhat.bag = predict(bag.boston ,newdata=Boston[-train ,])
+plot(yhat.bag, y)
+abline (0 ,1)
+mean((yhat.bag-y)^2)
+varImpPlot(bag.boston)
+
+# Boosting:
+library(gbm)
+boost.boston <- gbm(medv~., data = Boston[train, ], distribution = "gaussian", 
+                    n.trees = 5000, interaction.depth = 4, shrinkage = 0.2)
+par(mfrow=c(1,2)) 
+plot(boost.boston ,i="rm") 
+plot(boost.boston ,i="lstat")
+
+yhat.boost <- predict(boost.boston, newdata = Boston[-train, ], n.trees = 5000)
+mean((yhat.boost - y)^2)

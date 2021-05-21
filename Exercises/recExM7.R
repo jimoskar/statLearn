@@ -203,3 +203,5 @@ gam.lr.s <- gam(I(wage>250)~year+s(age,df=5)+education,family= binomial,data=Wag
 
 plot(gam.lr.s,se=T,col="green")
 
+
+
