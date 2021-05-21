@@ -1,4 +1,6 @@
-## Problem 2
+#===========#
+# Problem 2 #
+#===========#
 
 # a)
 library(ISLR)
@@ -16,7 +18,7 @@ tree.mod = tree(Sales ~ ., data = Carseats.train)
 summary(tree.mod)
 
 plot(tree.mod)
-text(tree.mod, pretty = 0)
+text(tree.mod, pretty = 0, cex = 0.7)
 
 yhat = predict(tree.mod, newdata = Carseats.test)
 mse = mean((yhat - Carseats.test$Sales)^2)
@@ -33,7 +35,7 @@ points(cv.Carseats$size[tree.min], cv.Carseats$dev[tree.min], col = "red", pch =
 
 pr.tree = prune.tree(tree.mod, best = 11)
 plot(pr.tree)
-text(pr.tree, pretty = 0)
+text(pr.tree, pretty = 0, cex = 0.7)
 
 yhat = predict(pr.tree, newdata = Carseats.test)
 mse = mean((yhat - Carseats.test$Sales)^2)
@@ -86,7 +88,9 @@ plot(1:500, bag.Car$test$mse, col = "blue", type = "l", xlab = "Number of Trees"
 lines(1:500, rf.Car$test$mse, col = "green")
 legend("topright", c("m = p", "m = p/3"), col = c("blue", "green"), cex = 1, lty = 1)
 
-## Problem 3
+#===========#
+# Problem 3 #
+#===========#
 
 # a)
 library(kernlab)
@@ -107,7 +111,7 @@ tree.mod = tree(type ~ ., data = spam)
 summary(tree.mod)
 
 plot(tree.mod)
-text(tree.mod, pretty = 0)
+text(tree.mod, pretty = 0, cex = 0.6)
 
 # d)
 yhat = predict(tree.mod, newdata = spam.test, type = "class")
@@ -164,16 +168,20 @@ misclass
 
 # h)
 library(gbm)
-boost.spam = gbm(type ~ ., spam.train, distribution = "gaussian", n.trees = 5000, interaction.depth = 3,
-              shrinkage = 0.001)
+set.seed(4268)
 
-yhat = predict(rf.spam, newdata = spam.test, type = "class")
-response.test = spam.test$type
+spamboost = spam
+spamboost$type = c()
+spamboost$type[spam$type == "spam"] = 1 
+spamboost$type[spam$type == "nonspam"] = 0
+boost.spam = gbm(type ~ ., data = spamboost[train, ], distribution = "bernoulli", n.trees = 5000,
+                 interaction.depth = 3, shrinkage = 0.001)
 
-# Misclassification rate
-misclass = table(yhat, response.test)
-misclass
-1 - sum(diag(misclass))/sum(misclass)
+yhat.boost = predict(boost.spam, newdata = spamboost[-train, ], n.trees = 5000, distribution = "bernoulli", type = "response")
+yhat.boost = ifelse(yhat.boost > 0.5, 1, 0) #Transform to 0 and 1 (nonspam and spam).
+misclass.boost = table(yhat.boost, spamboost$type[test])
+misclass.boost
+1 - sum(diag(misclass.boost))/sum(misclass.boost)
 
 #================#
 # Lab: Chapter 8 #
