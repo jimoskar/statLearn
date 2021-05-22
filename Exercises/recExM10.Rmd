@@ -1,0 +1,138 @@
+---
+title: "RecExM10 and Lab"
+author: "Jim Totland"
+date: "5/21/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
+                      cache=TRUE, size="scriptsize",fig.width=5, fig.height=5, fig.align = "center")
+```
+
+
+In this document I go through the lab for chapter 10 in ISLR and give a shot at the corresponding recommended exercises. The process of making this document is also an exercise towrds the exam.
+
+```{r,eval=TRUE,echo=FALSE}
+library(knitr)
+library(MASS)
+library(keras)
+library(caret)
+library(pls)
+library(glmnet)
+library(gam)
+library(gbm)
+library(randomForest)
+```
+
+
+# Lab (10.4)
+## PCA
+First, PCA will be applied to the dataset `USArrests`. We normalize the data and conduct the PCA, before making a biplot.
+
+```{r}
+names(USArrests)
+pr.out <- prcomp(USArrests, scale = T)
+biplot(pr.out, scale = 0)
+```
+
+The proportion of variance explained (PVE) can be found as follows.
+
+```{r}
+pr.var <- pr.out$sdev^2
+pve <- pr.var/sum(pr.var)
+pve
+```
+
+Furthermore, we can plot the PVE as well as the cumulative PVE:
+```{r}
+plot(pve, xlab="Principal Component", ylab="Proportion of Variance Explained ", ylim=c(0,1),type='b')
+plot(cumsum(pve), xlab="Principal Component ", ylab=" Cumulative Proportion of Variance Explained ", ylim=c(0,1), type='b')
+```
+
+## Clustering
+
+We perform K-means clustering on a synthetic example:
+```{r}
+set.seed(2)
+x <- matrix(rnorm(50*2), ncol=2)
+x[1:25,1]=x[1:25,1]+3
+x[1:25,2]=x[1:25,2]-4
+km.out <- kmeans(x,2,nstart=20)
+km.out$cluster
+plot(x, col =( km.out$cluster +1), main="K-Means Clustering Results with K=2", xlab="", ylab="", pch=20, cex=2)
+```
+
+
+Hierarchical clustering with Euclidian distance and complete linkage:
+```{r}
+hc.complete <- hclust(dist(x), method="complete")
+plot(hc.complete,main="Complete Linkage", xlab="", sub="",cex =.9)
+```
+
+# Recommended exercises
+## Problem 1
+
+Load the data and create a biplot:
+```{r, fig.width = 7, fig.height = 6}
+load("/Users/jimtotland/Github/statLearn/Exercises/pca-examples.rdata")
+nyt.data <- nyt.frame
+str(nyt.data)
+pr.out <- prcomp(nyt.data[, -1])
+biplot(pr.out, cex = 0.5)
+```
+
+We can already see that PC1 is associated with music, while PC2 is associated with art. 
+
+```{r}
+nyt.loading <- pr.out$rotation[, 1:2]
+informative.loadings <- rbind(head(nyt.loading[order(nyt.loading[,1], decreasing = T), ]),
+                              head(nyt.loading[order(nyt.loading[,2], decreasing = T),]))
+biplot(x = pr.out$x[, 1:2], y = informative.loadings, scale = 0, cex = 0.5)
+
+```
+Plotting PVE and cumulative PVE:
+```{r}
+pr.var <- pr.out$sdev^2
+pve <- pr.var/sum(pr.var)
+plot(pve, xlab="Principal Component", ylab="Proportion of Variance Explained ", ylim=c(0,1),type='b')
+plot(cumsum(pve), xlab="Principal Component ", ylab=" Cumulative Proportion of Variance Explained ", ylim=c(0,1), type='b')
+```
+## Problem 3
+
+Next, K-means clustering is performed:
+
+```{r}
+km.nyt <- kmeans(nyt.data[, -1], 2, nstart=20)
+km.nyt$cluster
+```
+Next, we dislpay the clustering produced by K-means graphically. The letters indicates the true classification, while the color indicates the classification produced by K-means.
+```{r}
+plot(pr.out$x[, 1:2], type = "n")
+points(pr.out$x[nyt.data[, "class.labels"] == "art", 1:2], pch = "A",
+       col = (km.nyt$cluster + 1)[nyt.data[, "class.labels"] == "art"])
+points(pr.out$x[nyt.data[, "class.labels"] == "music", 1:2], pch = "M",
+       col = (km.nyt$cluster + 1)[nyt.data[, "class.labels"] == "music"])
+
+```
+
+## Problem 4
+
+Finally, hierarchical clustering is performed.
+
+```{r}
+hc.nyt <- hclust(dist(nyt.data[, -1]), method="complete")
+plot(hc.nyt,main="Complete Linkage", xlab="", sub="",cex =.9, labels = as.character(nyt.data[ ,1]))
+```
+
+Next, we cut the tree in order to attain two clusters and produce a similar plot as for the K-means clustering.
+```{r}
+hc.clusters <- cutree(hc.nyt, 2)
+plot(pr.out$x[, 1:2], type = "n")
+points(pr.out$x[nyt.data[, "class.labels"] == "art", 1:2], pch = "A",
+       col = (hc.clusters + 1)[nyt.data[, "class.labels"] == "art"])
+points(pr.out$x[nyt.data[, "class.labels"] == "music", 1:2], pch = "M",
+       col = (hc.clusters + 1)[nyt.data[, "class.labels"] == "music"])
+```
+It is evident that hc performs worse than K-means.
