@@ -102,3 +102,45 @@ library(boot)
 bo = boot(SLID, boot.fn, 1000)
 bo
 
+#================#
+# Lab: Chapter 5 #
+#================#
+
+# LOOCV
+library(boot)
+head(Auto)
+glm.fit <- glm(mpg~horsepower, data = Auto)
+cv.err <- cv.glm(Auto, glm.fit)
+cv.err$delta
+
+cv.error <- rep(0, 5)
+for(i in 1:5){
+  glm.fit <- glm(mpg~poly(horsepower, i), data = Auto)
+  cv.error[i] <- cv.glm(Auto, glm.fit)$delta[1]
+}
+cv.error
+
+# k-fold CV
+cv.error <- rep(0, 10)
+for(i in 1:10){
+  glm.fit <- glm(mpg~poly(horsepower, i), data = Auto)
+  cv.error[i] <- cv.glm(Auto, glm.fit, K = 10)$delta[1]
+}
+cv.error
+
+# Bootstrap
+
+# See 5.2 in ISLR
+alpha.fn <- function(data, index){
+  X <- data$X[index]
+  Y <- data$Y[index]
+  return((var(Y) - cov(X,Y))/(var(X) + var(Y) - 2*cov(X,Y)))
+}
+boot(Portfolio, alpha.fn, R = 1000)
+
+# Linear regression:
+boot.fn <- function(data, index) return(coef(lm(mpg~horsepower, data = data, subset = index)))
+boot(Auto, boot.fn, 1000)
+
+
+
