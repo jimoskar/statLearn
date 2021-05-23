@@ -191,3 +191,52 @@ ggplot(dat_long, aes(d = D, m = M, color = name)) + geom_roc(n.cuts = F) + xlab(
 
 # AUC: yourAUC = auc(yourRoc)
 
+
+#================#
+# Lab: Chapter 4 #
+#================#
+
+library(ISLR)
+names(Smarket)
+attach(Smarket)
+plot(Volume)
+
+# Logistic reg.
+logfit <- glm(Direction~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume, data = Smarket, family = binomial)
+summary(logfit)  
+contrasts(Direction)  
+# With test set
+train <- (Year < 2005)
+Smarket.train <- Smarket[train, ]
+Smarket.test <- Smarket[!train, ]
+logfit <- glm(Direction~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume, data = Smarket.train, family = binomial)
+logfit.prob <- predict(logfit, Smarket.test, type = "response")
+logfit.pred <- rep("Down", length(logfit.prob))
+logfit.pred[logfit.prob > 0.5] <- "Up"
+table(logfit.pred, Smarket.test$Direction)
+mean(logfit.pred == Smarket.test$Direction)
+
+# LDA:
+library(MASS)
+lda.fit <- lda(Direction~ Lag1 + Lag2, data = Smarket.train)
+lda.pred <- predict(lda.fit, Smarket.test)
+lda.class <- lda.pred$class
+table(lda.class, Smarket.test$Direction)
+mean(lda.class == Smarket.test$Direction)
+
+# QDA:
+qda.fit <- qda(Direction~ Lag1 + Lag2, data = Smarket.train)
+qda.pred <- predict(qda.fit, Smarket.test)
+qda.class <- qda.pred$class
+table(qda.class, Smarket.test$Direction)
+mean(qda.class == Smarket.test$Direction)
+
+# KNN:
+library(class)
+train.X <- cbind(Lag1, Lag2)[train, ]
+train.y <- Direction[train]
+test.X <- cbind(Lag1, Lag2)[!train, ]
+set.seed(1)
+knn.pred <- knn(train.X, test.X, train.y, k = 3)
+table(knn.pred, Direction[!train])
+mean(knn.pred == Direction[!train])
