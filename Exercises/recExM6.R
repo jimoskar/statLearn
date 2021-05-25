@@ -224,12 +224,10 @@ reg.sum$rsq
 
 par(mfrow = c(2,2))
 # RSS
-plot(reg.sum$rss, xlab="Number of Variables ",ylab="RSS",
-     type="l")
+plot(reg.sum$rss, xlab="Number of Variables ",ylab="RSS", type="l")
 
 # AdjRsq
-plot(reg.sum$adjr2 ,xlab="Number of Variables ",
-     ylab="Adjusted RSq",type="l")
+plot(reg.sum$adjr2 ,xlab="Number of Variables ", ylab="Adjusted RSq",type="l")
 which.max(reg.sum$adjr2)
 points(which.max(reg.sum$adjr2),max(reg.sum$adjr2), col="red",cex=2,pch=20)
 
@@ -297,5 +295,18 @@ cv.out <- cv.glmnet(x[train,], y[train], alpha = 1)
 pred <- predict(lasso.mod, s = cv.out$lambda.min, newx = x[test, ])
 mean((pred - y[test])^2)
 
-## PCR and PLS Regression
+# PCR and PLS Regression
+library(pls)
+set.seed(2)
 
+pcr.fit <- pcr(Salary~., data = Hitters, subset = train, scale =  T, validation = "CV")
+summary(pcr.fit)
+validationplot(pcr.fit, val.type = "MSEP")
+pred.pcr <- predict(pcr.fit, x[test, ], ncomp = 6)
+(mse.pcr <- mean((pred.pcr - y[test])^2))
+
+pls.fit <- plsr(Salary~., data = Hitters, subset = train, scale = T, validation = "CV")
+summary(pls.fit)
+validationplot(pls.fit, val.type = "MSEP")
+pred.pls <- predict(pls.fit, x[test, ], ncomp = 7)
+(mse.pls <- mean((pred.pls - y[test])^2))
