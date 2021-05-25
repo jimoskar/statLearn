@@ -1,0 +1,61 @@
+---
+title: "Problem x"
+author: "Candidate Number: 10100"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document
+# html_document
+---
+  
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
+                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3, fig.align = "center")
+```
+
+
+```{r,eval=TRUE,echo=F}
+library(knitr)
+library(MASS)
+library(keras)
+library(caret)
+library(pls)
+library(glmnet)
+library(gam)
+library(gbm)
+library(randomForest)
+```
+
+```{r}
+id <- "1iI6YaqgG0QJW5onZ_GTBsCvpKPExF30G" # google file ID
+catdat <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id),
+header = T)
+
+set.seed(4268)
+train.ind = sample(1:nrow(catdat), 0.5 * nrow(catdat)) 
+catdat.train = catdat[train.ind, ]
+catdat.test = catdat[-train.ind, ]
+```
+
+
+## a)
+True, True, False, False
+
+## c)
+
+```{r}
+mse_train = c()
+mse_test = c()
+plot(catdat.train$daily.outdoortime, catdat.train$birds, type = "p", col = "darkgrey") 
+for (i in 1:10){
+  poly.mod = lm(birds ~ poly(daily.outdoortime, degree = i), data = catdat.train) 
+  lines(catdat.train$daily.outdoortime[order(catdat.train$daily.outdoortime)],
+        poly.mod$fitted.values[order(catdat.train$daily.outdoortime)], col = i, lwd = 2) 
+  mse_train[i] = mean(poly.mod$residuals^2)
+  mse_test[i] <- mean((predict(poly.mod, newdata = catdat.test) - catdat.test$birds)^2)
+}
+
+mse_train
+mse_test
+```
+

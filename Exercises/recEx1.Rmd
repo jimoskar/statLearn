@@ -20,7 +20,7 @@ b) Battery life of a phone. Response: Time until the phone is dead. Predictors: 
 
 a) In this example, the more flexible methods have a smaller test MSE. But at some point the test MSE start to increase monotonically with the flexibility. This is a result of overfitting.
 
-b) The variance refers to how much $\hat{f}$ would change if we used another set of training data. A small variance could indicate that a rigid method has been used, implying that the data is most likely underfiited.
+b) The variance refers to how much $\hat{f}$ would change if we used another set of training data. A small variance could indicate that a rigid method has been used, implying that the data is most likely underfitted.
 
 c) Bias generally decreases with flexibility, which indicates that a very low bias is connected to overfitting the data. 
 
@@ -30,8 +30,6 @@ c) Bias generally decreases with flexibility, which indicates that a very low bi
 ```{r chunk-name, results = "hide"}
 library(ISLR)
 data(Auto)
-```
-```{r, include = F}
 library(tidyverse)
 ```
 
@@ -56,27 +54,25 @@ sapply(Auto[, quant], range)
 
 c) The mean and standard deviation can be found in the following way:
 ```{r}
-for (i in 1:8) {
-  print(summarise(Auto, mean = mean(Auto[,i]), sd = sd(Auto[,i])))
-}
+sapply(Auto[, quant], mean)
+sapply(Auto[, quant], sd)
 ```
 
 d) Possible, though not very clean, solution:
 
 ```{r}
 ReducedAuto <- Auto[- (10:85),]
+# range, mean and sd
+sapply(ReducedAuto[, quant], range)
+sapply(ReducedAuto[, quant], mean)
+sapply(ReducedAuto[, quant], sd)
 
-for (i in 1:8) {
-  print(summarise(ReducedAuto, mean = mean(ReducedAuto[,i]), 
-                  sd = sd(ReducedAuto[,i]), 
-                  range = range(ReducedAuto[,i])))
-}
 ```
 
 e)
 ```{r, cache = T}
 library(GGally)
-ggpairs(Auto[-9])
+ggpairs(Auto[, quant])
 ```
 
 From the plot we can see that there seems to be a linear relationship between multiple predictors. E.g. `weight` and `displacement` have a clearly positive linear relationship. There also seems to be some non-linear relationships, e.g. between `mpg` and `horsepower`.
@@ -93,7 +89,7 @@ ggplot(Auto) +
   geom_boxplot(mapping = aes(x = cylinders, y = mpg))
 ```
 
-The majority of the variables seem to have some relvance in predicrting `mpg`. But the variables `year`, `acceleration` and `name` are probably the least impactful based on visual inspection.
+The majority of the variables seem to have some relevance in predicting `mpg`. But the variables `year`, `acceleration` and `name` are probably the least important based on visual inspection.
 
 g) The following function calculates the correlation matrix given the covariance matrix.
 
@@ -250,10 +246,9 @@ p1 = ggplot(data = sdf[1:nord, ], aes(x = poly, y = trainMSE)) + scale_y_continu
   geom_line()
 pall = ggplot(data = sdf, aes(x = poly, group = rep, y = trainMSE, colour = rep)) + 
   scale_y_continuous(limits = yrange) + geom_line()
-testp1 = ggplot(data = sdf[1:nord, ], aes(x = poly, y = testMSE)) + scale_y_continuous(limits = yrange) + 
-  geom_line()
-testpall = ggplot(data = sdf, aes(x = poly, group = rep, y = testMSE, 
-                                  colour = rep)) + scale_y_continuous(limits = yrange) + geom_line()
+testp1 = ggplot(data = sdf[1:nord, ], aes(x = poly, y = testMSE)) + scale_y_continuous(limits = yrange) +   geom_line()
+
+testpall = ggplot(data = sdf, aes(x = poly, group = rep, y = testMSE, colour = rep)) + scale_y_continuous(limits = yrange) + geom_line()
 ggarrange(p1, pall, testp1, testpall)
 
 

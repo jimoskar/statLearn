@@ -1,0 +1,99 @@
+---
+title: "Problem x"
+author: "Candidate Number: 10100"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document
+# html_document
+---
+  
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
+                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3, fig.align = "center")
+```
+
+
+```{r,eval=TRUE,echo=F}
+library(knitr)
+library(MASS)
+library(keras)
+library(caret)
+library(pls)
+library(glmnet)
+library(gam)
+library(gbm)
+library(randomForest)
+library(pROC)
+library(plotROC)
+library(class)
+```
+
+```{r}
+# read file
+id <- "1i1cQPeoLLC_FyAH0nnqCnnrSBpn05_hO" # google file ID
+diab <- dget(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+t = MASS::Pima.tr2 
+train = diab$ctrain
+test = diab$ctest
+```
+
+
+## a)
+```{r}
+logfit <- glm(diabetes~., data = train, family = "binomial")
+log.pred <- predict(logfit, test, type = "response")
+log.class <- ifelse(log.pred >= 0.5, 1, 0)
+(conf <- table(log.class, test$diabetes))
+(sens <- conf[2,2]/sum(conf[,2]))
+(spes <- conf[1,1]/sum(conf[,1 ]))
+```
+
+## b)
+(ii)
+```{r}
+lda.fit <- lda(diabetes~., data  = train)
+lda.class <- predict(lda.fit, test)$class
+(lda.conf <- table(lda.class, test$diabetes))
+(sens <- lda.conf[2,2]/sum(lda.conf[,2]))
+(spes <- lda.conf[1,1]/sum(lda.conf[,1 ]))
+
+qda.fit <- qda(diabetes~., data = train)
+qda.class <- predict(qda.fit, test)$class
+(qda.conf <- table(qda.class, test$diabetes))
+(sens <- qda.conf[2,2]/sum(qda.conf[,2]))
+(spes <- qda.conf[1,1]/sum(qda.conf[,1 ]))
+```
+## c)
+
+```{r}
+knn.mod <- knn(train = train[, -1], test = test[, -1], cl = train[, 1], k = 25, prob = T)
+(knn.conf <- table(knn.mod, test$diabetes))
+(sens <- knn.conf[2,2]/sum(knn.conf[,2]))
+(spes <- knn.conf[1,1]/sum(knn.conf[,1 ]))
+
+```
+
+## d)
+```{r}
+knn.probs <- ifelse(knn.mod == 0, 1 - attributes(knn.mod)$prob, attributes(knn.mod)$prob)
+logfit.probs <- predict(logfit, newdata = test, type="response")
+lda.probs <- predict(lda.fit, test)$posterior[, 2]
+qda.probs <- predict(qda.fit, test)$posterior[, 2]
+
+lda.roc = roc(response = test$diabetes, predictor = lda.probs, direction = "<")
+qda.roc = roc(response = test$diabetes, predictor = qda.probs, direction = "<")
+knn.roc = roc(response = test$diabetes, predictor = knn.probs, direction = "<")
+logfit.roc = roc(response = test$diabetes, predictor = logfit.probs, direction = "<")
+
+probs = data.frame(diabetes = test$diabetes, logReg = logfit.probs, LDA = lda.probs, QDA = qda.probs, KNN = knn.probs)
+plProbs = melt_roc(probs, "diabetes", c("logReg", "LDA", "QDA", "KNN")) 
+ggplot(plProbs, aes(d = D, m = M, color = name)) + 
+  geom_roc(n.cuts = F, size = 0.5) +
+  xlab("1-Specificity") + ylab("Sensitivity")
+
+auc.df = data.frame(auc = c(auc(logfit.roc), auc(lda.roc), auc(qda.roc), auc(knn.roc))) 
+rownames(auc.df) = c("logReg", "LDA ", "QDA ", "KNN ")
+kable(auc.df)
+```
+

@@ -1,0 +1,59 @@
+---
+title: "Problem 5"
+author: "Candidate Number: 10100"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document
+# html_document
+---
+  
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
+                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3, fig.align = "center")
+```
+
+
+```{r,eval=TRUE,echo=F}
+library(knitr)
+library(MASS)
+library(keras)
+library(caret)
+library(pls)
+library(glmnet)
+library(gam)
+library(gbm)
+library(randomForest)
+```
+
+```{r}
+id <- "19auu8YlUJJJUsZY8JZfsCTWzDm6doE7C" # google file ID
+d.bodyfat <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",
+    id), header = T)
+```
+
+
+## a)
+```{r}
+names(d.bodyfat)
+lm.fit <- lm(bodyfat~ age + weight + bmi, data = d.bodyfat)
+sum <- summary(lm.fit)
+sum$r.squared
+```
+
+## b)
+```{r}
+set.seed(4268)
+B <- 1000
+n <- nrow(d.bodyfat)
+r2.list <- rep(NA,B)
+for(i in 1:B){
+  ind <- sample(1:n, n, replace = T)
+  lm.fit <- lm(bodyfat~ age + bmi + weight, data = d.bodyfat, subset = ind)
+  r2.list[i] <- summary(lm.fit)$r.squared
+}
+hist(r2.list)
+quantile(r2.list, c(0.025, 0.975))
+sd(r2.list)
+```
+

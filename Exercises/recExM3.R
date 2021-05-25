@@ -22,12 +22,12 @@ ggpairs(Auto, lower = list(continuous = wrap("points", size = 0.1))) + # change 
 reduced.auto = subset(Auto, select = -origin)
 cor(reduced.auto)
 
-# c
+# c)
 fit <- lm(data = Auto, mpg ~ .)
 summary(fit)
 
 ## i) Yes, we can see that there are multiple relationships present, and the low p-value for the F-
-##    statistic indicate that the model has significant explanatory power.
+##    statistic indicates that the model has significant explanatory power.
 ## ii) From the coefficients, a 1000 kg increase in weight would result in a decrease of 6.71
 ##     in mpg. The low p-value speaks for the fact that this relationship is valid/exists.
 ## iii) year suggests that every 10th year, mpg increases with 7.770

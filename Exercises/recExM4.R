@@ -3,7 +3,11 @@
 #===========#
 # Problem 2 #
 #===========#
+## a)
+# A pooled variance can be calculated
 
+## b)
+# The distribution of the covariates are assumed to be multivariate normal within a class; e.g. X|Y ~ Np(mu, Sigma) 
 ## c)
 nG = nF = 500
 muG = c(214.97, 141.52)
@@ -167,22 +171,20 @@ knn.Weekly_prob[down] = 1 - knn.Weekly_prob[down]
 library(pROC)
 library(plotROC)
 
+glmroc = roc(response = Weekly_test$Direction, predictor = glm.probs_Weekly,direction = "<")
 
-glmroc = roc(response = Weekly_test$Direction, predictor = glm.probs_Weekly,
-             direction = "<")
-ldaroc = roc(response = Weekly_test$Direction, predictor = lda.Weekly_prob[,
-                                                                           2], direction = "<")
-qdaroc = roc(response = Weekly_test$Direction, predictor = qda.Weekly_prob[,
-                                                                           2], direction = "<")
-knnroc = roc(response = Weekly_test$Direction, predictor = knn.Weekly_prob,
-             direction = "<")
+ldaroc = roc(response = Weekly_test$Direction, predictor = lda.Weekly_prob[, 2], direction = "<")
+
+qdaroc = roc(response = Weekly_test$Direction, predictor = qda.Weekly_prob[,2], direction = "<")
+
+knnroc = roc(response = Weekly_test$Direction, predictor = knn.Weekly_prob, direction = "<")
 auc(glmroc)
 # you can use this function for all your methods and plot them using
 # plot(yourRoc)
 
 # or use ggplot2
-dat = data.frame(Direction = Weekly_test$Direction, glm = glm.probs_Weekly, lda = lda.Weekly_prob[,
-                                                                                           2], qda = qda.Weekly_prob[, 2], knn = knn.Weekly_prob)
+dat = data.frame(Direction = Weekly_test$Direction, glm = glm.probs_Weekly, 
+                 lda = lda.Weekly_prob[, 2], qda = qda.Weekly_prob[, 2], knn = knn.Weekly_prob)
 dat_long = melt_roc(dat, "Direction", c("glm", "lda", "qda", "knn"))
 ggplot(dat_long, aes(d = D, m = M, color = name)) + geom_roc(n.cuts = F) + xlab("1-Specificity") +
   ylab("Sensitivity")

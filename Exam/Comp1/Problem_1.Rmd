@@ -1,0 +1,84 @@
+---
+title: "Problem 1 (Comp1)"
+author: "Candidate Number: 10100"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document
+# html_document
+---
+  
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
+                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3, fig.align = "center")
+```
+
+
+```{r,eval=TRUE,echo=F}
+library(knitr)
+library(MASS)
+library(keras)
+library(caret)
+library(pls)
+library(glmnet)
+library(gam)
+library(gbm)
+library(randomForest)
+```
+
+# a)-c)
+
+Simply apply the rules $\mathrm{E}[AXB] = A\mathrm{E}[X]B$ and $\mathrm{Cov}(AX) = A\mathrm{Cov(X)}A^\top$.
+
+# d)
+```{r}
+id <- "1X_8OKcoYbng1XvYFDirxjEWr7LtpNr1m" # google file ID
+values <- dget(sprintf("https://docs.google.com/uc?id=%s&export=download", id))
+X = values$X 
+x0 = values$x0
+beta = values$beta
+sigma = values$sigma
+
+bias = function(lambda, X, x0, beta) {
+  p = ncol(X) 
+  inv = solve(t(X) %*% X + lambda*diag(p))
+  value = (t(x0) %*% beta - t(x0) %*% inv %*% t(X) %*% X %*% beta)^2
+  return(value)
+}
+lambdas = seq(0, 2, length.out = 500)
+BIAS = rep(NA, length(lambdas))
+for (i in 1:length(lambdas)) BIAS[i] = bias(lambdas[i], X, x0, beta)
+dfBias = data.frame(lambdas = lambdas, bias = BIAS)
+ggplot(dfBias, aes(x = lambdas, y = bias)) + geom_line(color = "red") + xlab(expression(lambda)) +
+ylab(expression(bias^2))
+
+```
+
+# e)
+```{r}
+variance = function(lambda, X, x0, sigma) { 
+  p = ncol(X)
+  inv = solve(t(X) %*% X + lambda * diag(p)) 
+  value = sigma^2 * (t(x0) %*% inv %*% t(X) %*% X %*% inv %*% x0)
+  return(value)
+}
+lambdas = seq(0, 2, length.out = 500)
+VAR = rep(NA, length(lambdas))
+for (i in 1:length(lambdas)) VAR[i] = variance(lambdas[i], X, x0, sigma)
+dfVar = data.frame(lambdas = lambdas, var = VAR)
+ggplot(dfVar, aes(x = lambdas, y = var)) + geom_line(color = "green4") + xlab(expression(lambda)) + 
+ylab("variance")
+```
+
+# f)
+```{r}
+lambdas = seq(0, 2, length.out = 500)
+exp_mse = BIAS + VAR 
+lambdas[which.min(exp_mse)]
+
+dfAll = data.frame(lambda = lambdas, bias = BIAS, var = VAR, exp_mse = exp_mse) 
+ggplot(dfAll) + geom_line(aes(x = lambda, y = exp_mse), color = "blue") + geom_line(aes(x = lambda,
+y = bias), color = "red") + geom_line(aes(x = lambda, y = var), color = "green4") + xlab(expression(lambda)) + ylab(expression(E(MSE)))
+
+```
+

@@ -1,0 +1,120 @@
+---
+title: "Problem 5"
+author: "Candidate Number: 10100"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document
+# html_document
+---
+  
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
+                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3, fig.align = "center")
+```
+
+
+```{r,eval=TRUE,echo=F}
+library(knitr)
+library(MASS)
+library(keras)
+library(caret)
+library(pls)
+library(glmnet)
+library(gam)
+library(gbm)
+library(randomForest)
+library(leaps)
+library(class)
+library(tree)
+```
+
+## a)
+True, False, False, False
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+x1 <- c(1, 2, 0, 4, 5, 6) 
+x2 <- c(5, 4, 3, 1, 1, 2)
+clusters <- sample(as.factor(c(0, 1)), replace = TRUE, size = length(x1))
+obs <- data.frame(x1 = x1, x2 = x2, clusters = clusters)
+ggplot(obs, aes(x = x1, y = x2, color = clusters)) + geom_point() + theme_bw()
+
+find_centroid <- function(obs) {
+  cluster1 <- obs %>% filter(clusters == 0)
+  cluster2 <- obs %>% filter(clusters == 1)
+  centroid1 <- c(mean(cluster1$x1), mean(cluster1$x2)) 
+  centroid2 <- c(mean(cluster2$x1), mean(cluster2$x2)) 
+  return(list(centroid1 = centroid1, centroid2 = centroid2))
+}
+
+centroids_it1 <- find_centroid(obs)
+ggplot(obs, aes(x = x1, y = x2, color = clusters)) + geom_point() + theme_bw() + geom_point(aes(centroids_it1$centroid1[1], centroids_it1$centroid1[2]), shape = 23,color = "red") + geom_point(aes(centroids_it1$centroid2[1], centroids_it1$centroid2[2]), shape = 23, color = "blue")
+
+euc.dist <- function(x, centroid) sqrt(sum((x - centroid)^2))
+
+for (i in 1:nrow(obs)) {
+  (dist_centroid1 <- euc.dist(obs[i, 1:2], centroids_it1$centroid1)) 
+  (dist_centroid2 <- euc.dist(obs[i,1:2], centroids_it1$centroid2)) 
+  if (dist_centroid1 < dist_centroid2) {
+    obs[i, ]$clusters <- as.factor(0) } 
+  else {
+    obs[i, ]$clusters <- as.factor(1) }
+}
+
+centroids_it2 <- find_centroid(obs)
+ggplot(obs, aes(x = x1, y = x2, color = clusters)) + geom_point() + theme_bw() +
+geom_point(aes(centroids_it2$centroid1[1], centroids_it2$centroid1[2]), shape = 23, color = "red") + geom_point(aes(centroids_it2$centroid2[1], centroids_it2$centroid2[2]),shape = 23, color = "blue")
+
+```
+## c)-d)
+
+```{r}
+id <- "1VfVCQvWt121UN39NXZ4aR9Dmsbj-p9OU" # google file ID
+GeneData <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",
+id), header = F)
+colnames(GeneData)[1:20] = paste(rep("H", 20), c(1:20), sep = "") 
+colnames(GeneData)[21:40] = paste(rep("D", 20), c(1:20), sep = "") 
+row.names(GeneData) = paste(rep("G", 1000), c(1:1000), sep = "") 
+GeneData = t(GeneData)
+GeneData <- scale(GeneData)
+```
+
+```{r}
+euc.d <- dist(GeneData)
+hc.euc.comp <- hclust(euc.d, method="complete")
+hc.euc.single <- hclust(euc.d, method = "single")
+hc.euc.avg <- hclust(euc.d, method = "average")
+
+par(mfrow = c(1, 3))
+plot(hc.euc.comp, main="Complete Linkage", xlab="", sub="",cex =.9)
+plot(hc.euc.comp, main="Single Linkage", xlab="", sub="",cex =.9)
+plot(hc.euc.comp, main="Average Linkage", xlab="", sub="",cex =.9)
+
+```
+## e)
+
+```{r}
+# transform and add column for state (diseased/healthy)
+PCdata = as.data.frame((GeneData))
+PCdata$State = c(rep("Healthy", 20), rep("Sick", 20))
+library(ggfortify)
+pr.out = prcomp(PCdata[, 1:1000]) # , scale = T) 
+autoplot(pr.out, data = PCdata, colour = "State")
+
+pr.var <- pr.out$sdev^2
+pve5 <- sum(pr.var[1:5])/sum(pr.var)
+pve5
+
+```
+
+## f)
+
+```{r}
+# which genes contribute the most to PC1?
+ImpGenes = names(sort(abs(pr.out$rotation[, 1]), decreasing = T)[1:10]) 
+pr.out$rotation[match(ImpGenes, row.names(pr.out$rotation)), 1]
+```
+

@@ -1,0 +1,92 @@
+---
+title: "Problem x"
+author: "Candidate Number: 10100"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document
+# html_document
+---
+  
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
+                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3, fig.align = "center")
+```
+
+
+```{r,eval=TRUE,echo=F}
+library(knitr)
+library(MASS)
+library(keras)
+library(caret)
+library(pls)
+library(glmnet)
+library(gam)
+library(gbm)
+library(randomForest)
+library(leaps)
+library(class)
+library(tree)
+```
+
+
+
+## a)
+
+True, True, False, True
+
+## b)
+```{r}
+id <- "1x_E8xnmz9CMHh_tMwIsWP94czPa1Fpsj" # google file ID
+d.leukemia <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",id), header = T)
+
+set.seed(2399)
+t.samples <- sample(1:60, 15, replace = F) 
+d.leukemia$Category <- as.factor(d.leukemia$Category) 
+d.leukemia.test <- d.leukemia[t.samples, ] 
+d.leukemia.train <- d.leukemia[-t.samples, ]
+head(d.leukemia.train)
+```
+
+```{r}
+svm.lin <- svm(Category~., data = d.leukemia.train, kernel = "linear", cost = 1, scale = T)
+lin.pred.train <- predict(svm.lin, d.leukemia.train)
+(lin.t.train <- table(true = d.leukemia.train$Category, predicted = lin.pred.train))
+(miclass.lin.train <-  1 - sum(diag(lin.t.train))/sum(lin.t.train))
+
+
+lin.pred.test <- predict(svm.lin, d.leukemia.test)
+(lin.t.test <- table(true = d.leukemia.test$Category, predicted = lin.pred.test))
+(miclass.lin.test <-  1 - sum(diag(lin.t.test))/sum(lin.t.test))
+
+```
+
+False negatives is the most prevalent error, which could be very serious in practice. The method is not successful in other words.
+
+```{r}
+# gamma = 1e-2
+svm.rad1 <- svm(Category~., data = d.leukemia.train, kernel = "radial", cost = 1, gamma = 1e-2, scale = T)
+rad1.pred.train <- predict(svm.rad1, d.leukemia.train)
+(rad1.t.train <- table(true = d.leukemia.train$Category, predicted = rad1.pred.train))
+(miclass.rad1.train <-  1 - sum(diag(rad1.t.train))/sum(rad1.t.train))
+
+
+rad1.pred.test <- predict(svm.rad1, d.leukemia.test)
+(rad1.t.test <- table(true = d.leukemia.test$Category, predicted = rad1.pred.test))
+(miclass.rad1.test <-  1 - sum(diag(rad1.t.test))/sum(rad1.t.test))
+
+```
+```{r}
+# gamma = 1e-5
+svm.rad2 <- svm(Category~., data = d.leukemia.train, kernel = "radial", cost = 1, gamma = 1e-5, scale = T)
+rad2.pred.train <- predict(svm.rad2, d.leukemia.train)
+(rad2.t.train <- table(true = d.leukemia.train$Category, predicted = rad2.pred.train))
+(miclass.rad2.train <-  1 - sum(diag(rad2.t.train))/sum(rad2.t.train))
+
+
+rad2.pred.test <- predict(svm.rad2, d.leukemia.test)
+(rad2.t.test <- table(true = d.leukemia.test$Category, predicted = rad2.pred.test))
+(miclass.rad2.test <-  1 - sum(diag(rad2.t.test))/sum(rad2.t.test))
+
+```
+

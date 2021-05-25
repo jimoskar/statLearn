@@ -1,0 +1,72 @@
+---
+title: "Problem 3"
+author: "Candidate Number: 10100"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document
+# html_document
+---
+  
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
+                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3, fig.align = "center")
+```
+
+
+```{r,eval=TRUE,echo=F}
+library(knitr)
+library(MASS)
+library(keras)
+library(caret)
+library(pls)
+library(glmnet)
+library(gam)
+library(gbm)
+library(randomForest)
+library(leaps)
+library(class)
+library(tree)
+```
+
+## a)
+True, True, False, False
+
+## b)
+
+## c)
+```{r}
+id <- "1Fv6xwKLSZHldRAC1MrcK2mzdOYnbgv0E" # google file ID
+d.diabetes <- dget(sprintf("https://docs.google.com/uc?id=%s&export=download", id)) 
+d.train = d.diabetes$ctrain
+d.test = d.diabetes$ctest
+d.train$diabetes <- as.factor(d.train$diabetes)
+d.test$diabetes <- as.factor(d.test$diabetes)
+```
+
+(i)
+```{r}
+str(d.train)
+tree.mod <- tree(diabetes~., data = d.train)
+set.seed(1)
+d.cv <- cv.tree(tree.mod)
+plot(d.cv$size, d.cv$dev, type = "b")
+tree.min <- which.min(d.cv$dev)
+d.cv$dev
+d.cv$size
+best <- d.cv$size[tree.min]
+best
+pr.tree <- prune.tree(tree.mod, best = best)
+
+yhat <- predict(pr.tree, d.test)
+mean((d.test$diabetes - yhat)^2)
+```
+
+(ii)
+```{r}
+m = round(sqrt(ncol(d.train) - 1))
+d.rf <- randomForest(diabetes~., data = d.train, mtry = m, ntree = 1000, importance = T)
+yhat <- predict(d.rf, d.test)
+mean((yhat - d.test$diabetes)^2)
+```
+

@@ -1,0 +1,117 @@
+---
+title: "Problem 1"
+author: "Candidate Number: 10100"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document
+# html_document
+---
+  
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
+                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3, fig.align = "center")
+```
+
+
+```{r,eval=TRUE,echo=F}
+library(knitr)
+library(MASS)
+library(keras)
+library(caret)
+library(pls)
+library(glmnet)
+library(gam)
+library(gbm)
+library(randomForest)
+library(leaps)
+```
+
+
+## a)
+True, True, True, False
+
+## b)
+
+```{r}
+id <- "1iI6YaqgG0QJW5onZ_GTBsCvpKPExF30G" # google file ID
+catdat <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id),
+header = T)
+
+set.seed(4268)
+train.ind = sample(1:nrow(catdat), 0.5 * nrow(catdat))
+catdat.train = catdat[train.ind, ]
+catdat.test = catdat[-train.ind, ]
+```
+
+We plot the RSS, $R^2_{\mathrm{Adj}}$, $C_p$ and BIC for the different model complexities:
+```{r, fig.height=5, fig.width = 6}
+regfit.full <- regsubsets(birds~., catdat.train, nvmax = ncol(catdat.train) - 1)
+reg.sum <- summary(regfit.full)
+reg.sum
+
+par(mar=c(2,2,2,2))
+par(mfrow = c(2,2))
+# RSS
+plot(reg.sum$rss, xlab="Number of Variables ",ylab="RSS", type="b", cex = 0.5)
+
+# AdjRsq
+plot(reg.sum$adjr2 ,xlab="Number of Variables ", ylab="Adjusted RSq",type="b", cex = 0.5)
+which.max(reg.sum$adjr2)
+points(which.max(reg.sum$adjr2),max(reg.sum$adjr2), col="red",cex=2,pch=20)
+
+# Cp
+plot(reg.sum$cp, xlab="Number of Variables ", ylab="Cp", type = 'b', cex = 0.5)
+points(which.min(reg.sum$cp), min(reg.sum$cp), col = "red", cex = 2, pch = 20)
+
+# BIC
+plot(reg.sum$bic, xlab="Number of Variables ", ylab="BIC", type = 'b', cex = 0.5)
+points(which.min(reg.sum$bic), min(reg.sum$bic), col = "red", cex = 2, pch = 20)
+which.min(reg.sum$bic)
+
+```
+
+We select the model according to the BIC, because that gives the simplest model.
+```{r}
+lm.fit <- lm(birds~ wetfood + daily.playtime + children.13 + urban + bell + daily.outdoortime, data = catdat.train)
+lm.preds <- predict(lm.fit, catdat.test)
+lm.mse <- mean((lm.preds - catdat.test$birds)^2)
+lm.mse
+```
+
+## c)
+```{r}
+x.train <- model.matrix(birds ~ ., data = catdat.train)[, -1] 
+y.train <- catdat.train$birds
+x.test <- model.matrix(birds ~ ., data = catdat.test)[, -1]
+y.test <-  catdat.test$birds
+
+lambdas <- 10^seq(10, -2, length=100)
+lasso.mod <- glmnet(x.train, y.train, alpha = 1, lambda = lambdas)
+cv.lasso <- cv.glmnet(x.train, y.train, alpha = 1, lambda = lambdas)
+lasso.preds <- predict(lasso.mod, s = cv.lasso$lambda.min, newx = x.test)
+lasso.mse <- mean((y.test - lasso.preds)^2)
+lasso.mse
+```
+## d)
+When $\lambda \rightarrow \infty$, we get the null model, while if $\lambda = 0$, we retain the standard least squares regression.
+
+## e)
+```{r}
+# Only intercept:
+i.pred <- mean(y.train)
+i.mse <- mean((y.test - i.pred)^2)
+i.mse
+
+# Full model:
+lm.full <- lm(birds~., data = catdat.train)
+full.pred <- predict(lm.full, catdat.test)
+full.mse <- mean((y.test - full.pred)^2)
+full.mse
+```
+## f)
+```{r}
+df <- data.frame(best.subset = lm.mse, lasso = lasso.mse, intercept = i.mse, ols = full.mse)
+df
+```
+

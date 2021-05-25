@@ -1,0 +1,82 @@
+---
+title: "Problem 2"
+author: "Candidate Number: 10100"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document
+# html_document
+---
+  
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
+                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3, fig.align = "center")
+```
+
+
+```{r,eval=TRUE,echo=F}
+library(knitr)
+library(MASS)
+library(keras)
+library(caret)
+library(pls)
+library(glmnet)
+library(gam)
+library(gbm)
+library(randomForest)
+```
+
+```{r}
+# read file
+id <- "1yYlEl5gYY3BEtJ4d7KWaFGIOEweJIn__" # google file ID
+d.corona <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",
+    id), header = T)
+```
+
+# a)
+```{r}
+t1 <- table(d.corona$deceased)
+kable(t1)
+
+t2 <- table(d.corona$sex, d.corona$country)
+kable(t2)
+
+t3 <- table(d.corona$sex, d.corona$deceased)
+kable(t3)
+
+france <- d.corona[which(d.corona$country == "France"), ]
+t4 <- table(france$sex, france$deceased)
+kable(t4)
+```
+
+# b)
+```{r}
+logfit <- glm(deceased~., data = d.corona, family = "binomial")
+predict(logfit, newdata = data.frame(sex = "male", age = 75, country = "Korea"), type = "response")
+summary(logfit)
+anova(logfit, test = "Chisq")
+```
+The odds changes with a factor `r exp(10*coef(logfit)[3])`.
+
+# c)
+```{r}
+logfit.i1 <- glm(deceased~. + age:sex, data = d.corona, family = "binomial")
+summary(logfit.i1)
+
+logfit.i2 <- glm(deceased~. + country:age, data = d.corona, family = "binomial")
+summary(logfit.i2)
+```
+# d)
+```{r}
+lda.fit <- lda(deceased~., data = d.corona)
+lda.preds <- predict(lda.fit, d.corona)$class
+table(lda.preds, d.corona$deceased)
+
+qda.fit <- qda(deceased~., data = d.corona)
+qda.preds <- predict(qda.fit, d.corona)$class
+table(qda.preds, d.corona$deceased)
+
+```
+
+
+
