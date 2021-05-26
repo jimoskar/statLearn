@@ -27,6 +27,11 @@ library(randomForest)
 library(leaps)
 library(class)
 library(tree)
+library(dplyr)
+library(GGally)
+library(ggfortify)
+library(pROC)
+library(nnet)
 ```
 
 

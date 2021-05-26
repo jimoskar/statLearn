@@ -1,0 +1,122 @@
+---
+title: "Problem 6"
+author: "Candidate Number: 10100"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document
+# html_document
+---
+  
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
+                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3, fig.align = "center")
+```
+
+
+```{r,eval=TRUE,echo=F}
+library(knitr)
+library(MASS)
+library(keras)
+library(caret)
+library(pls)
+library(glmnet)
+library(gam)
+library(gbm)
+library(randomForest)
+library(leaps)
+library(class)
+library(tree)
+library(dplyr)
+library(GGally)
+library(ggfortify)
+library(pROC)
+#library(nnet)
+```
+
+```{r}
+id <- "1cSVIJv-OoAwkhUAuun2qQyOfiuZzkmo3"
+d.sparrows <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",id), header = T)
+str(d.sparrows)
+```
+
+## a)
+```{r}
+d.sparrows$hisl <- as.factor(d.sparrows$hisl)
+logfit.hisl <- glm(recruit ~ . + sex:f, family = "binomial", data = d.sparrows)
+summary(logfit.hisl)
+anova(logfit.hisl, test = "Chisq")
+logfit <- glm(recruit ~ sex + sex:f +  lnrhday + clsize + hyear  + f + H1 + GTloci + geno,
+              family = "binomial", data = d.sparrows)
+anova(logfit, logfit.hisl, test = "Chisq")
+```
+From the last ANOVA table, we see that the p-value is somewhat low ($p \approx 0.056$), which coulc be considered evidence that survival probabilities differed between hatch islands, but more data should be gathered to test that it is not low by chance.
+
+## b) 
+```{r}
+set.seed(123456)
+samples <- sample(1:169,120, replace=F)
+d.sparrows.train <- d.sparrows[samples,]
+d.sparrows.test <- d.sparrows[-samples,]
+
+
+glm.fit <- glm(recruit ~ sex + lnrhday + clsize + hyear  + f + H1 + GTloci + geno,
+              family = "binomial", data = d.sparrows.train)
+glm.preds <- predict(glm.fit, d.sparrows.test, type = "response")
+yhat <- ifelse(glm.preds>0.5, 1, 0)
+(conf <- table(truth = d.sparrows.test$recruit, predict = yhat))
+(sens <- conf[2, 2]/sum(conf[2, ]))
+(spes <- conf[1, 1]/sum(conf[1, ]))
+
+```
+
+## c)
+
+```{r}
+qda.mod <-  qda(recruit ~ sex + lnrhday + clsize + hyear  + f + H1 + GTloci + geno,
+                data = d.sparrows.train)
+qda.pred <- predict(qda.mod, newdata = d.sparrows.test)$class
+(conf <- table(truth = d.sparrows.test$recruit, predict = qda.pred))
+(sens <- conf[2, 2]/sum(conf[2, ]))
+(spes <- conf[1, 1]/sum(conf[1, ]))
+
+```
+
+## d)
+
+```{r}
+library(keras)
+x_train <- d.sparrows.train[,-c(6,11)]
+x_test = d.sparrows.test[,-c(6,11)]
+mean = apply(x_train, 2, mean)                                
+std = apply(x_train, 2, sd)
+x_train = scale(x_train, center = mean, scale = std)
+x_test = scale(x_test, center = mean, scale = std)
+y_train = as.numeric(d.sparrows.train$recruit)
+y_test =  as.numeric(d.sparrows.test$recruit)
+
+nn.mod = keras_model_sequential() %>% 
+  layer_dense(units = 32, activation = 'relu', input_shape = c(9)) %>%  layer_dropout(rate = 0.2) %>% 
+  layer_dense(units = 64, activation = 'relu') %>% layer_dropout(rate = 0.2) %>%
+  layer_dense(units = 1, activation = 'sigmoid')
+
+nn.mod %>% compile(
+  optimizer = "rmsprop",
+  loss = "binary_crossentropy", 
+  metrics = c("accuracy")
+)
+
+set.seed(1234)
+history <-  nn.mod %>% fit(x_train, y_train,
+                            epochs = 25,
+                            batch_size = 16,
+                            validation_split = 0.5)
+plot(history)
+
+nn.preds <- nn.mod %>% predict_classes(x_test)
+(conf <- table(truth = d.sparrows.test$recruit, predict = nn.preds))
+(sens <- conf[2, 2]/sum(conf[2, ]))
+(spes <- conf[1, 1]/sum(conf[1, ]))
+```
+
+We see that QDA gives the highest sensitivity, while logistic regression gives the highest specificity. The neural network serves as a compromise between these two models, with regard to sensitivity and specificity.

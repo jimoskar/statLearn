@@ -33,10 +33,10 @@ confusionMatrix(factor(pred),test_labels)
 # a)
 
 # Install the keras R package 
-install.packages("keras")
+#install.packages("keras")
 # Install the core Keras library + TensorFlow
 library(keras)
-install_keras()
+#install_keras()
 # for machines with NVIDIA GPU
 # install_keras(tensorflow = "gpu")
 

@@ -1,0 +1,119 @@
+---
+title: "Problem 5"
+author: "Candidate Number: 10100"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  pdf_document
+# html_document
+---
+  
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.white=TRUE,prompt=FALSE,
+                      cache=TRUE, size="scriptsize",fig.width=4, fig.height=3, fig.align = "center")
+```
+
+
+```{r,eval=TRUE,echo=F}
+library(knitr)
+library(MASS)
+library(keras)
+library(caret)
+library(pls)
+library(glmnet)
+library(gam)
+library(gbm)
+library(randomForest)
+library(leaps)
+library(class)
+library(tree)
+library(dplyr)
+library(GGally)
+library(ggfortify)
+library(pROC)
+library(nnet)
+```
+
+
+
+```{r}
+id <- "1dNLfx9Dbs2gYIooUxA6HMxK_MPFwE3Hn"
+d.bodyfat <- read.csv(sprintf("https://docs.google.com/uc?id=%s&export=download",id), header = T)
+#str(d.bodyfat)
+#ggpairs(d.bodyfat)
+```
+## a)
+
+```{r}
+library(glmnet)
+set.seed(1234)
+samples <- sample(1:243,180, replace=F)
+d.body.train <- d.bodyfat[samples,]
+d.body.test <- d.bodyfat[-samples,]
+
+x.train <- model.matrix(bodyfat~.,d.body.train)[,-1]
+y.train <- d.body.train$bodyfat
+x.test <- model.matrix(bodyfat~.,d.body.test)[,-1]
+y.test <- d.body.test$bodyfat
+
+lasso.mod <- glmnet(x.train, y.train, alpha = 1)
+cv.out <- cv.glmnet(x.train, y.train, alpha = 1)
+bestlam <- cv.out$lambda.1se
+bestlam
+lasso.coef <- predict(lasso.mod, type = "coefficients", s = bestlam)
+lasso.coef
+pred <- predict(lasso.mod, s = bestlam, newx = x.test)
+(mse.lasso <- mean((pred - y.test)^2))
+```
+
+The value of $\lambda$ is chosen with 10-fold cross validation, and the largest value within one sd is chosen. The test MSE is reported above.
+
+## b)
+```{r}
+lm.fit <- lm(bodyfat~., data = d.body.train)
+summary(lm.fit)
+lm.pred <- predict(lm.fit, newdata = d.body.test)
+(mse.lm <- mean((lm.pred - d.body.test$bodyfat)^2))
+```
+The test MSE for the full multiple linear regression is reported above. We see that lasso yields a slightly lower test MSE, which could indicate that not all variables are as relevant and only contribute to a larger variance in the fit. From the summary, we also see that not all covariates are significant with respect to the p-value. We see that lasso only selects age, height, abdomen and wrists. 
+
+
+## c)
+```{r}
+library(gam)
+quantile(d.body.train$height)
+# Not sure how to implment the quantiles explixitly..
+gam.mod <- gam(bodyfat~ weight + bmi + poly(age, 2) + ns(height, 3) + ns(abdomen, 3) + s(hip), data = d.body.train)
+gam.pred <- predict(gam.mod, newdata = d.body.test)
+(gam.mse <- mean((gam.pred - d.body.test$bodyfat)^2))
+```
+## d)
+```{r}
+library(pls)
+pls.fit <- plsr(bodyfat~., data = d.body.train, scale = T, validation = "CV")
+summary(pls.fit)
+```
+From the summary, we can see that we need 10 components in order to explain at least 95% of the variance in the covariates.
+```{r}
+pred.pls <- predict(pls.fit, d.body.test, ncomp = 10)
+(mse.pls <- mean((pred.pls - y.test)^2))
+```
+
+## e)
+```{r}
+library(randomForest)
+m = round(sqrt(ncol(d.body.train) -1))
+rf.mod <- randomForest(bodyfat~., data = d.body.train, mtry=m,importance =TRUE, n.trees = 2000)
+rf.pred = predict(rf.mod, newdata = d.body.test)
+(mse.rf <- mean((rf.pred-y.test)^2))
+```
+The test MSE is reported above. The tuning parameter $m$ is chosen as approximately the square root of the number of predictors, in accordance with the practice in the course book. The number of trees (which is not a tuning parameter for random forests) is chosen great enough fot the test MSE to settle.
+
+## f)
+```{r}
+df <- data.frame(mse.lm = mse.lm, mse.lasso = mse.lasso, mse.pls = mse.pls, mse.rf = mse.rf)
+df
+```
+
+Interestingly, the lasso-model outperforms the other methods wrt the test MSE. The least squares regression performs the worst, which again indicates that some covariates are superfluous.
+

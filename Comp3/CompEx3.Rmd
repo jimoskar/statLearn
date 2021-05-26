@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE,tidy=TRUE,message=FALSE,warning=FALSE,strip.wh
                       cache=TRUE, size="scriptsize", comment = "#>", fig.align = "center")
 ```
 ## Disclaimer
-This exercise replaced the written exam in this course in 2020 and merely serves as an exam prepeartion for this semester, 2021.
+This exercise replaced the written exam in this course in 2020 and merely serves as an exam preparation for this semester, 2021.
 
 ## Problem 1
 # a)
