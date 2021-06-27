@@ -50,7 +50,7 @@ logfit <- glm(recruit ~ sex + sex:f +  lnrhday + clsize + hyear  + f + H1 + GTlo
               family = "binomial", data = d.sparrows)
 anova(logfit, logfit.hisl, test = "Chisq")
 ```
-From the last ANOVA table, we see that the p-value is somewhat low ($p \approx 0.056$), which coulc be considered evidence that survival probabilities differed between hatch islands, but more data should be gathered to test that it is not low by chance.
+From the last ANOVA table, we see that the p-value is somewhat low ($p \approx 0.056$), which could be considered evidence that survival probabilities differed between hatch islands, but more data should be gathered to test that it is not low by chance.
 
 ## b) 
 ```{r}

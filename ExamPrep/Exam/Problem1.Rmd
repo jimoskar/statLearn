@@ -75,7 +75,7 @@ summary(lm.fit)
 lm.pred <- predict(lm.fit, newdata = d.body.test)
 (mse.lm <- mean((lm.pred - d.body.test$bodyfat)^2))
 ```
-The test MSE for the full multiple linear regression is reported above. We see that lasso yields a slightly lower test MSE, which could indicate that not all variables are as relevant and only contribute to a larger variance in the fit. From the summary, we also see that not all covariates are significant with respect to the p-value. We see that lasso only selects age, height, abdomen and wrists. 
+The test MSE for the full multiple linear regression is reported above. We see that lasso yields a slightly lower test MSE, which could indicate that not all variables are as relevant and only contribute to a larger variance in the fit. From the summary, we also see that not all covariates are significant with respect to the p-value. We see that lasso only selects age, height, abdomen and wrist. The reason why variables such as weight and thigh, which have a low p-value, are not selected, could be that they are collinear with some of the selected variables.
 
 
 ## c)
